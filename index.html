@@ -1080,6 +1080,18 @@
             <span class="sb-label matlub-label">مطلوبِ نقطه‌ی حکم</span>
             <div class="sb-text" id="summaryMatlub"></div>
         </div>
+        <div class="summary-block" id="summaryDoctorBlock" style="display:none;">
+            <span class="sb-label matlub-label">دانایی پزشک — خانه ۱۰</span>
+            <div class="sb-text" id="summaryDoctor"></div>
+        </div>
+        <div class="summary-block" id="summaryTravelBlock" style="display:none;">
+            <span class="sb-label matlub-label">سفر برای درمان یا ماندن در وطن — خانه‌های ۱، ۴، ۷، ۱۰</span>
+            <div class="sb-text" id="summaryTravel"></div>
+        </div>
+        <div class="summary-block" id="summaryDiagnosisBlock" style="display:none;">
+            <span class="sb-label matlub-label">محل بیماری وقتی از عکس‌برداری مشخص نشد</span>
+            <div class="sb-text" id="summaryDiagnosis"></div>
+        </div>
     </div>
 
     <p class="shield-section-title"><span class="zahir-tag">🔷 ظاهر رمل</span></p>
@@ -2042,6 +2054,12 @@ const summaryHokm = document.getElementById('summaryHokm');
 const summaryLesan = document.getElementById('summaryLesan');
 const summaryMatlubBlock = document.getElementById('summaryMatlubBlock');
 const summaryMatlub = document.getElementById('summaryMatlub');
+const summaryDoctorBlock = document.getElementById('summaryDoctorBlock');
+const summaryDoctor = document.getElementById('summaryDoctor');
+const summaryTravelBlock = document.getElementById('summaryTravelBlock');
+const summaryTravel = document.getElementById('summaryTravel');
+const summaryDiagnosisBlock = document.getElementById('summaryDiagnosisBlock');
+const summaryDiagnosis = document.getElementById('summaryDiagnosis');
 const niyatInput = document.getElementById('niyatInput');
 
 const modeRandomBtn = document.getElementById('modeRandomBtn');
@@ -2768,6 +2786,114 @@ function renderBatinShield(){
     batinShieldWrap.classList.add('show');
 }
 
+/* ======================================================================
+   بخش ۷: دانایی پزشک (خانه ۱۰)، سفر برای درمان (خانه‌های ۱، ۴، ۷، ۱۰)،
+   و محل بیماری وقتی عکس‌برداری مشخص نمی‌کند (طریق/نقی‌الخد/فرح/عقله در ۱ تا ۱۶)
+   ====================================================================== */
+const doctorInfo = {
+    "لحیان":        { competency:'dana' },
+    "قبض الداخل":   { competency:'dana' },
+    "اجتماع":       { competency:'dana', extra:['اجتماع و جماعت: دکتر قدیمی یا داروی قدیمی خوب است'] },
+    "عتبه الداخل":  { competency:'dana', extra:['نصره‌داخل، عتبه‌داخل و فرح: عکس‌برداری خوب است'] },
+    "نصره الداخل":  { competency:'dana', extra:['اگر دکتر زن باشد خوب است', 'عکس‌برداری خوب است'] },
+    "نصره الخارج":  { competency:'dana' },
+    "قبض الخارج":   { competency:'nadan' },
+    "نقی الخد":     { competency:'nadan', extra:['نقی‌الخد و طریق: دکتر یا قابله ناوارد است'] },
+    "جماعت":        { competency:'nadan', extra:['اجتماع و جماعت: دکتر قدیمی یا داروی قدیمی خوب است'] },
+    "عتبه الخارج":  { competency:'nadan' },
+    "عقله":         { competency:'nadan' },
+    "انکیس":        { competency:'nadan' },
+    "فرح":          { competency:'mid', extra:['کمی وارد است', 'نصره‌داخل، عتبه‌داخل و فرح: عکس‌برداری خوب است'] },
+    "بیاض":         { competency:null, extra:['اگر دکتر زن باشد خوب است'] },
+    "طریق":         { competency:null, extra:['نقی‌الخد و طریق: دکتر یا قابله ناوارد است'] }
+};
+const competencyLabel = { dana:'دانا', nadan:'نادان', mid:'کمی وارد است' };
+
+function renderDoctorSection(){
+    const houseIdx = 9; // خانه‌ی دهم
+    const { shape } = shapeForHouse(houseIdx);
+    const info = doctorInfo[shape.shape];
+    if(!info){
+        summaryDoctorBlock.style.display = 'none';
+        summaryDoctor.innerHTML = '';
+        return;
+    }
+    let html = `در خانه‌ی دهم «${shape.shape}» افتاده است؛ `;
+    html += info.competency
+        ? `پزشک <span class="matlub-emph">${competencyLabel[info.competency]}</span> است.`
+        : `توضیح ویژه‌ای درباره‌ی دانایی پزشک ندارد.`;
+    if(info.extra && info.extra.length){
+        html += `<br>${info.extra.join('؛ ')}.`;
+    }
+    summaryDoctor.innerHTML = html;
+    summaryDoctorBlock.style.display = 'block';
+}
+
+const travelAbroadGood = ['لحیان', 'اجتماع', 'نصره الخارج', 'نصره الداخل', 'فرح', 'عتبه الداخل', 'بیاض'];
+const travelAbroadBad  = ['حمره', 'قبض الخارج', 'عقله', 'انکیس', 'جماعت', 'نقی الخد'];
+const travelTourismGood = ['طریق', 'عتبه الداخل', 'فرح', 'نصره الداخل'];
+const travelHomeGood = ['اجتماع', 'جماعت', 'قبض الداخل', 'بیاض'];
+const travelHouseLabels = { 0:'خانه‌ی اول', 3:'خانه‌ی چهارم', 6:'خانه‌ی هفتم', 9:'خانه‌ی دهم' };
+
+function renderTravelSection(){
+    const houseIdxs = [0, 3, 6, 9];
+    const lines = [];
+    houseIdxs.forEach(idx => {
+        const { shape } = shapeForHouse(idx);
+        const name = shape.shape;
+        const notes = [];
+        if(travelAbroadGood.includes(name)) notes.push('برای سفر و درمان خارج از وطن خوب است');
+        if(travelAbroadBad.includes(name)) notes.push('برای سفر خارج از وطن بسیار بد است؛ نرود، پشیمانی دارد');
+        if(travelTourismGood.includes(name)) notes.push('برای تفریح رفتن خوب است');
+        if(travelHomeGood.includes(name)) notes.push('در خود وطن بستری شدن خوب است');
+        if(notes.length){
+            lines.push(`${travelHouseLabels[idx]} «${name}»: ${notes.join('؛ ')}.`);
+        }
+    });
+    if(!lines.length){
+        summaryTravelBlock.style.display = 'none';
+        summaryTravel.innerHTML = '';
+        return;
+    }
+    summaryTravel.innerHTML = lines.join('<br>');
+    summaryTravelBlock.style.display = 'block';
+}
+
+const diagnosisShapes = ['طریق', 'نقی الخد', 'فرح', 'عقله'];
+const diagnosisPartsRight = { 1:'سر', 2:'پیشانی', 3:'بازو', 4:'سینه', 5:'پشت و کمر', 6:'ناف', 7:'تیر پشت', 8:'ذکر (در مرد)' };
+const diagnosisPartsLeft  = { 9:'داخل شکم', 10:'داخل سینه', 11:'زانوها', 12:'روی پا', 13:'کف دست‌ها', 14:'گوش‌ها', 15:'قلب', 16:'فرج' };
+const agholeCauses = {
+    1:'بیماری از خوراک‌های فاسد', 2:'بیماری از جهت خسارت مالی', 3:'بیماری از فامیل یا سرماخوردگی در راه',
+    4:'بیماری از پدر یا ملک یا روح باشد', 5:'از محبت و عشق، فکر و دوستی یا فرزند باشد',
+    6:'از غصه‌ی فرزند یا قرض و ناداری باشد', 7:'از دست زن یا سحر و جادو یا سرماخوردگی باشد',
+    8:'در راه ترسیدن از ماشین، یا خوف در خواب باشد', 9:'ترسیده از مقام دولتی یا مادرش مریض است',
+    10:'از کارخانه یا شغل زیاد یا خوراک مسموم باشد', 11:'حسرت خوردن و ناامیدی از نرسیدن دوست',
+    12:'خوف از زندان و دشمن و دزد و پاسبان دارد'
+};
+
+function renderDiagnosisSection(){
+    const lines = [];
+    for(let i = 0; i < 16; i++){
+        const n = i + 1;
+        const { shape } = shapeForHouse(i);
+        if(!diagnosisShapes.includes(shape.shape)) continue;
+        const side = n <= 8 ? 'راست' : 'چپ';
+        const part = n <= 8 ? diagnosisPartsRight[n] : diagnosisPartsLeft[n];
+        let line = `خانه‌ی ${n} «${shape.shape}»: اشاره به سمت ${side} بدن، محل: ${part}.`;
+        if(shape.shape === 'عقله' && n <= 12){
+            line += ` علت: ${agholeCauses[n]}.`;
+        }
+        lines.push(line);
+    }
+    if(!lines.length){
+        summaryDiagnosisBlock.style.display = 'none';
+        summaryDiagnosis.innerHTML = '';
+        return;
+    }
+    summaryDiagnosis.innerHTML = lines.join('<br>');
+    summaryDiagnosisBlock.style.display = 'block';
+}
+
 function renderSummary(niyatText){
     const judge = shapeForHouse(14);
     const lesan = shapeForHouse(15);
@@ -2796,6 +2922,10 @@ function renderSummary(niyatText){
     } else {
         summaryMatlubBlock.style.display = 'none';
     }
+
+    renderDoctorSection();
+    renderTravelSection();
+    renderDiagnosisSection();
 
     summaryPanel.classList.add('show');
 }
