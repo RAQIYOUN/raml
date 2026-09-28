@@ -473,6 +473,8 @@
     .card:hover{ transform:translateY(-3px); box-shadow:0 6px 14px #0003; }
     .card.narrow{ margin:0 auto; }
     .card.judge-house{ outline:2px solid #b9770e; }
+    .card.divide-gap-r{ margin-left:14px; }
+    .card.divide-gap-l{ margin-right:14px; }
 
     .card .num{
         position:absolute;
@@ -946,6 +948,8 @@
         .card h3{ font-size:9.5px; margin-bottom:2px; }
         .card pre{ font-size:10px; }
         .card .house-topic{ font-size:7.5px; }
+        .card.divide-gap-r{ margin-left:6px; }
+        .card.divide-gap-l{ margin-right:6px; }
         .box{ padding:16px 14px; }
         .box .title-line{ font-size:15px; }
         .box .head h2{ font-size:16px; }
@@ -2679,8 +2683,8 @@ function renderShield(){
             c.style.width = (100 / span).toFixed(4) + '%';
         }
         c.style.gridRow = String(pos.row);
-        if(i === 3) c.style.marginLeft = '14px';
-        if(i === 4) c.style.marginRight = '14px';
+        if(i === 3) c.classList.add('divide-gap-r');
+        if(i === 4) c.classList.add('divide-gap-l');
         shield.appendChild(c);
     }
     shieldWrap.classList.add('show');
@@ -2849,8 +2853,8 @@ function renderBatinShield(){
             c.style.width = (100 / span).toFixed(4) + '%';
         }
         c.style.gridRow = String(pos.row);
-        if(i === 3) c.style.marginLeft = '14px';
-        if(i === 4) c.style.marginRight = '14px';
+        if(i === 3) c.classList.add('divide-gap-r');
+        if(i === 4) c.classList.add('divide-gap-l');
         batinShield.appendChild(c);
     }
     batinShieldWrap.classList.add('show');
