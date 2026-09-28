@@ -1,45 +1,3 @@
-const CACHE_NAME = 'niyat-ramal-v1';
-const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icon-192.png',
-  './icon-512.png'
-];
-
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(ASSETS))
-      .then(() => self.skipWaiting())
-  );
-});
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
-    ).then(() => self.clients.claim())
-  );
-});
-
-self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') return;
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      const fetchPromise = fetch(event.request)
-        .then((response) => {
-          if (response && response.status === 200) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return response;
-        })
-        .catch(() => cached);
-      return cached || fetchPromise;
-    })
-  );
-});
 // هر بار که آپدیت جدیدی منتشر می‌کنید، فقط همین عدد را زیاد کنید
 const CACHE_VERSION = 'v5.0.1';
 const CACHE_NAME = `niyat-ramal-${CACHE_VERSION}`;
@@ -47,7 +5,9 @@ const CACHE_NAME = `niyat-ramal-${CACHE_VERSION}`;
 const PRECACHE_URLS = [
   './',
   './index.html',
-  './manifest.json'
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 // نصب: نسخه‌ی جدید فوراً منتظر نمی‌ماند، فایل‌های پایه را کش می‌کند
@@ -71,12 +31,14 @@ self.addEventListener('activate', (event) => {
 
 // درخواست‌ها: همیشه اول از شبکه بگیر (network-first)؛ فقط وقتی آفلاین بود از کش بده
 self.addEventListener('fetch', (event) => {
-  if(event.request.method !== 'GET') return;
+  if (event.request.method !== 'GET') return;
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
         return response;
       })
       .catch(() => caches.match(event.request))
