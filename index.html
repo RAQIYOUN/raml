@@ -1,36 +1,3 @@
-<!DOCTYPE html>
-<html lang="fa" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>نیت‌رمل | رمل انداختن آنلاین بر اساس دایره ابدح - محمود خاوری</title>
-
-<meta name="description" content="نیت‌رمل: صفحه‌ی آنلاین انداختن رمل بر اساس نیت شما، با محاسبه‌ی امّهات و بنات و اخوات و شواهد و قاضی، و تفسیر هر خانه دقیقاً بر پایه‌ی دایره‌ی کامل ابدح. تدوین: محمود خاوری - گروه آموزشی راقیون.">
-<meta name="robots" content="index, follow">
-<meta name="author" content="محمود خاوری - گروه آموزشی راقیون">
-
-<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Vazir&display=swap" rel="stylesheet">
-<link rel="icon" href="favicon.ico" type="image/x-icon">
-
-<!-- وب‌اپلیکیشن قابل‌نصب (PWA) -->
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#3498db">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="نیت‌رمل">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-<style>
-    :root{
-        --brand:#3498db;
-        --brand-dark:#2c7bb0;
-        --col-gap:6px;
-        --row-gap:10px;
-    }
-
-    *{ box-sizing:border-box; }
 
     body{
         font-family:'Vazir', sans-serif;
@@ -1080,6 +1047,10 @@
             <span class="sb-label matlub-label">مطلوبِ نقطه‌ی حکم</span>
             <div class="sb-text" id="summaryMatlub"></div>
         </div>
+        <div class="summary-block" id="summaryIllnessBlock" style="display:none;">
+            <span class="sb-label matlub-label">بیماری — خانه ۶</span>
+            <div class="sb-text" id="summaryIllness"></div>
+        </div>
         <div class="summary-block" id="summaryDoctorBlock" style="display:none;">
             <span class="sb-label matlub-label">دانایی پزشک — خانه ۱۰</span>
             <div class="sb-text" id="summaryDoctor"></div>
@@ -1096,6 +1067,7 @@
 
     <p class="shield-section-title"><span class="zahir-tag">🔷 ظاهر رمل</span></p>
     <div class="shield-wrap" id="shieldWrap">
+        <svg class="shield-trace-svg" id="shieldDivideSvg"></svg>
         <svg class="shield-trace-svg" id="shieldTraceSvg"></svg>
         <div class="shield" id="shield"></div>
     </div>
@@ -1103,6 +1075,7 @@
     <p class="shield-section-title"><span class="batin-tag">🔮 باطن رمل</span></p>
     <p class="batin-note">باطن، از ضرب هر خانه‌ی ظاهر با همان خانه از دایره‌ی ابدح (از لحیان تا جماعت) به دست می‌آید.</p>
     <div class="shield-wrap" id="batinShieldWrap">
+        <svg class="shield-trace-svg" id="batinShieldDivideSvg"></svg>
         <div class="shield" id="batinShield"></div>
     </div>
 
@@ -2013,17 +1986,20 @@ function computeBatin(zahirRows){
 const layout = [
     { row: 1, col: 1 }, { row: 1, col: 2 }, { row: 1, col: 3 }, { row: 1, col: 4 },
     { row: 1, col: 5 }, { row: 1, col: 6 }, { row: 1, col: 7 }, { row: 1, col: 8 },
-    { row: 2, col: 2 }, { row: 2, col: 3 }, { row: 2, col: 6 }, { row: 2, col: 7 },
+    { row: 2, colStart: 1, colEnd: 3 }, { row: 2, colStart: 3, colEnd: 5 },
+    { row: 2, colStart: 5, colEnd: 7 }, { row: 2, colStart: 7, colEnd: 9 },
     { row: 3, colStart: 2, colEnd: 4 }, { row: 3, colStart: 6, colEnd: 8 },
     { row: 4, colStart: 2, colEnd: 8 },
-    { row: 5, colStart: 1, colEnd: 9 }
+    { row: 5, colStart: 2, colEnd: 4 }
 ];
 
 const shield = document.getElementById('shield');
 const shieldWrap = document.getElementById('shieldWrap');
 const shieldTraceSvg = document.getElementById('shieldTraceSvg');
+const shieldDivideSvg = document.getElementById('shieldDivideSvg');
 const batinShield = document.getElementById('batinShield');
 const batinShieldWrap = document.getElementById('batinShieldWrap');
+const batinShieldDivideSvg = document.getElementById('batinShieldDivideSvg');
 const modal = document.getElementById('m');
 const numBadgeEl = document.getElementById('numBadge');
 const attributionEl = document.getElementById('attribution');
@@ -2054,6 +2030,8 @@ const summaryHokm = document.getElementById('summaryHokm');
 const summaryLesan = document.getElementById('summaryLesan');
 const summaryMatlubBlock = document.getElementById('summaryMatlubBlock');
 const summaryMatlub = document.getElementById('summaryMatlub');
+const summaryIllnessBlock = document.getElementById('summaryIllnessBlock');
+const summaryIllness = document.getElementById('summaryIllness');
 const summaryDoctorBlock = document.getElementById('summaryDoctorBlock');
 const summaryDoctor = document.getElementById('summaryDoctor');
 const summaryTravelBlock = document.getElementById('summaryTravelBlock');
@@ -2096,6 +2074,9 @@ function setMode(mode){
 modeRandomBtn.addEventListener('click', () => setMode('random'));
 modeManualBtn.addEventListener('click', () => setMode('manual'));
 modeClickBtn.addEventListener('click', () => setMode('click'));
+if(patientAgeGroupEl){
+    patientAgeGroupEl.addEventListener('change', () => { if(currentCast) renderIllnessSummary(); });
+}
 
 /* ---------- حالت نقطه‌به‌نقطه: ساخت ۱۶ خط با کلیک و جفت‌کردنِ نقطه‌ها ----------
    هر امّ از ۴ خط تشکیل می‌شود (به ترتیب عناصر آتش، باد، آب، خاک، دقیقاً هم‌ترتیب
@@ -2662,10 +2643,54 @@ function renderShield(){
             c.style.width = (100 / span).toFixed(4) + '%';
         }
         c.style.gridRow = String(pos.row);
+        if(i === 3) c.style.marginLeft = '14px';
+        if(i === 4) c.style.marginRight = '14px';
         shield.appendChild(c);
     }
     shieldWrap.classList.add('show');
+    drawDivideLine(shieldWrap, shield, shieldDivideSvg);
     drawShieldTraceLines();
+}
+
+/* ======================================================================
+   خط تقسیم امّهات/بنات: از مرز خانه‌ی ۴ و ۵ به پایین کشیده می‌شود و
+   درست بالای خانه‌ی ۱۵ به دو شاخه (به دو طرف شکل ۱۵) تقسیم می‌شود.
+   خانه‌های ۹ و ۱۰ و ۱۳ (راست) و ۱۱ و ۱۲ و ۱۴ (چپ) بر همین اساس در
+   دو طرف همین خط چیده شده‌اند؛ خانه‌ی ۱۶ هم اکنون دقیقاً هم‌ستون با
+   خانه‌ی ۱۳ و پایین‌تر از خانه‌ی ۱۵ قرار می‌گیرد (نه درست زیر ۱۵).
+   ====================================================================== */
+function drawDivideLine(wrapEl, shieldEl, svgEl){
+    if(!svgEl) return;
+    svgEl.innerHTML = '';
+    requestAnimationFrame(() => {
+        const wrapRect = wrapEl.getBoundingClientRect();
+        if(wrapRect.width === 0) return;
+        const h4 = shieldEl.querySelector('[data-house-index="3"]');
+        const h5 = shieldEl.querySelector('[data-house-index="4"]');
+        const h15 = shieldEl.querySelector('[data-house-index="14"]');
+        if(!h4 || !h5 || !h15) return;
+
+        const r4 = h4.getBoundingClientRect();
+        const r5 = h5.getBoundingClientRect();
+        const r15 = h15.getBoundingClientRect();
+
+        svgEl.setAttribute('viewBox', `0 0 ${wrapRect.width} ${wrapRect.height}`);
+
+        const trunkX = ((r4.left + r5.right) / 2) - wrapRect.left;
+        const topY = Math.min(r4.top, r5.top) - wrapRect.top;
+        const h15Top = r15.top - wrapRect.top;
+        const forkY = h15Top - 22;
+        const branchEndY = h15Top - 8; // خط بیرون از کادر خانه‌ی ۱۵ متوقف می‌شود، بدون تماس با آن
+        const leftX = r15.left - wrapRect.left;
+        const rightX = r15.right - wrapRect.left;
+
+        svgEl.innerHTML = `
+            <path d="M ${trunkX} ${topY} L ${trunkX} ${forkY}" fill="none" stroke="#7d3c98" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M ${trunkX} ${forkY} L ${leftX} ${branchEndY}" fill="none" stroke="#7d3c98" stroke-width="3.5" stroke-linecap="round"/>
+            <path d="M ${trunkX} ${forkY} L ${rightX} ${branchEndY}" fill="none" stroke="#7d3c98" stroke-width="3.5" stroke-linecap="round"/>
+            <circle cx="${trunkX}" cy="${topY}" r="3.5" fill="#7d3c98"/>
+            <circle cx="${trunkX}" cy="${forkY}" r="3.5" fill="#7d3c98"/>`;
+    });
 }
 
 function drawShieldTraceLines(){
@@ -2756,7 +2781,13 @@ function drawShieldTraceLines(){
     });
 }
 
-window.addEventListener('resize', () => { if(currentCast) drawShieldTraceLines(); });
+window.addEventListener('resize', () => {
+    if(currentCast){
+        drawShieldTraceLines();
+        drawDivideLine(shieldWrap, shield, shieldDivideSvg);
+        drawDivideLine(batinShieldWrap, batinShield, batinShieldDivideSvg);
+    }
+});
 
 function renderBatinShield(){
     batinShield.innerHTML = '';
@@ -2769,6 +2800,7 @@ function renderBatinShield(){
         c.style.animationDelay = (i * 0.03) + 's';
         c.dataset.element = shape.element;
         c.dataset.fortune = shape.fortune;
+        c.dataset.houseIndex = i;
         c.innerHTML = `<span class="num">${i + 1}</span><h3>${shape.shape}</h3><pre>${rowsToPattern(rows)}</pre><div class="house-topic">${topic.title}</div>`;
         c.onclick = () => openHouse(i, true);
 
@@ -2781,9 +2813,12 @@ function renderBatinShield(){
             c.style.width = (100 / span).toFixed(4) + '%';
         }
         c.style.gridRow = String(pos.row);
+        if(i === 3) c.style.marginLeft = '14px';
+        if(i === 4) c.style.marginRight = '14px';
         batinShield.appendChild(c);
     }
     batinShieldWrap.classList.add('show');
+    drawDivideLine(batinShieldWrap, batinShield, batinShieldDivideSvg);
 }
 
 /* ======================================================================
@@ -2808,6 +2843,21 @@ const doctorInfo = {
     "طریق":         { competency:null, extra:['نقی‌الخد و طریق: دکتر یا قابله ناوارد است'] }
 };
 const competencyLabel = { dana:'دانا', nadan:'نادان', mid:'کمی وارد است' };
+
+function renderIllnessSummary(){
+    const { shape } = shapeForHouse(5); // خانه‌ی ششم
+    const info = illnessHouse6[shape.shape];
+    if(!info){
+        summaryIllnessBlock.style.display = 'none';
+        summaryIllness.innerHTML = '';
+        return;
+    }
+    const ageGroup = patientAgeGroupEl ? patientAgeGroupEl.value : 'adult';
+    const text = ageGroup === 'child' ? info.child : info.adult;
+    const ageTag = ageGroup === 'child' ? 'از بدو تولد تا ۷ سالگی (خانه‌ی اول و ششم)' : '۷ سال به بالا';
+    summaryIllness.innerHTML = `در خانه‌ی ششم «${shape.shape}» افتاده است.<br><span class="illness-age-tag" style="margin-top:6px;">رده‌ی سنی: ${ageTag}</span><br>${text}`;
+    summaryIllnessBlock.style.display = 'block';
+}
 
 function renderDoctorSection(){
     const houseIdx = 9; // خانه‌ی دهم
@@ -2923,6 +2973,7 @@ function renderSummary(niyatText){
         summaryMatlubBlock.style.display = 'none';
     }
 
+    renderIllnessSummary();
     renderDoctorSection();
     renderTravelSection();
     renderDiagnosisSection();
