@@ -9,6 +9,9 @@
 <meta name="robots" content="index, follow">
 <meta name="author" content="محمود خاوری - گروه آموزشی راقیون">
 
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Vazir&display=swap" rel="stylesheet">
 <link rel="icon" href="favicon.ico" type="image/x-icon">
 
@@ -3111,7 +3114,20 @@ document.addEventListener('keydown', function(e){
 
 if('serviceWorker' in navigator){
     window.addEventListener('load', () => {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
+        navigator.serviceWorker.register('sw.js').then(reg => {
+            // همیشه چک کن که آیا نسخه‌ی جدیدتری از sw.js روی سرور هست
+            reg.update();
+            // هر چند دقیقه یک‌بار هم دوباره چک کند تا کاربرانی که صفحه را باز نگه می‌دارند نسخه‌ی جدید را بگیرند
+            setInterval(() => reg.update(), 5 * 60 * 1000);
+        }).catch(() => {});
+
+        // وقتی سرویس‌ورکرِ جدید کنترل صفحه را به دست گرفت، یک‌بار صفحه را خودکار تازه کن
+        let refreshedOnce = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if(refreshedOnce) return;
+            refreshedOnce = true;
+            window.location.reload();
+        });
     });
 }
 </script>
