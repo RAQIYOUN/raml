@@ -1103,6 +1103,14 @@
             <span class="sb-label matlub-label">سحر و جادو — اگر پرسش درباره‌ی سحر است (خانه‌های ۶، ۱، ۲، ۴، ۷، ۸، ۱۲)</span>
             <div class="sb-text" id="summarySorcery"></div>
         </div>
+        <div class="summary-block" id="summaryLostBlock" style="display:none;">
+            <span class="sb-label matlub-label">گمشده و غائب — اگر شخصی یا زیردستی گریخته یا گم شده (خانه‌های ۲، ۴، ۵، ۶، ۹، ۱۰، ۱۱، ۱۲)</span>
+            <div class="sb-text" id="summaryLost"></div>
+        </div>
+        <div class="summary-block" id="summaryMarriageBlock" style="display:none;">
+            <span class="sb-label matlub-label">ازدواج — اگر پرسش درباره‌ی ازدواج است (خانه‌های ۷ و ۴)</span>
+            <div class="sb-text" id="summaryMarriage"></div>
+        </div>
         <div class="summary-block" id="summaryDiagnosisBlock" style="display:none;">
             <span class="sb-label matlub-label">محل بیماری وقتی از عکس‌برداری مشخص نشد</span>
             <div class="sb-text" id="summaryDiagnosis"></div>
@@ -2080,6 +2088,10 @@ const summaryDoctorBlock = document.getElementById('summaryDoctorBlock');
 const summaryDoctor = document.getElementById('summaryDoctor');
 const summaryTravelBlock = document.getElementById('summaryTravelBlock');
 const summaryTravel = document.getElementById('summaryTravel');
+const summaryLostBlock = document.getElementById('summaryLostBlock');
+const summaryLost = document.getElementById('summaryLost');
+const summaryMarriageBlock = document.getElementById('summaryMarriageBlock');
+const summaryMarriage = document.getElementById('summaryMarriage');
 const summarySorceryBlock = document.getElementById('summarySorceryBlock');
 const summarySorcery = document.getElementById('summarySorcery');
 const summaryDiagnosisBlock = document.getElementById('summaryDiagnosisBlock');
@@ -3146,6 +3158,158 @@ function renderSorcerySection(){
     summarySorceryBlock.style.display = 'block';
 }
 
+
+/* ======================================================================
+   ابزار مشترک: ضرب دو خانه و جهت بر اساس عنصر
+   ====================================================================== */
+function multiplyHouses(idxA, idxB){
+    const a = shapeForHouse(idxA).rows, b = shapeForHouse(idxB).rows;
+    return patternIndex[rowsToCode(combine(a, b))];
+}
+function shapeIsStable(name){
+    const i = houses.findIndex(h => h.shape === name);
+    return i >= 0 && extras[i] && extras[i].boundary === 'ثابت';
+}
+const lostFire  = ['قبض الخارج', 'لحیان', 'عتبه الخارج', 'نصره الخارج'];
+const lostWind  = ['فرح', 'عتبه الداخل', 'اجتماع', 'حمره'];
+const lostWater = ['بیاض', 'طریق', 'نصره الداخل', 'نقی الخد'];
+const lostEarth = ['جماعت', 'عقله', 'انکیس', 'قبض الداخل'];
+function elementDirection(name, dirs){ // dirs: [آتش, باد, آب, خاک]
+    if(lostFire.includes(name))  return dirs[0];
+    if(lostWind.includes(name))  return dirs[1];
+    if(lostWater.includes(name)) return dirs[2];
+    if(lostEarth.includes(name)) return dirs[3];
+    return null;
+}
+const lostInner     = ['قبض الداخل', 'نصره الداخل', 'عتبه الداخل', 'جماعت', 'انکیس', 'حمره'];
+const lostEasy      = ['قبض الداخل', 'نصره الداخل', 'عتبه الداخل'];
+const lostAgain     = ['فرح', 'طریق', 'نقی الخد', 'عقله'];
+const lostTrouble   = ['حمره', 'انکیس', 'عقله', 'نقی الخد'];
+const lostInCity    = ['قبض الداخل', 'بیاض', 'انکیس', 'حمره', 'عتبه الداخل', 'اجتماع'];
+const lostHouseNames = { 1:'دوم', 3:'چهارم', 4:'پنجم', 5:'ششم', 8:'نهم', 9:'دهم', 10:'یازدهم', 11:'دوازدهم' };
+
+function renderLostSection(){
+    const sections = [];
+    const head = t => `<span class="matlub-emph">${t}</span>`;
+    const nm = i => shapeForHouse(i).shape.shape;
+    const hn = i => `خانه‌ی ${lostHouseNames[i]} «${nm(i)}»`;
+
+    /* الف) سمتی که رفته: ضرب خانه‌ی ۲ و ۶ */
+    const dirShape = multiplyHouses(1, 5).shape;
+    const dir = elementDirection(dirShape, ['شرق', 'شمال', 'غرب', 'جنوب']);
+    if(dir){
+        sections.push(head('سمتی که رفته') + `<br>ضرب خانه‌ی دوم «${nm(1)}» و ششم «${nm(5)}» = «${dirShape}» ← گمشده به سمت ${dir} رفته است.`);
+    }
+
+    /* ب) برگشت یا نه: خانه‌های ۶، ۱۲ و ۴ */
+    const chk = [5, 11, 3];
+    const b = [];
+    if(chk.every(i => lostInner.includes(nm(i)))){
+        b.push(`خانه‌های ششم، دوازدهم و چهارم همگی شکل داخلی دارند (${chk.map(hn).join('، ')}): غائب خودش می‌آید یا خبری می‌رسد که سالم است.`);
+    }
+    const easy = chk.filter(i => lostEasy.includes(nm(i)));
+    if(easy.length){
+        b.push(`${easy.map(hn).join('، ')}: به آسانی پیدا می‌شود.`);
+    }
+    const again = chk.filter(i => lostAgain.includes(nm(i)));
+    if(again.length){
+        again.forEach(i => {
+            const n = nm(i);
+            if(n === 'نقی الخد' || n === 'عقله'){
+                b.push(`${hn(i)} (نحس): پیدا شدنش دشوار است و باز هم گم می‌شود یا فرار می‌کند؛ این شکل یعنی کسی او را فریب داده یا ربوده و به کار خلاف برده است.`);
+            } else {
+                b.push(`${hn(i)} (سعد): باز هم گم می‌شود یا فرار می‌کند، اما به آسانی پیدا می‌شود.`);
+            }
+        });
+    }
+    const trouble = chk.filter(i => lostTrouble.includes(nm(i)));
+    if(trouble.length){
+        b.push(`${trouble.map(hn).join('، ')}: غائب دچار گرفتاری و سرگردانی می‌شود.`);
+    }
+    if(b.length){
+        sections.push(head('برمی‌گردد یا نه (خانه‌های ۶، ۱۲ و ۴)') + '<br>' + b.join('<br>'));
+    }
+
+    /* پ) ماندن غائب: ضرب ۴ در ۵ و ۹ در ۱۱ و سپس ضرب دو نتیجه */
+    const x = multiplyHouses(3, 4).shape;
+    const y = multiplyHouses(8, 10).shape;
+    const zRows = combine(patternIndex_rowsOf(x), patternIndex_rowsOf(y));
+    const z = patternIndex[rowsToCode(zRows)].shape;
+    const c = [`ضرب خانه‌ی چهارم و پنجم = «${x}»`, `ضرب خانه‌ی نهم و یازدهم = «${y}»`, `ضرب این دو = «${z}»`];
+    let cText = c.join('<br>');
+    const notes = [];
+    if(shapeIsStable(x) || shapeIsStable(y)){
+        notes.push('شکل حاصل ثابت است؛ یعنی غائب می‌ماند.');
+    }
+    if(shapeIsStable(z)){
+        notes.push('نتیجه‌ی نهایی ثابت است؛ یعنی قصد آمدن یا برگشتن ندارد یا از کاری که کرده می‌ترسد و حاضر نمی‌شود. احتمال دارد تا ۲ ماه یا ۹ تا ۱۸ ماه طول بکشد.');
+    }
+    if(notes.length) cText += '<br>' + notes.join('<br>');
+    sections.push(head('غائب می‌ماند یا می‌آید (ضرب ۴×۵ ، ۹×۱۱ و ضرب دو نتیجه)') + '<br>' + cText);
+
+    /* ت) داخل شهر یا بیرون */
+    const d = [];
+    const inCity = [3, 9].filter(i => lostInCity.includes(nm(i)));
+    if(inCity.length){
+        d.push(`${inCity.map(hn).join('، ')}: گریخته داخل شهر است.`);
+        const cityShape = multiplyHouses(1, 3).shape;
+        const cityDir = elementDirection(cityShape, ['مشرق', 'شمال', 'مغرب', 'جنوب']);
+        if(cityDir){
+            d.push(`ضرب خانه‌ی دوم و چهارم = «${cityShape}» ← سمت ${cityDir} شهر است.`);
+        }
+    } else {
+        d.push(`در خانه‌ی چهارم «${nm(3)}» و دهم «${nm(9)}» شکل داخل‌شهر نیامده است.`);
+    }
+    sections.push(head('داخل شهر است یا بیرون (خانه‌های ۴ و ۱۰)') + '<br>' + d.join('<br>'));
+
+    summaryLost.innerHTML = sections.join('<br><br>');
+    summaryLostBlock.style.display = 'block';
+}
+function patternIndex_rowsOf(shapeName){
+    const h = houses.find(x => x.shape === shapeName);
+    return h.pattern.split('\n').map(r => r === '•' ? 1 : 2);
+}
+
+/* ======================================================================
+   ازدواج (خانه‌ی هفتم و چهارم)
+   ====================================================================== */
+function renderMarriageSection(){
+    const n7 = shapeForHouse(6).shape.shape;
+    const n4 = shapeForHouse(3).shape.shape;
+    const lines = [];
+    if(['اجتماع', 'عتبه الداخل', 'جماعت', 'انکیس'].includes(n7)){
+        lines.push('خوب است؛ لذت چندانی ندارد ولی ثابت می‌ماند.');
+    }
+    if(['طریق', 'فرح'].includes(n7)){
+        lines.push('دو یا سه معشوق را دوست دارد.');
+    }
+    if(['حمره', 'نقی الخد'].includes(n7)){
+        lines.push('رابطه‌ی جنسی را بسیار دوست دارد.');
+    }
+    if(n7 === 'نصره الخارج'){
+        lines.push('زن یا مرد چشم‌چران و هوس‌باز است.');
+    }
+    if(['عتبه الخارج', 'قبض الخارج'].includes(n7)){
+        lines.push('عاقبت جدایی است؛ دائم ناسازگاری دارند.');
+    }
+    if(['عتبه الخارج', 'قبض الخارج'].includes(n4)){
+        lines.push(`«${n4}» در خانه‌ی چهارم: جدایی فوری.`);
+    }
+    if(['قبض الداخل', 'عقله'].includes(n7)){
+        lines.push('بی‌میل، بی‌اراده و سرد است.');
+    }
+    if(['بیاض', 'نقی الخد', 'طریق'].includes(n7)){
+        lines.push('سردل و کم‌قوت است.');
+    }
+    if(!lines.length){
+        summaryMarriageBlock.style.display = 'none';
+        summaryMarriage.innerHTML = '';
+        return;
+    }
+    summaryMarriage.innerHTML = `<span class="matlub-emph">خانه‌ی هفتم «${n7}»</span><br>` + lines.join('<br>');
+    summaryMarriageBlock.style.display = 'block';
+}
+
 function renderSummary(niyatText){
     const judge = shapeForHouse(14);
     const lesan = shapeForHouse(15);
@@ -3179,6 +3343,8 @@ function renderSummary(niyatText){
     renderDoctorSection();
     renderTravelSection();
     renderSorcerySection();
+    renderLostSection();
+    renderMarriageSection();
     renderDiagnosisSection();
 
     summaryPanel.classList.add('show');
