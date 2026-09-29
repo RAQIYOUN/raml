@@ -1099,6 +1099,10 @@
             <span class="sb-label matlub-label">سفر برای درمان یا ماندن در وطن — خانه‌های ۱، ۴، ۷، ۱۰</span>
             <div class="sb-text" id="summaryTravel"></div>
         </div>
+        <div class="summary-block" id="summarySorceryBlock" style="display:none;">
+            <span class="sb-label matlub-label">سحر و جادو — اگر پرسش درباره‌ی سحر است (خانه‌های ۶، ۱، ۲، ۴، ۷، ۸، ۱۲)</span>
+            <div class="sb-text" id="summarySorcery"></div>
+        </div>
         <div class="summary-block" id="summaryDiagnosisBlock" style="display:none;">
             <span class="sb-label matlub-label">محل بیماری وقتی از عکس‌برداری مشخص نشد</span>
             <div class="sb-text" id="summaryDiagnosis"></div>
@@ -2076,6 +2080,8 @@ const summaryDoctorBlock = document.getElementById('summaryDoctorBlock');
 const summaryDoctor = document.getElementById('summaryDoctor');
 const summaryTravelBlock = document.getElementById('summaryTravelBlock');
 const summaryTravel = document.getElementById('summaryTravel');
+const summarySorceryBlock = document.getElementById('summarySorceryBlock');
+const summarySorcery = document.getElementById('summarySorcery');
 const summaryDiagnosisBlock = document.getElementById('summaryDiagnosisBlock');
 const summaryDiagnosis = document.getElementById('summaryDiagnosis');
 const niyatInput = document.getElementById('niyatInput');
@@ -2984,6 +2990,162 @@ function renderDiagnosisSection(){
     summaryDiagnosisBlock.style.display = 'block';
 }
 
+
+/* ======================================================================
+   سحر و جادو (بر پایه‌ی خانه‌های ۶، ۱، ۴، ۷، ۸، ۲، ۱۲ و ۱۶)
+   ====================================================================== */
+const sorceryNone      = ['لحیان', 'نصره الداخل', 'نصره الخارج', 'عتبه الداخل'];
+const sorceryVain      = ['لحیان', 'نصره الخارج', 'طریق', 'فرح'];
+const sorceryEarthDeep = ['عقله', 'انکیس'];
+const sorceryKeyShapes = ['جماعت', 'اجتماع', 'حمره', 'بیاض'];
+const sorceryFriend    = ['لحیان', 'فرح', 'عتبه الداخل', 'اجتماع', 'قبض الداخل', 'بیاض'];
+const sorceryEnemy     = ['حمره', 'جماعت', 'نقی الخد', 'عقله', 'انکیس', 'عتبه الخارج', 'قبض الخارج'];
+const sorceryFire  = ['لحیان', 'نصره الخارج', 'عتبه الخارج', 'قبض الخارج'];
+const sorceryWind  = ['حمره', 'فرح', 'عتبه الداخل', 'اجتماع'];
+const sorceryWater = ['بیاض', 'نصره الداخل', 'طریق', 'نقی الخد'];
+const sorceryEarth = ['جماعت', 'قبض الداخل', 'عقله', 'انکیس'];
+const sorceryHouseNames = { 0:'اول', 1:'دوم', 3:'چهارم', 5:'ششم', 6:'هفتم', 7:'هشتم', 11:'دوازدهم', 15:'شانزدهم' };
+
+function sorceryHousesWith(names, houseIdxs){
+    const found = [];
+    houseIdxs.forEach(idx => {
+        const nm = shapeForHouse(idx).shape.shape;
+        if(names.includes(nm)) found.push({ idx, name: nm });
+    });
+    return found;
+}
+function sorceryFmt(found){
+    return found.map(f => `خانه‌ی ${sorceryHouseNames[f.idx]} «${f.name}»`).join('، ');
+}
+
+function renderSorcerySection(){
+    const sections = [];
+    const head = t => `<span class="matlub-emph">${t}</span>`;
+
+    /* --- الف) خانه‌ی ششم --- */
+    const h6 = shapeForHouse(5).shape.shape;
+    const a = [];
+    if(sorceryNone.includes(h6)){
+        a.push(`در خانه‌ی ششم «${h6}» افتاده است؛ سحر نیست.`);
+    }
+    if(sorceryVain.includes(h6)){
+        a.push(`«${h6}» در خانه‌ی ششم: طرف خیال باطل می‌کند و سحری نیست؛ اگر هم باشد سحری است که فوراً و حداکثر تا ۶ روز باطل می‌شود.`);
+    }
+    if(sorceryEarthDeep.includes(h6)){
+        let t = `در خانه‌ی ششم «${h6}» افتاده است: سحری است که در خاک یا چاه یا کوره‌ی خاکی یا خرابه یا در خاک گور دفن شده؛ علامتش کسالت روحی و دل‌بد شدن از زندگی است.`;
+        const also = sorceryHousesWith(sorceryEarthDeep, [0, 3, 6]);
+        if(also.length){
+            t += ` چون یکی از این دو شکل در ${sorceryFmt(also)} هم آمده است، بدون شک سحر است.`;
+        }
+        a.push(t);
+    }
+    if(!a.length){
+        a.push(`در خانه‌ی ششم «${h6}» افتاده است؛ این شکل به‌تنهایی درباره‌ی سحر حکمی ندارد، به خانه‌های ۱، ۴، ۷ و ۸ نگاه کنید.`);
+    }
+    sections.push(head('خانه‌ی ششم') + '<br>' + a.join('<br>'));
+
+    /* --- ب) خانه‌های اول، چهارم، هفتم و هشتم --- */
+    const keyHouses = [0, 3, 6, 7];
+    const b = [];
+    const keyFound = sorceryHousesWith(sorceryKeyShapes, keyHouses);
+    if(keyFound.length){
+        b.push(`${sorceryFmt(keyFound)}: سحر هست؛ در آب یا باد یا خاک برای بستگی، دل‌سیاهی و توقف کار و زندگی انجام شده است.`);
+    }
+    const fr = sorceryHousesWith(['حمره'], keyHouses);
+    if(fr.length){
+        b.push(`حمره (${sorceryFmt(fr)}): بر پیکر حرام‌گوشت‌کرده یا بر روی چرم و پوست یا روده، برای بستن مردان و زنان.`);
+    }
+    const fj = sorceryHousesWith(['جماعت', 'اجتماع'], keyHouses);
+    if(fj.length){
+        b.push(`جماعت/اجتماع (${sorceryFmt(fj)}): بخت و طالع شخص را بسته‌اند؛ روز چهارشنبه در گورستان یا بر نخ ابریشم دفن کرده‌اند.`);
+    }
+    const ff = sorceryHousesWith(['عتبه الخارج', 'قبض الخارج'], keyHouses);
+    if(ff.length){
+        b.push(`عتبه‌الخارج/قبض‌الخارج (${sorceryFmt(ff)}): بر سفال یا مس یا آهن سحر کرده‌اند و در کوره‌ی اجاق دفن کرده یا در آتش انداخته‌اند؛ علامت: ناراحتی و دیوانگی از عصبانیت.`);
+    }
+    const fn = sorceryHousesWith(['نقی الخد'], keyHouses);
+    if(fn.length){
+        b.push(`نقی‌الخد (${sorceryFmt(fn)}): بر اشیائی نوشته یا کنده شده، یا بر قلم نی.`);
+    }
+    if(b.length){
+        sections.push(head('خانه‌های اول، چهارم، هفتم و هشتم') + '<br>' + b.join('<br>'));
+    }
+
+    /* --- پ) دوست یا دشمن (خانه‌ی اول و دوم) --- */
+    const c = [];
+    [0, 1].forEach(idx => {
+        const nm = shapeForHouse(idx).shape.shape;
+        if(sorceryFriend.includes(nm)){
+            c.push(`خانه‌ی ${sorceryHouseNames[idx]} «${nm}» (شکل سعد): سحر‌کننده، نفرین‌کننده یا فحاش دوست است؛ برای دوستی، جلب مهربانی، نزدیک شدن، مال و زبان‌بندی سحر کرده است.`);
+        }
+        if(sorceryEnemy.includes(nm)){
+            c.push(`خانه‌ی ${sorceryHouseNames[idx]} «${nm}»: سحر‌کننده، نفرین‌کننده یا فحاش دشمن است؛ برای دشمنی، جدایی، آوارگی و زبان‌بندی است. مدتی در این حال می‌ماند و دیر باطل می‌شود، مگر باطل‌السحر بگیرد یا مرغی یا گوسفندی قربانی کند.`);
+        }
+    });
+    if(c.length){
+        sections.push(head('دوست یا دشمن (خانه‌ی اول و دوم)') + '<br>' + c.join('<br>'));
+    }
+
+    /* --- ت) برای چه و چطور (خانه‌ی ۶ و ۱۲) + تکرار اشکال در کل رمل --- */
+    const d = [];
+    const s6  = shapeForHouse(5).shape.shape;
+    const s12 = shapeForHouse(11).shape.shape;
+    [[5, s6], [11, s12]].forEach(([idx, nm]) => {
+        const parts = [];
+        if(sorceryFire.includes(nm)){
+            parts.push('آتشی است: بر آتش کوره و آهن‌آلات.');
+        }
+        if(sorceryWind.includes(nm)){
+            let t = 'بادی است: بر نخ و پشم یا بر حیواناتی مانند گاو، الاغ و شتر.';
+            if(nm === 'فرح' || nm === 'عتبه الداخل') t += ' همچنین بر پرندگان.';
+            parts.push(t);
+        }
+        if(sorceryWater.includes(nm)){
+            let t = 'آبی است: بر انگشتر یا مدال گردن و فلزات سفید نوشته یا در آبش جوشانده و کنار جوی دفن کرده‌اند.';
+            if(nm === 'طریق') t += ' در جوی آب و دریا دفن شده است.';
+            if(nm === 'نقی الخد') t += ' بر ماهی یا حیوانات آبی.';
+            parts.push(t);
+        }
+        if(sorceryEarth.includes(nm)){
+            let t = 'خاکی است: بر سفال یا گل نوشته‌اند یا چیزی میان آن گذاشته و کنار منزل یا خیابان دفن کرده‌اند.';
+            if(nm === 'جماعت') t += ' در حیاط یا میدان.';
+            if(nm === 'عقله') t += ' در حمام یا خرابه یا چاه انداخته‌اند.';
+            if(nm === 'انکیس') t += ' در گورستان یا مرده‌شورخانه و امثال آن، برای نابودی، آوارگی و خسارت.';
+            parts.push(t);
+        }
+        if(parts.length){
+            d.push(`خانه‌ی ${sorceryHouseNames[idx]} «${nm}»: ${parts.join(' ')}`);
+        }
+    });
+
+    // تکرار: شکل‌های افتاده در خانه‌ی ۶ یا ۱۲ چند بار در کل رمل آمده‌اند
+    const repeatNames = [...new Set([s6, s12])];
+    const repeatLines = [];
+    repeatNames.forEach(nm => {
+        const houseNums = [];
+        for(let i = 0; i < 16; i++){
+            if(shapeForHouse(i).shape.shape === nm) houseNums.push(i + 1);
+        }
+        if(houseNums.length > 1){
+            repeatLines.push(`شکل «${nm}» ${houseNums.length} بار در رمل آمده است (خانه‌های ${houseNums.join('، ')}).`);
+        }
+    });
+    if(repeatLines.length){
+        d.push(`<span class="matlub-emph">تکرار اشکال:</span> ${repeatLines.join(' ')} این تکرار اشاره به این دارد که سحر چند بار انجام شده است.`);
+    }
+    if(d.length){
+        sections.push(head('برای چه و چطور سحر کرده‌اند (خانه‌ی ۶ و ۱۲)') + '<br>' + d.join('<br>'));
+    }
+
+    if(!sections.length){
+        summarySorceryBlock.style.display = 'none';
+        summarySorcery.innerHTML = '';
+        return;
+    }
+    summarySorcery.innerHTML = sections.join('<br><br>');
+    summarySorceryBlock.style.display = 'block';
+}
+
 function renderSummary(niyatText){
     const judge = shapeForHouse(14);
     const lesan = shapeForHouse(15);
@@ -3016,6 +3178,7 @@ function renderSummary(niyatText){
     renderIllnessSummary();
     renderDoctorSection();
     renderTravelSection();
+    renderSorcerySection();
     renderDiagnosisSection();
 
     summaryPanel.classList.add('show');
