@@ -3437,9 +3437,42 @@ manualCastBtn.addEventListener('click', () => {
 
 modal.onclick = e => { if(e.target === modal) modal.style.display = 'none'; };
 
+/* اعمال امّهات از روی لینک: ?m=7,3,10,6  یا  ?m=عتبه الخارج,نصره الخارج,... */
+function normShape(s){
+    return s.trim()
+        .replace(/ي/g,'ی').replace(/ك/g,'ک').replace(/ة/g,'ه')
+        .replace(/[_+\-]+/g,' ').replace(/\s+/g,' ');
+}
+function applyUrlParams(){
+    const p = new URLSearchParams(location.search);
+    const m = p.get('m');
+    if(!m) return;
+    const parts = m.split(',');
+    if(parts.length !== 4) return;
+
+    const names = parts.map(x => {
+        x = x.trim();
+        if(/^\d+$/.test(x)){
+            const h = houses[Number(x) - 1];   // شماره‌ی شکل در دایره‌ی ابدح (۱ تا ۱۶)
+            return h ? h.shape : null;
+        }
+        const n = normShape(x);
+        const h = houses.find(h => normShape(h.shape) === n);
+        return h ? h.shape : null;
+    });
+    if(names.some(n => !n)) return;
+
+    names.forEach((n, i) => { document.getElementById(motherSelectIds[i]).value = n; });
+    const nq = p.get('n');                       // نیت (اختیاری)
+    if(nq) niyatInputManual.value = nq;
+    setMode('manual');
+    manualCastBtn.click();
+}
+
 window.onload = function(){
     document.body.style.opacity = 1;
     document.querySelector('.loader').style.display = 'none';
+    applyUrlParams();
 };
 
 /* ======================================================================
