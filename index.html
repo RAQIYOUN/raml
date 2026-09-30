@@ -370,6 +370,21 @@
         font-size:15px;
         color:var(--brand-dark);
     }
+    .share-box{
+        display:flex; align-items:center; gap:10px;
+        background:#fff; border:1px dashed var(--brand);
+        border-radius:10px; padding:10px 12px; margin-bottom:10px;
+        cursor:pointer; transition:background .15s;
+    }
+    .share-box:active{ background:#eaf2f8; }
+    .share-box .share-label{ font-size:11.5px; font-weight:bold; color:var(--brand-dark); white-space:nowrap; }
+    .share-box .share-url{
+        flex:1; min-width:0; direction:ltr; text-align:left;
+        font-size:11px; color:#556270;
+        overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+    }
+    .share-box.copied{ background:#eafaf1; border-color:#1e8449; }
+    .share-box.copied .share-label{ color:#1e8449; }
     .summary-block{
         background:#fff;
         border-radius:10px;
@@ -1043,6 +1058,10 @@
 
     <div class="summary-panel" id="summaryPanel">
         <h2 id="summaryNiyat"></h2>
+        <div class="share-box" id="shareBox" title="لمس برای کپی">
+            <span class="share-label" id="shareLabel">🔗 کپی لینک این رمل</span>
+            <span class="share-url" id="shareUrl"></span>
+        </div>
         <div class="summary-block" id="summaryHokmBlock">
             <span class="sb-label">حکم نهایی — خانه ۱۵ (قاضی)</span>
             <span class="sb-text" id="summaryHokm"></span>
@@ -3369,7 +3388,72 @@ function renderDiagnosisSection(){
     summaryDiagnosisBlock.style.display = 'block';
 }
 
+/* ---------- لینک اشتراک‌گذاری همین رمل (فقط چهار امّ) ---------- */
+const shareBox = document.getElementById('shareBox');
+const shareLabel = document.getElementById('shareLabel');
+const shareUrlEl = document.getElementById('shareUrl');
+let currentShareUrl = '';
+
+/* آدرس واقعی صفحه: وقتی صفحه داخل iframe (srcdoc) باز می‌شود location.href برابر about:srcdoc است */
+const CANONICAL_PAGE_URL = 'https://raqiyoun.github.io/raml/';
+function getPageBaseUrl(){
+    /* فقط اگر صفحه روی سایت اصلی باز است از آدرس خودش استفاده شود؛
+       در بقیه‌ی حالت‌ها (srcdoc، پیش‌نمایش claudeusercontent، فایل محلی و ...) آدرس ثابت سایت اصلی */
+    try{
+        if(location.hostname === 'raqiyoun.github.io') return location.href.split(/[?#]/)[0];
+    }catch(e){}
+    try{
+        if(window.parent && window.parent !== window && window.parent.location.hostname === 'raqiyoun.github.io'){
+            return window.parent.location.href.split(/[?#]/)[0];
+        }
+    }catch(e){}
+    return CANONICAL_PAGE_URL;
+}
+function getPageSearch(){
+    if(location.search) return location.search;
+    try{
+        if(window.parent && window.parent !== window) return window.parent.location.search || '';
+    }catch(e){}
+    return '';
+}
+
+function updateShareLink(){
+    const idx = currentCast.housesRows.slice(0, 4).map(r =>
+        houses.findIndex(h => codeOf(h.pattern) === rowsToCode(r)) + 1
+    );
+    const base = getPageBaseUrl();
+    currentShareUrl = base + '?m=' + idx.join(',');
+    shareUrlEl.textContent = currentShareUrl;
+    shareLabel.textContent = '🔗 کپی لینک این رمل';
+    shareBox.classList.remove('copied');
+}
+
+async function copyShareLink(){
+    if(!currentShareUrl) return;
+    let ok = false;
+    try{
+        await navigator.clipboard.writeText(currentShareUrl);
+        ok = true;
+    }catch(e){
+        const ta = document.createElement('textarea');
+        ta.value = currentShareUrl;
+        ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+        document.body.appendChild(ta);
+        ta.focus(); ta.select();
+        try{ ok = document.execCommand('copy'); }catch(_){}
+        document.body.removeChild(ta);
+    }
+    shareLabel.textContent = ok ? 'کپی شد ✅' : 'کپی نشد؛ لینک را دستی انتخاب کنید';
+    shareBox.classList.toggle('copied', ok);
+    setTimeout(() => {
+        shareLabel.textContent = '🔗 کپی لینک این رمل';
+        shareBox.classList.remove('copied');
+    }, 2000);
+}
+shareBox.addEventListener('click', copyShareLink);
+
 function renderSummary(niyatText){
+    updateShareLink();
     const judge = shapeForHouse(14);
     const lesan = shapeForHouse(15);
     const judgeParas = judge.shape.longText.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
@@ -3444,7 +3528,7 @@ function normShape(s){
         .replace(/[_+\-]+/g,' ').replace(/\s+/g,' ');
 }
 function applyUrlParams(){
-    const p = new URLSearchParams(location.search);
+    const p = new URLSearchParams(getPageSearch());
     const m = p.get('m');
     if(!m) return;
     const parts = m.split(',');
