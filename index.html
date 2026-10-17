@@ -465,7 +465,7 @@
     }
     .sb-sub{
         display:inline-block; margin:8px 0 2px;
-        padding:2px 10px; border-radius:999px;
+        padding:2px 10px; border-radius:14px;
         font-size:12px; font-weight:800;
         color:var(--ac); background:var(--ac-soft);
     }
@@ -483,6 +483,20 @@
     .vd-bad{ background:#fdecea; color:#c0392b; }
     .vd-mid{ background:#fef5e7; color:#b9770e; }
     .vd-vbad{ background:#c0392b; color:#fff; }
+    .sp{ font-weight:800; color:var(--ac); margin-inline-end:4px; }
+    .sb-text strong{ font-weight:800; color:#1f2d3a; }
+    .sb-group{
+        margin:10px 0 6px; padding:2px 10px 4px 8px;
+        background:#fff; border:1px solid var(--ac-soft);
+        border-right:4px solid var(--ac); border-radius:12px;
+    }
+    .sb-group .sb-sub{ margin:8px 0 2px; font-size:12.5px; }
+    .c-a{ --ac:#2c7bb0; --ac-soft:#e8f3fb; }
+    .c-b{ --ac:#8e44ad; --ac-soft:#f4ecf7; }
+    .c-c{ --ac:#0e7c86; --ac-soft:#e4f5f6; }
+    .c-d{ --ac:#b9770e; --ac-soft:#fdf3e1; }
+    .c-e{ --ac:#c0392b; --ac-soft:#fdecea; }
+    .c-f{ --ac:#1e8449; --ac-soft:#e9f7ef; }
     @keyframes sbIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
     @media (prefers-reduced-motion:reduce){
         .summary-block{ animation:none; }
@@ -1166,16 +1180,12 @@
             <div class="sb-text" id="summaryDiagnosis"></div>
         </div>
         <div class="summary-block" id="summarySorceryBlock" style="display:none;">
-            <span class="sb-label matlub-label">سحر و جادو — خانه ۶</span>
+            <span class="sb-label matlub-label">سحر و جادو — خانه‌های ۱، ۴، ۶، ۷ و ۱۲</span>
             <div class="sb-text" id="summarySorcery"></div>
         </div>
         <div class="summary-block" id="summaryFriendEnemyBlock" style="display:none;">
             <span class="sb-label matlub-label">دوست است یا دشمن — خانه‌های ۱ و ۲</span>
             <div class="sb-text" id="summaryFriendEnemy"></div>
-        </div>
-        <div class="summary-block" id="summaryHowBlock" style="display:none;">
-            <span class="sb-label matlub-label">برای چه و چطور کرده‌اند — خانه‌های ۶ و ۱۲</span>
-            <div class="sb-text" id="summaryHow"></div>
         </div>
         <div class="summary-block" id="summaryMissingBlock" style="display:none;">
             <span class="sb-label matlub-label">گمشده و غائب</span>
@@ -2161,8 +2171,6 @@ const summarySorceryBlock = document.getElementById('summarySorceryBlock');
 const summarySorcery = document.getElementById('summarySorcery');
 const summaryFriendEnemyBlock = document.getElementById('summaryFriendEnemyBlock');
 const summaryFriendEnemy = document.getElementById('summaryFriendEnemy');
-const summaryHowBlock = document.getElementById('summaryHowBlock');
-const summaryHow = document.getElementById('summaryHow');
 const summaryMissingBlock = document.getElementById('summaryMissingBlock');
 const summaryMissing = document.getElementById('summaryMissing');
 const summaryMarriageBlock = document.getElementById('summaryMarriageBlock');
@@ -2995,64 +3003,104 @@ function renderIllnessSummary(){
 }
 
 function renderSorcerySummary(){
-    const house1 = shapeForHouse(0).shape.shape;
-    const house2 = shapeForHouse(1).shape.shape;
-    const house4 = shapeForHouse(3).shape.shape;
-    const house6 = shapeForHouse(5).shape.shape;
-    const house7 = shapeForHouse(6).shape.shape;
-    const house12 = shapeForHouse(11).shape.shape;
+    const house1 = shapeOfHouse(1), house2 = shapeOfHouse(2), house4 = shapeOfHouse(4);
+    const house6 = shapeOfHouse(6), house7 = shapeOfHouse(7), house12 = shapeOfHouse(12);
 
-    /* --- آیا سحر هست؟ (خانه‌ی ششم و ۱،۴،۶،۷ برای گروه آب-باد-خاک) --- */
+    const hs = t => `<span class="hs">${t}</span>`;
+    const sp = t => `<span class="sp">«${t}»</span>`;
+    const vd = (cls, t) => `<span class="vd vd-${cls}">${t}</span>`;
+    const chip = (label, shape) => `${hs('خانه‌ی ' + label)}${sp(shape)}`;
+
     const buriedEarth = ['عقله', 'انکیس'];
     const imaginaryOrWeak = ['لحیان', 'نصره الخارج', 'طریق', 'فرح'];
     const notSureBase = ['لحیان', 'نصره الداخل', 'نصره الخارج', 'عتبه الداخل'];
     const wagGroup = ['جماعت', 'اجتماع', 'حمره', 'بیاض'];
+    const fireTypes = ['عتبه الخارج', 'قبض الخارج'];
 
-    const sorceryLines = [];
+    /* خانه‌های ۱، ۴، ۶ و ۷ برای قاعده‌های «سحر هست» */
+    const sorceryHouses = [['اول', house1], ['چهارم', house4], ['ششم', house6], ['هفتم', house7]];
+    const hitsOf = shapes => sorceryHouses.filter(([label, s]) => shapes.includes(s)).map(([label, s]) => chip(label, s));
 
+    /* ---------- ۱) آیا سحر هست؟ ---------- */
+    const existLines = [];
     if(buriedEarth.includes(house6)){
-        let txt = `در خانه‌ی ششم «${house6}» افتاده؛ سحری است که در خاک یا چاه یا کوره‌ی خاکی یا خرابه یا در خاک گور دفن شده است. علامتش کسالت روحی و دل‌زده شدن از زندگی است.`;
-        const reinforce = [];
-        [[0,'اول',house1], [3,'چهارم',house4], [6,'هفتم',house7]].forEach(([idx, label, s]) => {
-            if(buriedEarth.includes(s)) reinforce.push(`خانه‌ی ${label} (${s})`);
-        });
-        if(reinforce.length){
-            txt += ` چون در ${reinforce.join('، ')} هم عقله یا انکیس افتاده، بدون شک سحر است.`;
-        }
-        sorceryLines.push(txt);
+        const reinforce = sorceryHouses.filter(([label, s]) => label !== 'ششم' && buriedEarth.includes(s)).map(([label, s]) => chip(label, s));
+        existLines.push(reinforce.length
+            ? `${chip('ششم', house6)} — ${vd('vbad', 'بدون شک سحر است')} چون در ${reinforce.join(' ')} هم عقله یا انکیس افتاده.`
+            : `${chip('ششم', house6)} — ${vd('bad', 'سحر است')}`);
     } else if(imaginaryOrWeak.includes(house6)){
-        sorceryLines.push(`در خانه‌ی ششم «${house6}» افتاده؛ معمولاً طرف خیال باطل می‌کند و سحری در کار نیست. اگر هم سحری باشد، حداکثر تا ۶ روز دیگر خودش باطل می‌شود.`);
+        existLines.push(`${chip('ششم', house6)} — ${vd('mid', 'خیال باطل')} معمولاً طرف خیال باطل می‌کند و سحری در کار نیست؛ اگر هم باشد، حداکثر تا ۶ روز دیگر خودش باطل می‌شود.`);
     } else if(notSureBase.includes(house6)){
-        sorceryLines.push(`در خانه‌ی ششم «${house6}» افتاده؛ سحر نیست.`);
+        existLines.push(`${chip('ششم', house6)} — ${vd('good', 'سحر نیست')}`);
     }
+    const wagHits = hitsOf(wagGroup), fireHits = hitsOf(fireTypes), nakHits = hitsOf(['نقی الخد']);
+    const anyHits = hitsOf([...wagGroup, ...fireTypes, 'نقی الخد']);
+    if(anyHits.length) existLines.push(`${anyHits.join(' ')} — ${vd('bad', 'سحر هست')}`);
 
-    const wagHits = [];
-    [[0,'اول',house1], [3,'چهارم',house4], [5,'ششم',house6], [6,'هفتم',house7]].forEach(([idx, label, s]) => {
-        if(wagGroup.includes(s)) wagHits.push({ label, s });
-    });
+    /* ---------- ۲) نوع سحر و علامت‌ها ---------- */
+    const kindLines = [];
+    if(buriedEarth.includes(house6)){
+        kindLines.push(`${chip('ششم', house6)} — <strong>در خاک یا چاه یا کوره‌ی خاکی یا خرابه یا گور دفن شده.</strong> علامت: کسالت روحی و دل‌زده شدن از زندگی.`);
+    }
     if(wagHits.length){
-        let txt = `در ${wagHits.map(h => `خانه‌ی ${h.label} («${h.s}»)`).join('، ')} یکی از اشکال جماعت/اجتماع/حمره/بیاض افتاده؛ نشانه‌ی سحر در آب یا باد یا خاک است، برای بستگی، دل‌سیاهی و توقف کار و زندگی.`;
-        wagHits.forEach(h => {
-            if(h.s === 'حمره') txt += ` (حمره: بر پیکر حیوان حرام‌گوشت یا روی چرم و پوست و روده، برای بستن مردان و زنان.)`;
-            if(h.s === 'جماعت' || h.s === 'اجتماع') txt += ` (${h.s}: بخت و طالع شخص را بسته‌اند؛ روز چهارشنبه در گورستان یا بر نخ ابریشم دفن کرده‌اند.)`;
-        });
-        sorceryLines.push(txt);
+        kindLines.push(`${wagHits.join(' ')} — <strong>سحر در آب یا باد یا خاک</strong> برای بستگی، دل‌سیاهی و توقف کار و زندگی.`);
     }
+    const hamHits = hitsOf(['حمره']);
+    if(hamHits.length) kindLines.push(`${hamHits.join(' ')} — بر پیکر حیوان حرام‌گوشت یا روی چرم و پوست و روده، <strong>برای بستن مردان و زنان.</strong>`);
+    const janHits = hitsOf(['جماعت', 'اجتماع']);
+    if(janHits.length) kindLines.push(`${janHits.join(' ')} — <strong>بخت و طالع شخص را بسته‌اند؛</strong> روز چهارشنبه در گورستان یا بر نخ ابریشم دفن کرده‌اند.`);
+    if(fireHits.length) kindLines.push(`${fireHits.join(' ')} — بر سفال یا مس یا آهن سحر کرده و در کوره یا اجاق دفن یا در آتش انداخته‌اند. علامت: <strong>ناراحتی و دیوانگی از عصبانیت.</strong>`);
+    if(nakHits.length) kindLines.push(`${nakHits.join(' ')} — روی اشیا نوشته یا کنده شده، یا بر قلم نی نوشته‌اند.`);
 
-    if(house6 === 'عتبه الخارج' || house6 === 'قبض الخارج'){
-        sorceryLines.push(`در خانه‌ی ششم «${house6}» افتاده؛ سحر بر سفال یا مس یا آهن انجام شده و در کوره یا اجاق دفن یا در آتش انداخته‌اند؛ علامتش ناراحتی و دیوانگی از عصبانیت است.`);
-    }
-    if(house6 === 'نقی الخد'){
-        sorceryLines.push(`در خانه‌ی ششم «نقی‌الخد» افتاده؛ سحر روی اشیا نوشته یا کنده شده، یا بر قلم نی نوشته‌اند.`);
-    }
+    /* ---------- ۳) چطور و روی چه چیزی (خانه‌ی ۶ و ۱۲) ---------- */
+    const fireGroup = ['لحیان', 'نصره الخارج', 'عتبه الخارج', 'قبض الخارج'];
+    const airGroup = ['حمره', 'فرح', 'عتبه الداخل', 'اجتماع'];
+    const waterGroup = ['بیاض', 'نصره الداخل', 'طریق', 'نقی الخد'];
+    const earthGroup = ['جماعت', 'قبض الداخل', 'عقله', 'انکیس'];
+    const howLines = [];
+    [['ششم', house6], ['دوازدهم', house12]].forEach(([label, sh]) => {
+        let txt = null;
+        if(fireGroup.includes(sh)){
+            txt = `<strong>آتشی:</strong> بر آتش کوره و آهن‌آلات.`;
+        } else if(airGroup.includes(sh)){
+            txt = `<strong>بادی:</strong> بر نخ و پشم یا حیواناتی مثل گاو، خر و شتر.`;
+            if(sh === 'فرح' || sh === 'عتبه الداخل') txt += ` (${sh}: بر پرندگان.)`;
+        } else if(waterGroup.includes(sh)){
+            txt = `<strong>آبی:</strong> بر انگشتر یا مدال گردن و فلزات سفید نوشته، یا در آبش جوشانده و کنار جوی دفن کرده‌اند.`;
+            if(sh === 'طریق') txt += ` (طریق: در جوی آب یا دریا دفن شده.)`;
+            if(sh === 'نقی الخد') txt += ` (نقی‌الخد: بر ماهی یا حیوانات آبی.)`;
+        } else if(earthGroup.includes(sh)){
+            txt = `<strong>خاکی:</strong> بر سفال یا گلی نوشته‌اند یا میان آن چیزی گذاشته‌اند و کنار منزل یا خیابان دفن کرده‌اند.`;
+            if(sh === 'جماعت') txt += ` (جماعت: در حیاط یا میدان.)`;
+            if(sh === 'عقله') txt += ` (عقله: در حمام یا خرابه یا چاه انداخته‌اند.)`;
+            if(sh === 'انکیس') txt += ` (انکیس: در گورستان یا مرده‌شورخانه و مانند آن؛ برای نابودی و آوارگی و خسارت.)`;
+        }
+        if(txt) howLines.push(`${chip(label, sh)} — ${txt}`);
+    });
 
-    const house6Repeats = findHousesWithShape(house6, currentCast.housesRows);
-    if(house6Repeats.length > 1){
-        sorceryLines.push(`شکل «${house6}» در خانه‌های ${house6Repeats.join('، ')} تکرار شده است؛ یعنی این کار ${house6Repeats.length} بار انجام شده.`);
-    }
+    /* ---------- ۴) چند بار انجام شده ---------- */
+    const countLines = [];
+    const repShapes = [house6];
+    if(waterGroup.includes(house12) && !repShapes.includes(house12)) repShapes.push(house12);
+    repShapes.forEach(sh => {
+        const rep = findHousesWithShape(sh, currentCast.housesRows);
+        if(rep.length > 1){
+            countLines.push(`${sp(sh)} در خانه‌های ${rep.join('، ')} تکرار شده؛ یعنی این کار <strong>${rep.length} بار</strong> انجام شده.`);
+        }
+    });
 
-    if(sorceryLines.length){
-        summarySorcery.innerHTML = sorceryLines.join('<br><br>');
+    const groups = [
+        ['c-b', '🔎 آیا سحر هست؟', existLines],
+        ['c-e', '🧪 نوع سحر و علامت‌ها', kindLines],
+        ['c-c', '🛠 چطور و روی چه چیزی (خانه‌های ۶ و ۱۲)', howLines],
+        ['c-d', '🔁 چند بار انجام شده', countLines]
+    ];
+    const out = [];
+    groups.forEach(([cls, title, arr]) => {
+        if(arr.length){ out.push(`<b class="${cls}">${title}</b>`); out.push(...arr); }
+    });
+    if(out.length){
+        summarySorcery.innerHTML = out.join('<br>');
         summarySorceryBlock.style.display = 'block';
     } else {
         summarySorceryBlock.style.display = 'none';
@@ -3063,11 +3111,11 @@ function renderSorcerySummary(){
     const friendShapes = ['لحیان', 'فرح', 'عتبه الداخل', 'اجتماع', 'قبض الداخل', 'بیاض'];
     const enemyShapes = ['حمره', 'جماعت', 'نقی الخد', 'عقله', 'انکیس', 'عتبه الخارج', 'قبض الخارج'];
     const feLines = [];
-    [[0, 'اول', house1], [1, 'دوم', house2]].forEach(([idx, label, s]) => {
-        if(friendShapes.includes(s)){
-            feLines.push(`خانه‌ی ${label} «${s}»: دوست است؛ سحر برای جلب مهربانی، نزدیک شدن، مال و زبان‌بندی بوده.`);
-        } else if(enemyShapes.includes(s)){
-            feLines.push(`خانه‌ی ${label} «${s}»: دشمن است؛ سحر برای دشمنی، جدایی، آوارگی و زبان‌بندی بوده و مدتی طول می‌کشد تا باطل شود، مگر با باطل‌سحر یا قربانی مرغ یا گوسفند.`);
+    [['اول', house1], ['دوم', house2]].forEach(([label, sh]) => {
+        if(friendShapes.includes(sh)){
+            feLines.push(`${chip(label, sh)} — ${vd('good', 'دوست است')} سحر برای جلب مهربانی، نزدیک شدن، مال و زبان‌بندی بوده.`);
+        } else if(enemyShapes.includes(sh)){
+            feLines.push(`${chip(label, sh)} — ${vd('bad', 'دشمن است')} سحر برای دشمنی، جدایی، آوارگی و زبان‌بندی بوده؛ مدتی طول می‌کشد تا باطل شود، مگر با باطل‌سحر یا قربانی مرغ یا گوسفند.`);
         }
     });
     if(feLines.length){
@@ -3076,43 +3124,6 @@ function renderSorcerySummary(){
     } else {
         summaryFriendEnemyBlock.style.display = 'none';
         summaryFriendEnemy.innerHTML = '';
-    }
-
-    /* --- برای چه و چطور کرده‌اند (خانه‌ی ششم و دوازدهم) --- */
-    const fireGroup = ['لحیان', 'نصره الخارج', 'عتبه الخارج', 'قبض الخارج'];
-    const airGroup = ['حمره', 'فرح', 'عتبه الداخل', 'اجتماع'];
-    const waterGroup = ['بیاض', 'نصره الداخل', 'طریق', 'نقی الخد'];
-    const earthGroup = ['جماعت', 'قبض الداخل', 'عقله', 'انکیس'];
-    const howLines = [];
-    [[5, 'ششم', house6], [11, 'دوازدهم', house12]].forEach(([idx, label, s]) => {
-        let txt = null;
-        if(fireGroup.includes(s)){
-            txt = `بر آتش کوره و آهن‌آلات.`;
-        } else if(airGroup.includes(s)){
-            txt = `بر نخ و پشم یا حیواناتی مثل گاو، خر و شتر.`;
-            if(s === 'فرح' || s === 'عتبه الداخل') txt += ` (${s}: بر پرندگان.)`;
-        } else if(waterGroup.includes(s)){
-            txt = `بر انگشتر یا مدال گردن و فلزات سفید نوشته، یا در آبش جوشانده و کنار جوی دفن کرده‌اند.`;
-            if(s === 'طریق') txt += ` (طریق: در جوی آب یا دریا دفن شده.)`;
-            if(s === 'نقی الخد') txt += ` (نقی‌الخد: بر ماهی یا حیوانات آبی.)`;
-            const rep = findHousesWithShape(s, currentCast.housesRows);
-            if(rep.length > 1){
-                txt += ` این شکل در خانه‌های ${rep.join('، ')} تکرار شده که نشانه‌ی تکرار عمل سحر است.`;
-            }
-        } else if(earthGroup.includes(s)){
-            txt = `بر سفال یا گلی نوشته‌اند یا میان آن چیزی گذاشته‌اند و کنار منزل یا خیابان دفن کرده‌اند.`;
-            if(s === 'جماعت') txt += ` (جماعت: در حیاط یا میدان.)`;
-            if(s === 'عقله') txt += ` (عقله: در حمام یا خرابه یا چاه انداخته‌اند.)`;
-            if(s === 'انکیس') txt += ` (انکیس: در گورستان یا مرده‌شورخانه و مانند آن؛ برای نابودی و آوارگی و خسارت.)`;
-        }
-        if(txt) howLines.push(`خانه‌ی ${label} «${s}»: ${txt}`);
-    });
-    if(howLines.length){
-        summaryHow.innerHTML = howLines.join('<br>');
-        summaryHowBlock.style.display = 'block';
-    } else {
-        summaryHowBlock.style.display = 'none';
-        summaryHow.innerHTML = '';
     }
 }
 
@@ -3481,6 +3492,8 @@ function renderJobSummary(){
         }
     });
 
+    if(lines.length) lines.unshift('<b class="c-a">📌 وضعیت کلی شغل (خانه‌های ۱ و ۱۰)</b>');
+
     /* ---------- ۲) اگر برای ۲ تا ۴ کار پرسیده باشد ---------- */
     const multi = [];
     [[1, 'کار اول'], [4, 'کار دوم'], [7, 'کار سوم'], [10, 'کار چهارم']].forEach(([n, label]) => {
@@ -3493,7 +3506,7 @@ function renderJobSummary(){
         if(v) multi.push(`${hs(label)} خانه‌ی ${n} «${sh}» — ${v}`);
     });
     if(multi.length){
-        lines.push('<b>اگر برای چند کار (۲ تا ۴ کار) پرسیده باشد</b>');
+        lines.push('<b class="c-d">🗂 اگر برای چند کار (۲ تا ۴ کار) پرسیده باشد</b>');
         lines.push(...multi);
     }
 
@@ -3505,7 +3518,7 @@ function renderJobSummary(){
         if(f) fields.push(`${hs('خانه‌ی ' + label)} «${sh}» — ${f}.`);
     });
     if(fields.length){
-        lines.push('<b>اگر بپرسد چه شغلی انتخاب کنم</b>');
+        lines.push('<b class="c-f">🧭 اگر بپرسد چه شغلی انتخاب کنم</b>');
         lines.push(...fields);
     }
 
@@ -3539,7 +3552,7 @@ const summaryBlockMeta = {          // [آیکن، رنگ اصلی، رنگ زم
     summaryMatlubBlock:['🎯','#c0392b','#fdecea'],   summaryIllnessBlock:['🩺','#c0392b','#fdecea'],
     summaryDoctorBlock:['👨‍⚕️','#1e8449','#e9f7ef'],  summaryTravelBlock:['🧳','#2c7bb0','#e8f3fb'],
     summaryDiagnosisBlock:['🔍','#8e44ad','#f4ecf7'], summarySorceryBlock:['🔮','#8e44ad','#f4ecf7'],
-    summaryFriendEnemyBlock:['🤝','#16a085','#e8f6f3'], summaryHowBlock:['🧿','#8e44ad','#f4ecf7'],
+    summaryFriendEnemyBlock:['🤝','#16a085','#e8f6f3'],
     summaryMissingBlock:['📍','#d35400','#fbeee6'],  summaryMarriageBlock:['💍','#c2185b','#fce8f0'],
     summaryPointsBlock:['🔢','#566573','#eef0f2'],   summaryJobBlock:['💼','#0e7c86','#e4f5f6'],
     summaryTradeBlock:['💰','#b9770e','#fdf3e1'],    summaryCarBlock:['🚗','#34495e','#ebeef1']
@@ -3595,10 +3608,23 @@ function formatSummaryLines(){
         if(summaryRawTextIds.includes(el.id)){ el.innerHTML = toFaDigits('>' + el.innerHTML + '<').slice(1, -1); return; }
         const html = toFaDigits('>' + el.innerHTML.trim() + '<').slice(1, -1);
         if(!html || /<(div|p|ul|ol|table)\b/i.test(html)) return;
-        el.innerHTML = html.split(/(?:<br\s*\/?>\s*)+/i).map(x => x.trim()).filter(Boolean)
-            .map(x => /^<b>[\s\S]*<\/b>$/i.test(x)
-                ? `<div class="sb-sub">${x.slice(3, -4)}</div>`
-                : `<div class="sb-line">${x}</div>`).join('');
+        const parts = html.split(/(?:<br\s*\/?>\s*)+/i).map(x => x.trim()).filter(Boolean);
+        let out = '', open = false;
+        parts.forEach(x => {
+            const m = x.match(/^<b(?:\s+class="([^"]+)")?>([\s\S]*)<\/b>$/i);
+            if(m){
+                if(open) out += '</div>';
+                out += `<div class="sb-group ${m[1] || ''}"><div class="sb-sub">${m[2]}</div>`;
+                open = true;
+            } else {
+                /* «خانه‌ی اول «شکل»: ...» در بخش‌های ساده‌تر هم به‌شکل برچسب نمایش داده می‌شود */
+                const line = x.replace(/^خانه‌ی\s+(\S+)\s+\(?«([^»]+)»\)?\s*:\s*/,
+                    '<span class="hs">خانه‌ی $1</span><span class="sp">«$2»</span> ');
+                out += `<div class="sb-line">${line}</div>`;
+            }
+        });
+        if(open) out += '</div>';
+        el.innerHTML = out;
     });
 }
 
@@ -3659,7 +3685,7 @@ enhanceSummaryBlocks();
    تشخیص موضوع از روی متن نیت و چیدن بخش‌های مرتبط در بالای لیست.
    ====================================================================== */
 const topicKeywordMap = [
-    { keywords: ['سحر', 'جادو', 'طلسم', 'نفرین', 'فحاشی'], blocks: ['summarySorceryBlock', 'summaryFriendEnemyBlock', 'summaryHowBlock'] },
+    { keywords: ['سحر', 'جادو', 'طلسم', 'نفرین', 'فحاشی'], blocks: ['summarySorceryBlock', 'summaryFriendEnemyBlock'] },
     { keywords: ['ازدواج', 'عروسی', 'نامزد', 'همسر', 'شوهر', 'خواستگار', 'خواستگاری'], blocks: ['summaryMarriageBlock'] },
     { keywords: ['دزد', 'دزدی', 'سرقت', 'سارق'], blocks: ['summaryPointsBlock'] },
     { keywords: ['گمشده', 'غایب', 'غائب', 'فراری', 'گریخت', 'فرار'], blocks: ['summaryMissingBlock', 'summaryPointsBlock'] },
@@ -3672,7 +3698,7 @@ const topicKeywordMap = [
 
 const topicBlockDefaultOrder = [
     'summaryIllnessBlock', 'summaryDoctorBlock', 'summaryTravelBlock', 'summaryDiagnosisBlock',
-    'summarySorceryBlock', 'summaryFriendEnemyBlock', 'summaryHowBlock',
+    'summarySorceryBlock', 'summaryFriendEnemyBlock',
     'summaryMissingBlock', 'summaryMarriageBlock', 'summaryPointsBlock', 'summaryJobBlock', 'summaryTradeBlock', 'summaryCarBlock'
 ];
 

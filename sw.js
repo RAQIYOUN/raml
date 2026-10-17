@@ -1,5 +1,5 @@
 // هر بار که آپدیت جدیدی منتشر می‌کنید، فقط همین عدد را زیاد کنید
-const CACHE_VERSION = 'v7.0.14';
+const CACHE_VERSION = 'v6.9.14';
 const CACHE_NAME = `niyat-ramal-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
