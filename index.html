@@ -358,22 +358,28 @@
     /* ---------- نتیجه‌ی نهایی (خلاصه) ---------- */
     .summary-panel{
         display:none;
-        background:linear-gradient(135deg,#eef6fc,#fdf6ec);
+        background:linear-gradient(160deg,#eef6fc 0%,#faf6ec 100%);
         border:1px solid #d3e9f7;
-        border-radius:14px;
-        padding:16px;
+        border-radius:18px;
+        padding:14px;
         margin-bottom:20px;
+        box-shadow:0 6px 24px rgba(44,123,176,.08);
     }
     .summary-panel.show{ display:block; }
     .summary-panel h2{
         margin:0 0 10px;
-        font-size:15px;
-        color:var(--brand-dark);
+        padding:10px 12px;
+        font-size:14.5px;
+        line-height:1.9;
+        color:#1f4e6f;
+        background:#fff;
+        border-radius:12px;
+        border-right:4px solid var(--brand-dark);
     }
     .share-box{
         display:flex; align-items:center; gap:10px;
         background:#fff; border:1px dashed var(--brand);
-        border-radius:10px; padding:10px 12px; margin-bottom:10px;
+        border-radius:12px; padding:10px 12px; margin-bottom:10px;
         cursor:pointer; transition:background .15s;
     }
     .share-box:active{ background:#eaf2f8; }
@@ -385,26 +391,102 @@
     }
     .share-box.copied{ background:#eafaf1; border-color:#1e8449; }
     .share-box.copied .share-label{ color:#1e8449; }
+
+    /* نوار میانبر بخش‌ها (چسبیده به بالای صفحه هنگام اسکرول) */
+    .sum-nav{
+        position:sticky; top:0; z-index:20;
+        display:flex; gap:6px; overflow-x:auto;
+        padding:8px 2px; margin:0 -2px 8px;
+        background:rgba(238,246,252,.94);
+        -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    }
+    .sum-nav::-webkit-scrollbar{ display:none; }
+    .sum-nav:empty{ display:none; }
+    .sum-nav button{
+        flex:none; font:inherit; font-size:11.5px;
+        padding:5px 11px; border-radius:999px;
+        border:1px solid #cfe3f1; background:#fff; color:#2c4a63;
+        cursor:pointer; white-space:nowrap;
+    }
+    .sum-nav button:active{ background:#eaf2f8; }
+    .sum-nav .nav-all{ background:var(--brand-dark); border-color:var(--brand-dark); color:#fff; }
+
+    /* کارت هر بخش */
     .summary-block{
+        --ac:#2c7bb0; --ac-soft:#e8f3fb;
         background:#fff;
-        border-radius:10px;
-        padding:10px 12px;
-        margin-bottom:8px;
-        border-right:4px solid var(--brand);
+        border:1px solid #e3ebf2;
+        border-radius:14px;
+        margin-bottom:10px;
+        overflow:hidden;
+        scroll-margin-top:56px;
+        box-shadow:0 1px 3px rgba(0,0,0,.04);
+        animation:sbIn .35s ease both;
     }
-    .summary-block:last-child{ margin-bottom:0; border-right-color:#b9770e; }
+    .summary-block.is-topic{ border-color:var(--ac); box-shadow:0 0 0 3px var(--ac-soft); }
     .summary-block .sb-label{
-        font-size:11.5px;
-        font-weight:bold;
-        color:#8a97a6;
-        display:block;
-        margin-bottom:3px;
+        font-size:12.5px; font-weight:bold; color:#6b7a89; display:block; padding:10px 12px 0;
     }
-    .summary-block .sb-text{ font-size:13.5px; line-height:1.8; }
-    .summary-block .sb-label.matlub-label{
-        color:#c0392b;
-        font-size:13.5px;
-        font-weight:800;
+    .summary-block .sb-head{
+        display:flex; align-items:center; gap:8px;
+        padding:10px 12px; margin:0;
+        background:var(--ac-soft); color:var(--ac);
+        font-size:13.5px; font-weight:800;
+        cursor:pointer; -webkit-tap-highlight-color:transparent;
+    }
+    .sb-ico{ font-size:16px; line-height:1; }
+    .sb-title{ flex:1 1 auto; min-width:0; }
+    .sb-tag{
+        font-size:10.5px; font-weight:600; color:#6b7a89;
+        background:#fff; padding:1px 8px; border-radius:999px; white-space:nowrap;
+    }
+    .sb-rel{
+        font-size:10px; font-weight:700; color:#fff; background:var(--ac);
+        padding:1px 8px; border-radius:999px; white-space:nowrap;
+    }
+    .sb-chev{
+        margin-inline-start:auto; flex:none;
+        width:8px; height:8px;
+        border-left:2px solid currentColor; border-bottom:2px solid currentColor;
+        transform:rotate(-45deg); transition:transform .2s;
+    }
+    .summary-block.collapsed .sb-chev{ transform:rotate(45deg); }
+    .summary-block.collapsed .sb-text{ display:none; }
+    .summary-block .sb-text{ display:block; padding:6px 12px 10px; font-size:13.5px; line-height:1.9; color:#2b3a47; }
+    .sb-line{
+        position:relative; padding:7px 16px 7px 0;
+        border-bottom:1px dashed #e6edf3;
+    }
+    .sb-line:last-child{ border-bottom:0; }
+    .sb-line::before{
+        content:''; position:absolute; right:2px; top:1.15em;
+        width:6px; height:6px; border-radius:50%;
+        background:var(--ac); opacity:.7;
+    }
+    .sb-sub{
+        display:inline-block; margin:8px 0 2px;
+        padding:2px 10px; border-radius:999px;
+        font-size:12px; font-weight:800;
+        color:var(--ac); background:var(--ac-soft);
+    }
+    .hs{
+        display:inline-block; margin-inline-end:4px;
+        padding:0 7px; border-radius:6px;
+        font-size:11.5px; font-weight:800;
+        color:#44586a; background:#eef2f6;
+    }
+    .vd{
+        display:inline-block; margin:0 1px; padding:0 8px;
+        border-radius:999px; font-size:12px; font-weight:800; line-height:1.7;
+    }
+    .vd-good{ background:#e9f7ef; color:#1e8449; }
+    .vd-bad{ background:#fdecea; color:#c0392b; }
+    .vd-mid{ background:#fef5e7; color:#b9770e; }
+    .vd-vbad{ background:#c0392b; color:#fff; }
+    @keyframes sbIn{ from{ opacity:0; transform:translateY(6px); } to{ opacity:1; transform:none; } }
+    @media (prefers-reduced-motion:reduce){
+        .summary-block{ animation:none; }
+        .sb-chev{ transition:none; }
     }
 
     /* ---------- چیدمان سپری (شیلد) ۱۶ خانه ---------- */
@@ -1062,14 +1144,7 @@
             <span class="share-label" id="shareLabel">🔗 کپی لینک این رمل</span>
             <span class="share-url" id="shareUrl"></span>
         </div>
-        <div class="summary-block" id="summaryHokmBlock">
-            <span class="sb-label">حکم نهایی — خانه ۱۵ (قاضی)</span>
-            <span class="sb-text" id="summaryHokm"></span>
-        </div>
-        <div class="summary-block" id="summaryLesanBlock">
-            <span class="sb-label">لسان الامر — خانه ۱۶ (نتیجه‌ی کلی)</span>
-            <span class="sb-text" id="summaryLesan"></span>
-        </div>
+        <div class="sum-nav" id="sumNav"></div>
         <div class="summary-block" id="summaryMatlubBlock" style="display:none;">
             <span class="sb-label matlub-label">مطلوبِ نقطه‌ی حکم</span>
             <div class="sb-text" id="summaryMatlub"></div>
@@ -1113,6 +1188,10 @@
         <div class="summary-block" id="summaryPointsBlock" style="display:none;">
             <span class="sb-label matlub-label">شماره‌ی نقطه‌های رمل</span>
             <div class="sb-text" id="summaryPoints"></div>
+        </div>
+        <div class="summary-block" id="summaryJobBlock" style="display:none;">
+            <span class="sb-label matlub-label">شغل و کار — خانه‌های ۱ و ۱۰</span>
+            <div class="sb-text" id="summaryJob"></div>
         </div>
         <div class="summary-block" id="summaryTradeBlock" style="display:none;">
             <span class="sb-label matlub-label">کار، معامله و خرید و فروش — خانه ۲</span>
@@ -2068,8 +2147,6 @@ const patientAgeGroupEl = document.getElementById('patientAgeGroup');
 
 const summaryPanel = document.getElementById('summaryPanel');
 const summaryNiyat = document.getElementById('summaryNiyat');
-const summaryHokm = document.getElementById('summaryHokm');
-const summaryLesan = document.getElementById('summaryLesan');
 const summaryMatlubBlock = document.getElementById('summaryMatlubBlock');
 const summaryMatlub = document.getElementById('summaryMatlub');
 const summaryIllnessBlock = document.getElementById('summaryIllnessBlock');
@@ -2092,6 +2169,8 @@ const summaryMarriageBlock = document.getElementById('summaryMarriageBlock');
 const summaryMarriage = document.getElementById('summaryMarriage');
 const summaryPointsBlock = document.getElementById('summaryPointsBlock');
 const summaryPoints = document.getElementById('summaryPoints');
+const summaryJobBlock = document.getElementById('summaryJobBlock');
+const summaryJob = document.getElementById('summaryJob');
 const summaryTradeBlock = document.getElementById('summaryTradeBlock');
 const summaryTrade = document.getElementById('summaryTrade');
 const summaryCarBlock = document.getElementById('summaryCarBlock');
@@ -2592,6 +2671,10 @@ function shapeForHouse(houseIndex){ // houseIndex: 0..15
     return { shape: patternIndex[code], rows };
 }
 
+/* نام شکل و سعد/نحس بودن خانه‌ی n (n: شماره‌ی خانه از ۱ تا ۱۶) — مشترک بین همه‌ی بخش‌های خلاصه */
+const shapeOfHouse = n => shapeForHouse(n - 1).shape.shape;
+const fortuneOfHouse = n => shapeForHouse(n - 1).shape.fortune;
+
 function shapeForHouseBatin(houseIndex){ // houseIndex: 0..15
     const rows = currentCast.batinRows[houseIndex];
     const code = rowsToCode(rows);
@@ -3034,7 +3117,6 @@ function renderSorcerySummary(){
 }
 
 function renderMissingPersonSummary(){
-    const shapeOfHouse = n => shapeForHouse(n - 1).shape.shape; // n: شماره‌ی خانه (۱ تا ۱۶)
     const rowsOfHouse = n => currentCast.housesRows[n - 1];
 
     const lines = [];
@@ -3263,7 +3345,6 @@ function renderPointCountSummary(){
    فروش: خانه‌های ۱،۵،۸،۹،۱۳ و ثابت‌بودنِ خانه‌های ۴،۸،۱۲،۱۶.
    ====================================================================== */
 function renderCarSummary(){
-    const shapeOfHouse = n => shapeForHouse(n - 1).shape.shape;
     const label = n => `خانه‌ی ${n} («${shapeOfHouse(n)}»)`;
     const lines = [];
 
@@ -3338,6 +3419,105 @@ function renderCarSummary(){
     }
 }
 
+/* ======================================================================
+   شغل و کار — خانه‌ی اول و دهم (و چهارم و هفتم برای چند کار)
+   ۱) سؤال برای پیدا کردن شغل و کار: خوب/بد/متوقف بودن از خانه‌های ۱ و ۱۰
+   ۲) سؤال برای ۲ تا ۴ کار: خانه‌ی ۱ کار اول، ۴ کار دوم، ۷ کار سوم، ۱۰ کار چهارم
+   ۳) سؤال «چه شغلی انتخاب کنم»: نوع شغل از روی شکل خانه‌ی ۱ و ۱۰
+   ====================================================================== */
+const jobGoodShapes = ['لحیان', 'نصره الخارج', 'نصره الداخل'];
+const jobUndecidedShapes = ['فرح', 'نقی الخد', 'عقله', 'طریق'];
+const jobStuckShapes = ['جماعت', 'اجتماع'];
+const jobVeryBadShapes = ['عتبه الخارج', 'قبض الخارج'];
+
+/* چند کار: خوب / بد / میانه / بسیار بد */
+const jobMultiGood = ['لحیان', 'نصره الخارج', 'نصره الداخل', 'بیاض', 'عتبه الداخل', 'فرح'];
+const jobMultiBad = ['جماعت', 'انکیس', 'عقله', 'حمره', 'نقی الخد'];
+const jobMultiMid = ['اجتماع', 'طریق'];
+
+/* انتخاب شغل: نوع کار به‌ازای هر شکل */
+const jobFieldByShape = {
+    'لحیان': 'ادارات دولتی و شرکت‌های تجاری و ساختمانی',
+    'نصره الخارج': 'ادارات دولتی و شرکت‌های تجاری و ساختمانی',
+    'عتبه الخارج': 'وزارت نفت و پتروشیمی و برق و گاز',
+    'قبض الخارج': 'وزارت نفت و پتروشیمی و برق و گاز',
+    'بیاض': 'نیروی دریایی و کارهای آبی',
+    'طریق': 'نیروی دریایی و کارهای آبی',
+    'نقی الخد': 'کارهای مکانیکی و فلزتراشی و رادیو و تلفن‌سازی و هر رشته‌ای که با چرخ‌دنده سروکار دارد',
+    'نصره الداخل': 'دفترداری و پارچه‌فروشی و تحریر و کتاب‌فروشی و لبنیاتی',
+    'جماعت': 'بنایی و زمین و کشاورزی و کارهای ساختمانی',
+    'عقله': 'چاه‌کنی و لوله‌کشی و موزاییک و گچ و سیمان و سنگ و آجر',
+    'انکیس': 'کارهای وزارتی، جاده‌سازی، پل‌سازی، حفاری، ساختمانی، تعمیرات ماشین‌هایی مثل لودر و تراکتور، روغن ماشین، آپاراتی، اسباب ماشین سنگین و تعمیرات آن‌ها',
+    'قبض الداخل': 'کاسبی و تجارت، پول بانک، مغازه‌داری، صرافی و کار با پول',
+    'فرح': 'گوسفندداری و مرغداری و پشم و پوست',
+    'عتبه الداخل': 'گوسفندداری و مرغداری و پشم و پوست',
+    'حمره': 'کار با ماشین‌آلات بزرگ مثل تریلر و کمپرسی',
+    'اجتماع': 'کارهای دانشگاهی و آموزش و معلمی و کارخانه‌های خیلی بزرگ'
+};
+
+function renderJobSummary(){
+    const hs = t => `<span class="hs">${t}</span>`;
+    const vd = (cls, t) => `<span class="vd vd-${cls}">${t}</span>`;
+    const lines = [];
+
+    /* ---------- ۱) وضعیت کلی شغل و کار: خانه‌ی ۱ و ۱۰ ---------- */
+    [[1, 'اول'], [10, 'دهم']].forEach(([n, label]) => {
+        const sh = shapeOfHouse(n);
+        const head = `${hs('خانه‌ی ' + label)} «${sh}» — `;
+        if(jobGoodShapes.includes(sh)){
+            lines.push(head + `${vd('good', 'صددرصد خوب')} نیت هر کاری که دارد، چه دولتی و چه غیردولتی، فوری اقدام شود.`);
+        } else if(jobUndecidedShapes.includes(sh)){
+            const f = fortuneOfHouse(n);
+            let t = `${vd('mid', 'دل‌دل دارد')} سائل در انتخاب مردد است.`;
+            if(f === 'نحس') t += ` شکل نحس است، پس ${vd('bad', 'بد است')}.`;
+            else if(f === 'سعد') t += ` شکل سعد است، پس ${vd('good', 'خوب است')}.`;
+            lines.push(head + t);
+        } else if(jobStuckShapes.includes(sh)){
+            lines.push(head + `${vd('mid', 'توقف')} هر کاری شروع کند حرکتی ندارد و بسته است.`);
+        } else if(jobVeryBadShapes.includes(sh)){
+            lines.push(head + `${vd('vbad', 'بسیار بد')} رونقی ندارد و خسارت هم دارد.`);
+        } else if(sh === 'بیاض'){
+            lines.push(head + vd('mid', 'میانه، خوب است'));
+        }
+    });
+
+    /* ---------- ۲) اگر برای ۲ تا ۴ کار پرسیده باشد ---------- */
+    const multi = [];
+    [[1, 'کار اول'], [4, 'کار دوم'], [7, 'کار سوم'], [10, 'کار چهارم']].forEach(([n, label]) => {
+        const sh = shapeOfHouse(n);
+        let v = '';
+        if(jobVeryBadShapes.includes(sh)) v = vd('vbad', 'بسیار بد');
+        else if(jobMultiGood.includes(sh)) v = vd('good', 'خوب است');
+        else if(jobMultiBad.includes(sh)) v = vd('bad', 'بد است');
+        else if(jobMultiMid.includes(sh)) v = vd('mid', 'میانه');
+        if(v) multi.push(`${hs(label)} خانه‌ی ${n} «${sh}» — ${v}`);
+    });
+    if(multi.length){
+        lines.push('<b>اگر برای چند کار (۲ تا ۴ کار) پرسیده باشد</b>');
+        lines.push(...multi);
+    }
+
+    /* ---------- ۳) اگر بپرسد چه شغلی انتخاب کنم ---------- */
+    const fields = [];
+    [[1, 'اول'], [10, 'دهم']].forEach(([n, label]) => {
+        const sh = shapeOfHouse(n);
+        const f = jobFieldByShape[sh];
+        if(f) fields.push(`${hs('خانه‌ی ' + label)} «${sh}» — ${f}.`);
+    });
+    if(fields.length){
+        lines.push('<b>اگر بپرسد چه شغلی انتخاب کنم</b>');
+        lines.push(...fields);
+    }
+
+    if(lines.length){
+        summaryJob.innerHTML = lines.join('<br>');
+        summaryJobBlock.style.display = 'block';
+    } else {
+        summaryJobBlock.style.display = 'none';
+        summaryJob.innerHTML = '';
+    }
+}
+
 function renderTradeSummary(){
     const { shape } = shapeForHouse(1); // خانه‌ی دوم — بیت المال
     const paras = shape.longText.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
@@ -3352,6 +3532,130 @@ function renderTradeSummary(){
 }
 
 /* ======================================================================
+   ظاهر و رفتار کارت‌های خلاصه: آیکن و رنگ هر بخش، سرخط‌های جمع‌شونده،
+   خط‌به‌خط‌کردن متن، نوار میانبر و برچسب «مرتبط با نیت».
+   ====================================================================== */
+const summaryBlockMeta = {          // [آیکن، رنگ اصلی، رنگ زمینه‌ی ملایم]
+    summaryMatlubBlock:['🎯','#c0392b','#fdecea'],   summaryIllnessBlock:['🩺','#c0392b','#fdecea'],
+    summaryDoctorBlock:['👨‍⚕️','#1e8449','#e9f7ef'],  summaryTravelBlock:['🧳','#2c7bb0','#e8f3fb'],
+    summaryDiagnosisBlock:['🔍','#8e44ad','#f4ecf7'], summarySorceryBlock:['🔮','#8e44ad','#f4ecf7'],
+    summaryFriendEnemyBlock:['🤝','#16a085','#e8f6f3'], summaryHowBlock:['🧿','#8e44ad','#f4ecf7'],
+    summaryMissingBlock:['📍','#d35400','#fbeee6'],  summaryMarriageBlock:['💍','#c2185b','#fce8f0'],
+    summaryPointsBlock:['🔢','#566573','#eef0f2'],   summaryJobBlock:['💼','#0e7c86','#e4f5f6'],
+    summaryTradeBlock:['💰','#b9770e','#fdf3e1'],    summaryCarBlock:['🚗','#34495e','#ebeef1']
+};
+const summaryRawTextIds = ['summaryMatlub']; // متن‌های بلند، بدون خط‌به‌خط‌کردن
+
+function enhanceSummaryBlocks(){
+    summaryPanel.querySelectorAll('.summary-block').forEach(block => {
+        const meta = summaryBlockMeta[block.id] || ['📌', '#2c7bb0', '#e8f3fb'];
+        block.style.setProperty('--ac', meta[1]);
+        block.style.setProperty('--ac-soft', meta[2]);
+        const label = block.querySelector('.sb-label');
+        if(!label) return;
+        const parts = label.textContent.split(' — ');
+        const title = parts[0].trim();
+        const tag = parts.slice(1).join(' — ').trim();
+        label.className = 'sb-label sb-head';
+        label.setAttribute('role', 'button');
+        label.setAttribute('tabindex', '0');
+        label.setAttribute('aria-expanded', 'true');
+        label.innerHTML = `<span class="sb-ico">${meta[0]}</span><span class="sb-title">${title}</span>`
+            + (tag ? `<span class="sb-tag">${tag}</span>` : '')
+            + `<span class="sb-chev" aria-hidden="true"></span>`;
+        block.dataset.title = title;
+        block.dataset.ico = meta[0];
+    });
+}
+
+function toggleSummaryBlock(block, open){      // open: true/false برای تعیین صریح، بدون آرگومان = برعکس‌کردن
+    const collapse = typeof open === 'boolean' ? !open : !block.classList.contains('collapsed');
+    block.classList.toggle('collapsed', collapse);
+    const head = block.querySelector('.sb-head');
+    if(head) head.setAttribute('aria-expanded', String(!collapse));
+}
+
+summaryPanel.addEventListener('click', e => {
+    const head = e.target.closest('.sb-head');
+    if(head) toggleSummaryBlock(head.closest('.summary-block'));
+});
+summaryPanel.addEventListener('keydown', e => {
+    if((e.key === 'Enter' || e.key === ' ') && e.target.classList && e.target.classList.contains('sb-head')){
+        e.preventDefault();
+        toggleSummaryBlock(e.target.closest('.summary-block'));
+    }
+});
+
+/* هر خط از متن هر بخش (که با <br> جدا شده) یک ردیف مرتب می‌شود؛ سطرِ فقط-<b> تبدیل به زیرعنوان می‌شود */
+/* اعداد لاتین داخل متن (نه داخل تگ‌ها) به رقم فارسی تبدیل می‌شوند تا همه‌ی بخش‌ها یکدست باشند */
+const toFaDigits = str => str.replace(/>([^<]+)</g, (m, t) => '>' + t.replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]) + '<');
+
+function formatSummaryLines(){
+    summaryPanel.querySelectorAll('.summary-block .sb-text').forEach(el => {
+        if(summaryRawTextIds.includes(el.id)){ el.innerHTML = toFaDigits('>' + el.innerHTML + '<').slice(1, -1); return; }
+        const html = toFaDigits('>' + el.innerHTML.trim() + '<').slice(1, -1);
+        if(!html || /<(div|p|ul|ol|table)\b/i.test(html)) return;
+        el.innerHTML = html.split(/(?:<br\s*\/?>\s*)+/i).map(x => x.trim()).filter(Boolean)
+            .map(x => /^<b>[\s\S]*<\/b>$/i.test(x)
+                ? `<div class="sb-sub">${x.slice(3, -4)}</div>`
+                : `<div class="sb-line">${x}</div>`).join('');
+    });
+}
+
+function buildSummaryNav(){
+    const nav = document.getElementById('sumNav');
+    nav.innerHTML = '';
+    const blocks = [...summaryPanel.querySelectorAll('.summary-block')].filter(b => b.style.display !== 'none');
+    if(blocks.length < 4) return;
+    blocks.forEach(b => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = `${b.dataset.ico || ''} ${b.dataset.title || ''}`.trim();
+        btn.addEventListener('click', () => {
+            toggleSummaryBlock(b, true);
+            b.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        nav.appendChild(btn);
+    });
+    const all = document.createElement('button');
+    all.type = 'button';
+    all.className = 'nav-all';
+    all.textContent = 'جمع‌کردن همه';
+    all.addEventListener('click', () => {
+        const open = all.textContent === 'باز کردن همه';
+        blocks.forEach(b => toggleSummaryBlock(b, open));
+        all.textContent = open ? 'جمع‌کردن همه' : 'باز کردن همه';
+    });
+    nav.appendChild(all);
+}
+
+function finalizeSummaryUI(niyatText){
+    formatSummaryLines();
+    summaryPanel.querySelectorAll('.summary-block').forEach(b => {
+        b.classList.remove('collapsed', 'is-topic');
+        const rel = b.querySelector('.sb-rel');
+        if(rel) rel.remove();
+        const head = b.querySelector('.sb-head');
+        if(head) head.setAttribute('aria-expanded', 'true');
+    });
+    detectTopicBlocks(niyatText).forEach(id => {
+        const b = document.getElementById(id);
+        if(!b || b.style.display === 'none') return;
+        b.classList.add('is-topic');
+        const head = b.querySelector('.sb-head');
+        if(head){
+            const rel = document.createElement('span');
+            rel.className = 'sb-rel';
+            rel.textContent = 'مرتبط با نیت';
+            head.insertBefore(rel, head.querySelector('.sb-chev'));
+        }
+    });
+    buildSummaryNav();
+}
+
+enhanceSummaryBlocks();
+
+/* ======================================================================
    تشخیص موضوع از روی متن نیت و چیدن بخش‌های مرتبط در بالای لیست.
    ====================================================================== */
 const topicKeywordMap = [
@@ -3359,6 +3663,7 @@ const topicKeywordMap = [
     { keywords: ['ازدواج', 'عروسی', 'نامزد', 'همسر', 'شوهر', 'خواستگار', 'خواستگاری'], blocks: ['summaryMarriageBlock'] },
     { keywords: ['دزد', 'دزدی', 'سرقت', 'سارق'], blocks: ['summaryPointsBlock'] },
     { keywords: ['گمشده', 'غایب', 'غائب', 'فراری', 'گریخت', 'فرار'], blocks: ['summaryMissingBlock', 'summaryPointsBlock'] },
+    { keywords: ['شغل', 'استخدام', 'اشتغال', 'بیکار', 'حرفه', 'رشته', 'کار'], blocks: ['summaryJobBlock'] },
     { keywords: ['کار', 'معامله', 'خرید', 'فروش', 'تجارت', 'کسب', 'پول', 'سود', 'ضرر', 'قرض'], blocks: ['summaryTradeBlock'] },
     { keywords: ['بیمار', 'بیماری', 'مریض', 'درد', 'سلامت', 'دکتر', 'پزشک'], blocks: ['summaryIllnessBlock', 'summaryDoctorBlock', 'summaryDiagnosisBlock', 'summaryTravelBlock'] },
     { keywords: ['ماشین', 'خودرو', 'اتومبیل', 'سواری'], blocks: ['summaryCarBlock'] },
@@ -3368,7 +3673,7 @@ const topicKeywordMap = [
 const topicBlockDefaultOrder = [
     'summaryIllnessBlock', 'summaryDoctorBlock', 'summaryTravelBlock', 'summaryDiagnosisBlock',
     'summarySorceryBlock', 'summaryFriendEnemyBlock', 'summaryHowBlock',
-    'summaryMissingBlock', 'summaryMarriageBlock', 'summaryPointsBlock', 'summaryTradeBlock', 'summaryCarBlock'
+    'summaryMissingBlock', 'summaryMarriageBlock', 'summaryPointsBlock', 'summaryJobBlock', 'summaryTradeBlock', 'summaryCarBlock'
 ];
 
 function detectTopicBlocks(niyatText){
@@ -3542,14 +3847,7 @@ shareBox.addEventListener('click', copyShareLink);
 
 function renderSummary(niyatText){
     updateShareLink();
-    const judge = shapeForHouse(14);
-    const lesan = shapeForHouse(15);
-    const judgeParas = judge.shape.longText.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
-    const lesanParas = lesan.shape.longText.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
-
     summaryNiyat.textContent = niyatText ? `نتیجه‌ی رمل برای نیت: «${niyatText}»` : 'نتیجه‌ی رمل';
-    summaryHokm.innerHTML = highlightBitNumbers(judgeParas[14] || '');
-    summaryLesan.innerHTML = highlightBitNumbers(lesanParas[15] || '');
 
     const rows15 = currentCast.housesRows[14];
     const singles15 = rows15.map((v, i) => v === 1 ? i : -1).filter(i => i !== -1);
@@ -3575,12 +3873,14 @@ function renderSummary(niyatText){
     renderMissingPersonSummary();
     renderMarriageSummary();
     renderPointCountSummary();
+    renderJobSummary();
     renderTradeSummary();
     renderCarSummary();
     reorderSummaryBlocks(niyatText);
     renderDoctorSection();
     renderTravelSection();
     renderDiagnosisSection();
+    finalizeSummaryUI(niyatText);
 
     summaryPanel.classList.add('show');
 }
