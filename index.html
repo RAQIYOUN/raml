@@ -1118,6 +1118,10 @@
             <span class="sb-label matlub-label">کار، معامله و خرید و فروش — خانه ۲</span>
             <div class="sb-text" id="summaryTrade"></div>
         </div>
+        <div class="summary-block" id="summaryCarBlock" style="display:none;">
+            <span class="sb-label matlub-label">خرید و فروش ماشین</span>
+            <div class="sb-text" id="summaryCar"></div>
+        </div>
     </div>
 
     <p class="shield-section-title"><span class="zahir-tag">🔷 ظاهر رمل</span></p>
@@ -2090,6 +2094,8 @@ const summaryPointsBlock = document.getElementById('summaryPointsBlock');
 const summaryPoints = document.getElementById('summaryPoints');
 const summaryTradeBlock = document.getElementById('summaryTradeBlock');
 const summaryTrade = document.getElementById('summaryTrade');
+const summaryCarBlock = document.getElementById('summaryCarBlock');
+const summaryCar = document.getElementById('summaryCar');
 
 const modeManualBtn = document.getElementById('modeManualBtn');
 const manualModeBox = document.getElementById('manualModeBox');
@@ -2911,10 +2917,9 @@ function renderSorcerySummary(){
     const house4 = shapeForHouse(3).shape.shape;
     const house6 = shapeForHouse(5).shape.shape;
     const house7 = shapeForHouse(6).shape.shape;
-    const house8 = shapeForHouse(7).shape.shape;
     const house12 = shapeForHouse(11).shape.shape;
 
-    /* --- آیا سحر هست؟ (خانه‌ی ششم و ۱،۴،۷،۸ برای تقویت/گروه آب-باد-خاک) --- */
+    /* --- آیا سحر هست؟ (خانه‌ی ششم و ۱،۴،۶،۷ برای گروه آب-باد-خاک) --- */
     const buriedEarth = ['عقله', 'انکیس'];
     const imaginaryOrWeak = ['لحیان', 'نصره الخارج', 'طریق', 'فرح'];
     const notSureBase = ['لحیان', 'نصره الداخل', 'نصره الخارج', 'عتبه الداخل'];
@@ -2939,7 +2944,7 @@ function renderSorcerySummary(){
     }
 
     const wagHits = [];
-    [[0,'اول',house1], [3,'چهارم',house4], [6,'هفتم',house7], [7,'هشتم',house8]].forEach(([idx, label, s]) => {
+    [[0,'اول',house1], [3,'چهارم',house4], [5,'ششم',house6], [6,'هفتم',house7]].forEach(([idx, label, s]) => {
         if(wagGroup.includes(s)) wagHits.push({ label, s });
     });
     if(wagHits.length){
@@ -3251,6 +3256,88 @@ function renderPointCountSummary(){
     summaryPointsBlock.style.display = 'block';
 }
 
+/* ======================================================================
+   خرید و فروش ماشین
+   خرید: حمره/نقی‌الخد در خانه‌های ۴،۸،۱۲،۱۶ (قوت دارد) یا ۱،۵،۹،۱۳ (باز هم خوب است)؛
+   قبض‌الخارج/عتبه‌الخارج در خانه‌های ۲،۶،۷ (خراب/روغن‌سوز)؛ انکیس/عقله (کهنه و داغان).
+   فروش: خانه‌های ۱،۵،۸،۹،۱۳ و ثابت‌بودنِ خانه‌های ۴،۸،۱۲،۱۶.
+   ====================================================================== */
+function renderCarSummary(){
+    const shapeOfHouse = n => shapeForHouse(n - 1).shape.shape;
+    const label = n => `خانه‌ی ${n} («${shapeOfHouse(n)}»)`;
+    const lines = [];
+
+    /* ---------- اگر می‌خواهد بخرد ---------- */
+    const goodShapes = ['حمره', 'نقی الخد'];
+    const strongHits = [4, 8, 12, 16].filter(n => goodShapes.includes(shapeOfHouse(n)));
+    if(strongHits.length){
+        lines.push(`خرید: ${strongHits.map(label).join('، ')} — خوب است، قوت دارد و بخرد.`);
+    }
+    const goodHits = [1, 5, 9, 13].filter(n => goodShapes.includes(shapeOfHouse(n)));
+    if(goodHits.length){
+        lines.push(`خرید: ${goodHits.map(label).join('، ')} — باز هم خوب است، بخرد.`);
+    }
+
+    const damageShapes = ['قبض الخارج', 'عتبه الخارج'];
+    const damageHits = [2, 6, 7].filter(n => damageShapes.includes(shapeOfHouse(n)));
+    if(damageHits.length){
+        let txt = `خرید: ${damageHits.map(label).join('، ')} — ماشین خراب است و احتمالاً روغن‌سوزی دارد.`;
+        const shown = [];
+        damageHits.forEach(n => {
+            const sh = shapeOfHouse(n);
+            if(shown.includes(sh)) return;
+            shown.push(sh);
+            const rep = findHousesWithShape(sh, currentCast.housesRows);
+            if(rep.length > 1) txt += ` (شکل «${sh}» در رمل دو بار یا بیشتر آمده — در خانه‌های ${rep.join('، ')} — که خرابی را تأیید می‌کند.)`;
+        });
+        lines.push(txt);
+    }
+
+    const oldHits = [];
+    for(let n = 1; n <= 16; n++){
+        if(['انکیس', 'عقله'].includes(shapeOfHouse(n))) oldHits.push(n);
+    }
+    if(oldHits.length){
+        lines.push(`خرید: ${oldHits.map(label).join('، ')} — ماشین کهنه و داغان است.`);
+    }
+
+    /* ---------- اگر می‌خواهد بفروشد ---------- */
+    const sellHouses = [1, 5, 8, 9, 13];
+    const exitShapes = ['لحیان', 'نصره الخارج', 'قبض الخارج', 'عتبه الخارج'];
+    const sellHits = sellHouses.filter(n => exitShapes.includes(shapeOfHouse(n)));
+    if(sellHits.length){
+        let txt = `فروش: ${sellHits.map(label).join('، ')} — فوری بفروشد.`;
+        const good = sellHits.filter(n => ['لحیان', 'نصره الخارج'].includes(shapeOfHouse(n)));
+        const bad = sellHits.filter(n => ['عتبه الخارج', 'قبض الخارج'].includes(shapeOfHouse(n)));
+        if(good.length) txt += ` ${good.map(n => shapeOfHouse(n)).join(' و ')}: خیر می‌کند.`;
+        if(bad.length) txt += ` ${bad.map(n => shapeOfHouse(n)).join(' و ')}: خسارت دارد یا عیبی دارد که دل مشتری را می‌زند.`;
+        lines.push(txt);
+    }
+
+    const stuckHits = sellHouses.filter(n => ['جماعت', 'اجتماع'].includes(shapeOfHouse(n)));
+    if(stuckHits.length){
+        lines.push(`فروش: ${stuckHits.map(label).join('، ')} — مدتی در توقف می‌ماند و خریداری ندارد.`);
+    }
+
+    const badCarHits = sellHouses.filter(n => ['نقی الخد', 'عقله', 'انکیس', 'طریق'].includes(shapeOfHouse(n)));
+    if(badCarHits.length){
+        lines.push(`فروش: ${badCarHits.map(label).join('، ')} — ماشین خوبی برای سواری یا کار نیست و خریدار ایرادهای دیگری هم می‌گیرد.`);
+    }
+
+    const fixedHits = [4, 8, 12, 16].filter(n => shapeForHouse(n - 1).shape.boundary === 'ثابت');
+    if(fixedHits.length){
+        lines.push(`فروش: ${fixedHits.map(label).join('، ')} — شکل ثابت است؛ مدتی در گاراژ یا بنگاه می‌ماند.`);
+    }
+
+    if(lines.length){
+        summaryCar.innerHTML = lines.join('<br><br>');
+        summaryCarBlock.style.display = 'block';
+    } else {
+        summaryCarBlock.style.display = 'none';
+        summaryCar.innerHTML = '';
+    }
+}
+
 function renderTradeSummary(){
     const { shape } = shapeForHouse(1); // خانه‌ی دوم — بیت المال
     const paras = shape.longText.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
@@ -3274,13 +3361,14 @@ const topicKeywordMap = [
     { keywords: ['گمشده', 'غایب', 'غائب', 'فراری', 'گریخت', 'فرار'], blocks: ['summaryMissingBlock', 'summaryPointsBlock'] },
     { keywords: ['کار', 'معامله', 'خرید', 'فروش', 'تجارت', 'کسب', 'پول', 'سود', 'ضرر', 'قرض'], blocks: ['summaryTradeBlock'] },
     { keywords: ['بیمار', 'بیماری', 'مریض', 'درد', 'سلامت', 'دکتر', 'پزشک'], blocks: ['summaryIllnessBlock', 'summaryDoctorBlock', 'summaryDiagnosisBlock', 'summaryTravelBlock'] },
+    { keywords: ['ماشین', 'خودرو', 'اتومبیل', 'سواری'], blocks: ['summaryCarBlock'] },
     { keywords: ['سفر', 'مسافرت'], blocks: ['summaryTravelBlock'] }
 ];
 
 const topicBlockDefaultOrder = [
     'summaryIllnessBlock', 'summaryDoctorBlock', 'summaryTravelBlock', 'summaryDiagnosisBlock',
     'summarySorceryBlock', 'summaryFriendEnemyBlock', 'summaryHowBlock',
-    'summaryMissingBlock', 'summaryMarriageBlock', 'summaryPointsBlock', 'summaryTradeBlock'
+    'summaryMissingBlock', 'summaryMarriageBlock', 'summaryPointsBlock', 'summaryTradeBlock', 'summaryCarBlock'
 ];
 
 function detectTopicBlocks(niyatText){
@@ -3488,6 +3576,7 @@ function renderSummary(niyatText){
     renderMarriageSummary();
     renderPointCountSummary();
     renderTradeSummary();
+    renderCarSummary();
     reorderSummaryBlocks(niyatText);
     renderDoctorSection();
     renderTravelSection();
