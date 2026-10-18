@@ -484,6 +484,35 @@
     .vd-mid{ background:#fef5e7; color:#b9770e; }
     .vd-vbad{ background:#c0392b; color:#fff; }
     .sp{ font-weight:800; color:var(--ac); margin-inline-end:4px; }
+
+    /* ---------- مسیر نقطه‌ی ضمیر و حکم (زیر ظاهر رمل) ---------- */
+    .zhp{
+        max-width:900px; margin:18px auto 6px;
+        background:#fff; border:1px solid #e3ebf2; border-radius:16px;
+        padding:12px; box-shadow:0 4px 16px rgba(44,123,176,.08);
+    }
+    .zhp-title{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:14px; font-weight:800; color:#1f4e6f; margin-bottom:8px; }
+    .zhp-legend{ margin-inline-start:auto; display:flex; gap:6px; font-size:10.5px; font-weight:700; }
+    .zhp-legend span{ color:#fff; padding:1px 8px; border-radius:999px; }
+    .zhp-row{ --rc:#2980b9; --rs:#eaf2f8; border:1px solid var(--rs); border-right:4px solid var(--rc); border-radius:12px; padding:8px 10px 10px; margin-bottom:8px; }
+    .zhp-row.h{ --rc:#e67e22; --rs:#fdf0e3; }
+    .zhp-head{ display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+    .zhp-role{ font-size:13px; font-weight:800; color:#fff; background:var(--rc); padding:2px 12px; border-radius:999px; }
+    .zhp-flow{ display:flex; align-items:stretch; flex-wrap:wrap; gap:6px 2px; }
+    .zhp-cell{ display:flex; align-items:stretch; gap:2px; }
+    .zhp-arrow{ align-self:center; color:#8a97a6; font-weight:800; padding:0 2px; }
+    .zhp-step{ display:flex; flex-direction:column; align-items:center; gap:2px; padding:5px 8px; border-radius:10px; background:var(--es); border:1px solid var(--ec); min-width:62px; }
+    .zhp-hn{ font-size:10.5px; font-weight:700; color:#44586a; white-space:nowrap; }
+    .zhp-tb{ font-size:12px; font-weight:800; color:var(--ec); white-space:nowrap; }
+    .zhp-pt{ font-size:10px; color:#7b8794; white-space:nowrap; }
+    .zhp-sum{ margin-top:8px; font-size:12.5px; line-height:1.9; color:#2b3a47; }
+    .zhp-note{ font-size:10.5px; color:#8a97a6; margin-top:4px; line-height:1.7; }
+    .el{ display:inline-block; padding:0 8px; border-radius:999px; font-weight:800; font-size:12px; line-height:1.7; color:var(--ec); background:var(--es); border:1px solid var(--ec); white-space:nowrap; }
+    .el-fire{ --ec:#e03131; --es:#fff1f0; }
+    .el-air{ --ec:#d98c00; --es:#fff8e1; }
+    .el-water{ --ec:#1c7ed6; --es:#e8f2fc; }
+    .el-earth{ --ec:#8d5a2b; --es:#f4eadf; }
+    @media (max-width:600px){ .zhp{ padding:10px 8px; } .zhp-step{ min-width:54px; padding:4px 5px; } }
     .sb-text strong{ font-weight:800; color:#1f2d3a; }
     .sb-group{
         margin:10px 0 6px; padding:2px 10px 4px 8px;
@@ -547,7 +576,7 @@
         width:100%;
         min-width:0;
         background:#fff;
-        padding:8px 4px;
+        padding:10px 4px 8px;
         border-radius:10px;
         cursor:pointer;
         text-align:center;
@@ -563,24 +592,24 @@
     .card:hover{ transform:translateY(-3px); box-shadow:0 6px 14px #0003; }
     .card.narrow{ margin:0 auto; }
     .card.judge-house{ outline:2px solid #b9770e; }
-    .card.divide-gap-r{ margin-left:14px; }
-    .card.divide-gap-l{ margin-right:14px; }
-
-    .card .num{
-        position:absolute;
-        top:-7px;
-        right:-6px;
-        width:20px;
-        height:20px;
-        line-height:20px;
-        border-radius:50%;
-        background:var(--brand);
-        color:#fff;
-        font-size:10px;
-        font-weight:bold;
-        box-shadow:0 1px 4px #0004;
-        z-index:2;
+    /* بلوک‌هایی که نقطه‌ی ضمیر (آبی) و حکم (نارنجی) از آن‌ها عبور کرده‌اند */
+    .shield.has-path .card:not(.hl-z):not(.hl-h){ filter:saturate(.35) brightness(1.03); }
+    .card.hl-z{ box-shadow:0 0 0 3px #2980b9, 0 6px 14px rgba(41,128,185,.35); z-index:1; }
+    .card.hl-h{ box-shadow:0 0 0 3px #e67e22, 0 6px 14px rgba(230,126,34,.35); z-index:1; }
+    .card.hl-z.hl-h{ box-shadow:0 0 0 3px #2980b9, 0 0 0 6px #e67e22, 0 6px 14px rgba(0,0,0,.25); }
+    .card .path-tags{
+        position:absolute; bottom:-8px; left:50%; transform:translateX(-50%);
+        display:flex; gap:2px; z-index:3; white-space:nowrap;
     }
+    .card .path-tags b{
+        min-width:15px; height:14px; padding:0 3px; border-radius:7px;
+        font-size:8.5px; line-height:14px; font-weight:800; color:#fff;
+        box-shadow:0 1px 3px #0004;
+    }
+    .card .path-tags .pt-z{ background:#2980b9; }
+    .card .path-tags .pt-h{ background:#e67e22; }
+    .card.divide-gap-r{ margin-left:14px; width:calc(100% - 14px); }
+    .card.divide-gap-l{ margin-right:14px; width:calc(100% - 14px); }
 
     .card h3{
         margin:0 0 4px;
@@ -602,22 +631,65 @@
         overflow-wrap:break-word;
     }
 
-    .card[data-element="آتشی"]{ border-top:4px solid #e74c3c; }
-    .card[data-element="بادی"]{ border-top:4px solid #f39c12; }
-    .card[data-element="آبی"]{ border-top:4px solid #2980b9; }
-    .card[data-element="خاکی"]{ border-top:4px solid #27ae60; }
+    /* ---------- رنگ‌بندی: عنصر شکل (خط بالا + رنگ نام)، طبع خانه (زمینه و شماره)، سعد/نحس/ممتزج (دایره‌ی گوشه) ---------- */
+    .card[data-element="آتشی"]{ border-top:5px solid #e03131; }
+    .card[data-element="بادی"]{ border-top:5px solid #f59f00; }
+    .card[data-element="آبی"]{ border-top:5px solid #1c7ed6; }
+    .card[data-element="خاکی"]{ border-top:5px solid #8d5a2b; }
+    /* برچسب‌های بالای بلوک: راست = شماره و طبع خانه، چپ = سعد/نحس/ممتزج شکل (در جریان چیدمان، بدون هم‌پوشانی) */
+    .card .hd{ display:flex; flex-wrap:wrap; align-items:center; gap:2px; margin:-6px 0 4px; }
+    .card .hn, .card .hf{
+        display:inline-block; padding:0 5px; border-radius:999px;
+        font-size:9px; font-weight:800; line-height:15px; color:#fff; white-space:nowrap;
+    }
+    .card .hf{ margin-inline-start:auto; }
+    .card h3 .se{
+        display:inline-block; margin-inline-start:2px; padding:0 5px; border-radius:999px;
+        font-size:8.5px; font-weight:700; line-height:14px; color:#fff; vertical-align:middle; white-space:nowrap;
+    }
+    .card h3 .se[data-e="آتشی"]{ background:#e03131; }
+    .card h3 .se[data-e="بادی"]{ background:#d98c00; }
+    .card h3 .se[data-e="آبی"]{ background:#1c7ed6; }
+    .card h3 .se[data-e="خاکی"]{ background:#8d5a2b; }
+    .card .hn[data-n="آتش"]{ background:#e03131; }
+    .card .hn[data-n="باد"]{ background:#d98c00; }
+    .card .hn[data-n="آب"]{ background:#1c7ed6; }
+    .card .hn[data-n="خاک"]{ background:#8d5a2b; }
+    .card .hf[data-f="سعد"]{ background:#2b8a3e; }
+    .card .hf[data-f="نحس"]{ background:#343a40; }
+    .card .hf[data-f="ممتزج"]{ background:#9c36b5; }
+    .card .hf[data-f="خنثی"]{ background:#868e96; }
 
-    .card[data-fortune="سعد"] h3{ color:#1e8449; }
-    .card[data-fortune="نحس"] h3{ color:#c0392b; }
-    .card[data-fortune="ممتزج"] h3, .card[data-fortune="خنثی"] h3{ color:#8e44ad; }
+    .color-legend{
+        max-width:900px; margin:0 auto 12px; padding:10px 12px;
+        background:#fff; border:1px solid #e3ebf2; border-radius:14px;
+        font-size:11.5px; line-height:2; color:#44586a;
+        box-shadow:0 2px 8px rgba(44,123,176,.06);
+    }
+    .color-legend .cl-row{ display:flex; flex-wrap:wrap; align-items:center; gap:4px 6px; }
+    .color-legend .cl-row + .cl-row{ margin-top:4px; padding-top:4px; border-top:1px dashed #e6edf3; }
+    .color-legend .cl-t{ font-weight:800; color:#1f4e6f; margin-inline-end:2px; }
+    .cl-chip{ display:inline-block; padding:0 9px; border-radius:999px; font-weight:700; font-size:11px; line-height:1.8; border:1px solid transparent; }
+    .cl-chip.n-fire{ background:#e03131; color:#fff; }
+    .cl-chip.n-air{ background:#d98c00; color:#fff; }
+    .cl-chip.n-water{ background:#1c7ed6; color:#fff; }
+    .cl-chip.n-earth{ background:#8d5a2b; color:#fff; }
+    .cl-chip.f-sad{ background:#2b8a3e; color:#fff; }
+    .cl-chip.f-nahs{ background:#343a40; color:#fff; }
+    .cl-chip.f-mam{ background:#9c36b5; color:#fff; }
+    .cl-chip.e-fire{ border-top:4px solid #e03131; background:#fff; color:#c92a2a; border-radius:6px; }
+    .cl-chip.e-air{ border-top:4px solid #f59f00; background:#fff; color:#a66b00; border-radius:6px; }
+    .cl-chip.e-water{ border-top:4px solid #1c7ed6; background:#fff; color:#1864ab; border-radius:6px; }
+    .cl-chip.e-earth{ border-top:4px solid #8d5a2b; background:#fff; color:#704214; border-radius:6px; }
 
-    .attrs span[data-tag="fortune-سعد"]{ background:#eafaf1; color:#1e8449; border-color:#c8f0da; }
-    .attrs span[data-tag="fortune-نحس"]{ background:#fdedec; color:#c0392b; border-color:#f8d3ce; }
-    .attrs span[data-tag="fortune-ممتزج"], .attrs span[data-tag="fortune-خنثی"]{ background:#f4ecf7; color:#8e44ad; border-color:#e6d3ee; }
-    .attrs span[data-tag="element-آتشی"]{ background:#fdedec; color:#c0392b; border-color:#f8d3ce; }
-    .attrs span[data-tag="element-بادی"]{ background:#fef5e7; color:#b9770e; border-color:#fbe6bd; }
-    .attrs span[data-tag="element-آبی"]{ background:#eaf2f8; color:#2471a3; border-color:#cfe3f3; }
-    .attrs span[data-tag="element-خاکی"]{ background:#eafaf1; color:#1e8449; border-color:#c8f0da; }
+
+    .attrs span[data-tag="fortune-سعد"]{ background:#e6f6ea; color:#2b8a3e; border-color:#b8e2c2; }
+    .attrs span[data-tag="fortune-نحس"]{ background:#e9ecef; color:#343a40; border-color:#ced4da; }
+    .attrs span[data-tag="fortune-ممتزج"], .attrs span[data-tag="fortune-خنثی"]{ background:#f6e8fa; color:#9c36b5; border-color:#e3c4ee; }
+    .attrs span[data-tag="element-آتشی"]{ background:#fff1f0; color:#c92a2a; border-color:#f3b8b4; }
+    .attrs span[data-tag="element-بادی"]{ background:#fff8e1; color:#a66b00; border-color:#f6d98a; }
+    .attrs span[data-tag="element-آبی"]{ background:#e8f2fc; color:#1864ab; border-color:#b5d4f1; }
+    .attrs span[data-tag="element-خاکی"]{ background:#f4eadf; color:#704214; border-color:#dcc3a6; }
 
     .row-elements{
         display:flex;
@@ -1034,12 +1106,14 @@
     @media (max-width:600px){
         :root{ --col-gap:4px; --row-gap:8px; }
         main{ padding:20px 8px 24px; }
-        .card{ padding:5px 2px; border-radius:7px; }
+        .card{ padding:8px 2px 5px; border-radius:7px; }
+        .card .hn, .card .hf{ font-size:8px; line-height:13px; padding:0 4px; }
+        .card h3 .se{ font-size:7.5px; line-height:12px; padding:0 4px; }
         .card h3{ font-size:9.5px; margin-bottom:2px; }
         .card pre{ font-size:10px; }
         .card .house-topic{ font-size:7.5px; }
-        .card.divide-gap-r{ margin-left:6px; }
-        .card.divide-gap-l{ margin-right:6px; }
+        .card.divide-gap-r{ margin-left:6px; width:calc(100% - 6px); }
+        .card.divide-gap-l{ margin-right:6px; width:calc(100% - 6px); }
         .box{ padding:16px 14px; }
         .box .title-line{ font-size:15px; }
         .box .head h2{ font-size:16px; }
@@ -1214,11 +1288,25 @@
     </div>
 
     <p class="shield-section-title"><span class="zahir-tag">🔷 ظاهر رمل</span></p>
+    <div class="color-legend" id="colorLegend" style="display:none;">
+        <div class="cl-row"><span class="cl-t">🏠 طبع خانه (برچسب راست-بالای بلوک):</span>
+            <span class="cl-chip n-fire">🔥 آتش: ۱، ۵، ۹، ۱۳</span>
+            <span class="cl-chip n-air">💨 باد: ۲، ۶، ۱۰، ۱۴</span>
+            <span class="cl-chip n-water">💧 آب: ۳، ۷، ۱۱، ۱۵</span>
+            <span class="cl-chip n-earth">🌱 خاک: ۴، ۸، ۱۲، ۱۶</span></div>
+        <div class="cl-row"><span class="cl-t">🔣 عنصر شکل (رنگ خط بالای بلوک):</span>
+            <span class="cl-chip e-fire">آتشی</span><span class="cl-chip e-air">بادی</span>
+            <span class="cl-chip e-water">آبی</span><span class="cl-chip e-earth">خاکی</span></div>
+        <div class="cl-row"><span class="cl-t">☯️ سعد/نحس شکل (برچسب چپ-بالای بلوک):</span>
+            <span class="cl-chip f-sad">سعد</span><span class="cl-chip f-nahs">نحس</span><span class="cl-chip f-mam">ممتزج</span></div>
+    </div>
     <div class="shield-wrap" id="shieldWrap">
         <svg class="shield-trace-svg" id="shieldDivideSvg"></svg>
         <svg class="shield-trace-svg" id="shieldTraceSvg"></svg>
         <div class="shield" id="shield"></div>
     </div>
+
+    <div class="zhp" id="zhPathBox" style="display:none;"></div>
 
     <p class="shield-section-title"><span class="batin-tag">🔮 باطن رمل</span></p>
     <p class="batin-note">باطن، از ضرب هر خانه‌ی ظاهر با همان خانه از دایره‌ی ابدح (از لحیان تا جماعت) به دست می‌آید.</p>
@@ -1287,6 +1375,7 @@
 
 <footer>
     <p style="margin:0;">&copy; 2025 نیت‌رمل — بر پایه‌ی دایره‌ی ابدح، تدوین: <strong>محمود خاوری</strong> (گروه آموزشی راقیون).</p>
+    <p style="margin:4px 0 0;font-size:11px;opacity:.7;">نسخه ۸.۸.۸</p>
 </footer>
 
 <script>
@@ -2761,7 +2850,77 @@ function openHouse(houseIndex, isBatin){
     document.querySelector('.box').scrollTop = 0;
 }
 
+/* ======================================================================
+   مسیر نقطه‌ی ضمیر و حکم: عنصر هر نقطه + خانه‌هایی که از آن‌ها گذشته‌اند
+   (به‌همراه طبعِ خانه) + پررنگ‌کردن همان بلوک‌ها در ظاهر رمل.
+   طبعِ خانه از جایگاه آن است: در هر چهار خانه‌ی پشت‌سرهم به ترتیب
+   آتش، باد، آب، خاک (همان قاعده‌ی گروه‌های ۴تایی در درجه‌ی وتد).
+   ====================================================================== */
+function faDigits(str){ return String(str).replace(/[0-9]/g, d => '۰۱۲۳۴۵۶۷۸۹'[d]); }
+const elementChipInfo = { 'آتش': ['🔥', 'el-fire'], 'باد': ['💨', 'el-air'], 'آب': ['💧', 'el-water'], 'خاک': ['🌱', 'el-earth'] };
+const houseNatureOf = idx => elementByRow[idx % 4];
+const elChip = name => `<span class="el ${elementChipInfo[name][1]}">${elementChipInfo[name][0]} ${name}</span>`;
+
+function buildPathRow(roleTitle, cls, pointRow, chain){
+    const flow = chain.map((step, k) => {
+        const nature = houseNatureOf(step.house);
+        const [ico, ecls] = elementChipInfo[nature];
+        return `<div class="zhp-cell">${k ? '<span class="zhp-arrow">←</span>' : ''}<div class="zhp-step ${ecls}">
+            <span class="zhp-hn">${faDigits(houseFamilyName(step.house))}${step.house <= 13 ? ' (خانه ' + faDigits(step.house + 1) + ')' : ''}</span>
+            <span class="zhp-tb">${ico} ${nature}</span>
+            <span class="zhp-pt">نقطه: ${elementByRow[step.row]}</span>
+        </div></div>`;
+    }).join('');
+
+    const natures = chain.map(step => houseNatureOf(step.house));
+    const last = chain[chain.length - 1];
+    const moves = natures.slice(1).map(n => elChip(n));
+    const sum = `نقطه‌ی ${roleTitle} <strong>${elementByRow[pointRow]}</strong> بود؛ از خانه‌ی ${elChip(natures[0])} شروع شد`
+        + (moves.length ? ` و به ترتیب به خانه‌ی ${moves.join(' ← ')} رفت` : '')
+        + ` و در ${faDigits(houseFamilyName(last.house))} (طبع ${elChip(houseNatureOf(last.house))}) به پایان رسید.`;
+
+    return `<div class="zhp-row ${cls}">
+        <div class="zhp-head"><span class="zhp-role">نقطه‌ی ${roleTitle}</span>${elChip(elementByRow[pointRow])}</div>
+        <div class="zhp-flow">${flow}</div>
+        <div class="zhp-sum">${sum}</div>
+    </div>`;
+}
+
+function renderZamirHokmPath(){
+    const box = document.getElementById('zhPathBox');
+    shield.classList.remove('has-path');
+    if(!currentCast){ box.style.display = 'none'; return; }
+    const singles = currentCast.housesRows[14].map((v, i) => v === 1 ? i : -1).filter(i => i !== -1);
+    if(singles.length < 2){ box.style.display = 'none'; box.innerHTML = ''; return; }
+
+    const zamirRow = singles[0], hokmRow = singles[1];
+    const zChain = tracePoint(14, zamirRow, currentCast.housesRows);
+    const hChain = tracePoint(14, hokmRow, currentCast.housesRows);
+
+    /* پررنگ‌کردن بلوک‌ها + برچسب ض/ح با شماره‌ی ترتیب عبور */
+    const marks = {};
+    zChain.forEach((st, k) => { (marks[st.house] = marks[st.house] || {}).z = k + 1; });
+    hChain.forEach((st, k) => { (marks[st.house] = marks[st.house] || {}).h = k + 1; });
+    Object.keys(marks).forEach(h => {
+        const card = shield.querySelector(`[data-house-index="${h}"]`);
+        if(!card) return;
+        const m = marks[h];
+        if(m.z) card.classList.add('hl-z');
+        if(m.h) card.classList.add('hl-h');
+        card.insertAdjacentHTML('beforeend', `<span class="path-tags">${m.z ? `<b class="pt-z" title="ضمیر">ض${faDigits(m.z)}</b>` : ''}${m.h ? `<b class="pt-h" title="حکم">ح${faDigits(m.h)}</b>` : ''}</span>`);
+    });
+    shield.classList.add('has-path');
+
+    box.innerHTML = `<div class="zhp-title">🧭 مسیر نقطه‌ی ضمیر و حکم
+            <span class="zhp-legend"><span style="background:#2980b9">ض = ضمیر</span><span style="background:#e67e22">ح = حکم</span></span></div>
+        ${buildPathRow('ضمیر', 'z', zamirRow, zChain)}
+        ${buildPathRow('حکم', 'h', hokmRow, hChain)}
+        <div class="zhp-note">طبع هر خانه از جایگاه آن است (در هر ۴ خانه‌ی پشت‌سرهم: آتش، باد، آب، خاک). عدد کنار «ض» و «ح» روی بلوک‌ها، ترتیب عبور نقطه است. «نقطه» زیر هر خانه، عنصر نقطه در همان مرحله است.</div>`;
+    box.style.display = 'block';
+}
+
 function renderShield(){
+    document.getElementById('colorLegend').style.display = 'block';
     shield.innerHTML = '';
     for(let i = 0; i < 16; i++){
         const { shape, rows } = shapeForHouse(i);
@@ -2774,7 +2933,7 @@ function renderShield(){
         c.dataset.fortune = shape.fortune;
         c.dataset.houseIndex = i;
         if(i === 14) c.classList.add('judge-house');
-        c.innerHTML = `<span class="num">${i + 1}</span><h3>${shape.shape}</h3><pre>${rowsToPattern(rows)}</pre><div class="house-topic">${topic.title}</div>`;
+        c.innerHTML = `<div class="hd"><span class="hn" data-n="${elementByRow[i % 4]}">${faDigits(i + 1)} ${elementByRow[i % 4]}</span><span class="hf" data-f="${shape.fortune}">${shape.fortune}</span></div><h3>${shape.shape} <span class="se" data-e="${shape.element}">${shape.element}</span></h3><pre>${rowsToPattern(rows)}</pre><div class="house-topic">${topic.title}</div>`;
         c.onclick = () => openHouse(i, false);
 
         if(pos.col !== undefined){
@@ -2791,6 +2950,7 @@ function renderShield(){
         shield.appendChild(c);
     }
     shieldWrap.classList.add('show');
+    renderZamirHokmPath();
     drawDivideLine(shieldWrap, shield, shieldDivideSvg);
     drawShieldTraceLines();
 }
@@ -2944,7 +3104,7 @@ function renderBatinShield(){
         c.dataset.element = shape.element;
         c.dataset.fortune = shape.fortune;
         c.dataset.houseIndex = i;
-        c.innerHTML = `<span class="num">${i + 1}</span><h3>${shape.shape}</h3><pre>${rowsToPattern(rows)}</pre><div class="house-topic">${topic.title}</div>`;
+        c.innerHTML = `<div class="hd"><span class="hn" data-n="${elementByRow[i % 4]}">${faDigits(i + 1)} ${elementByRow[i % 4]}</span><span class="hf" data-f="${shape.fortune}">${shape.fortune}</span></div><h3>${shape.shape} <span class="se" data-e="${shape.element}">${shape.element}</span></h3><pre>${rowsToPattern(rows)}</pre><div class="house-topic">${topic.title}</div>`;
         c.onclick = () => openHouse(i, true);
 
         if(pos.col !== undefined){
