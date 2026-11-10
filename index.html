@@ -3085,6 +3085,19 @@ function interpMarriage(){
     } else {
         res.verdicts.push(it(`خانه‌ی هفتم (ازدواج): «${s7}» — ${fortuneOfHouse(7)}؛ برای این شکل قاعده‌ی ویژه‌ی ازدواج ثبت نشده، متن کتاب را در پایین بخوانید.`, [7], fortuneTone(fortuneOfHouse(7))));
     }
+    const comp = [];
+    const e1 = elemOf(SH(1)), e7 = elemOf(s7);
+    comp.push(it(`طبع سائل (${e1}) و طبع همسر (${e7}): ${elemEnemy(e1, e7) ? 'دشمن‌اند؛ ناسازگاری.' : 'دشمنی ندارند.'}`, [1, 7], elemEnemy(e1, e7) ? 'bad' : 'good'));
+    const s8 = SH(8);
+    comp.push(it(`آینده‌ی ازدواج (خانه‌ی ۸) «${s8}» ${fortuneOfName(s8)}${s8 === 'انکیس' ? '؛ همراه با کدورت و رنجش و بگومگو' : repIn(7, 8) ? '؛ شکل ۷ این‌جا تکرار کرده: همین روال در آینده هم ادامه دارد' : ''}.`, [8], fortuneTone(fortuneOfName(s8))));
+    const s10 = SH(10), st10 = stateOfName(s10);
+    comp.push(it(`عاقبت ازدواج (خانه‌ی ۱۰) «${s10}» ${fortuneOfName(s10)} و ${st10}${repIn(10, 3) ? '؛ در ۳ تکرار کرده: خویشان وساطت می‌کنند' : ''}.`, [10], fortuneTone(fortuneOfName(s10))));
+    if(stateOfName(SH(15)) === 'داخل' && fortuneOfHouse(15) === 'سعد') comp.push(it('قاضی (۱۵) سعد و داخل است: جدایی دیده نمی‌شود.', [15], 'good'));
+    if(SH(15) === 'قبض الخارج') comp.push(it('قبض‌الخارج در قاضی: شکل جدایی و انفصال.', [15], 'bad'));
+    if(s7 === 'جماعت' && repIn(7, 8)) comp.push(it('جماعت در ۷ و تکرار در ۸: سردی رابطه.', [7, 8], 'bad'));
+    const t12 = SH(12);
+    if(fortuneOfName(t12) === 'نحس' || isClosed(t12)) comp.push(it(`مثلث ازدواج (خانه‌ی ۱۲) «${t12}»: خوب نیست.`, [12], 'bad'));
+    res.sections.push(section('⚖️', 'سازگاری و آینده', comp));
     return res;
 }
 
@@ -3352,6 +3365,7 @@ function mainHouseSection(m, topicId){
         const v = kind ? witnessVerdict(wst, kind) : null;
         return it(`شاهد ${hLabel(n)}: «${ws}» ${fortuneOfName(ws)} و ${wst}${v ? ` ← ${v[0]}، ${easeOf(fortuneOfName(ws))}` : ''}.`, [n], v ? v[1] : fortuneTone(fortuneOfName(ws)));
     });
+    items.push(...extraMainHouseItems(m, topicId));
     return [section('🧭', `خانه‌ی اصلی (${fa(m)}): حالت، تکرار و گشتار`, items),
             section('👁️', `شواهد خانه‌ی ${fa(m)}${kind ? ` (سؤال از ${kind === 'وصل' ? 'رسیدن' : 'جدا شدن'})` : ''}`, wItems)];
 }
@@ -3551,6 +3565,455 @@ function interpKin(key){
     return res;
 }
 
+/* ======================== علت‌یابی: تأخیر ازدواج و مشکلات خانه و خانواده ========================
+   منطق مشترک: خانه‌ی اصلی موضوع را می‌خوانیم، بعد در خانه‌های ۱ تا ۱۲ دنبال خانه‌هایی می‌گردیم که
+   نحس یا بسته‌اند و با خانه‌ی اصلی پیوند دارند (تکرار همان شکل، شاهد بودن، یا آمدن در گشتار).
+   معنی هر خانه همان منسوبات ۱۶ خانه است که به زبان «علت» برگردانده شده. */
+const causeByHouse = {
+    marriage: {
+        1: 'خود سائل: تردید، سخت‌گیری در انتخاب یا آماده نبودن',
+        2: 'مال: هزینه، مهریه و جهیزیه یا تنگی دست',
+        3: 'خواهر و برادر و خویشان: دخالت، مخالفت یا منتظر ماندن برای ازدواج آن‌ها',
+        4: 'پدر و خانه: مخالفت پدر یا نداشتن مسکن',
+        5: 'دل‌بستگی: عشق قبلی یا دل دادن به کسی که نمی‌رسد',
+        6: 'سحر، چشم‌زخم، حسد یا بیماری',
+        8: 'ترس: ترس از ازدواج یا تجربه‌ی تلخ گذشته',
+        9: 'عقیده و دوری: اختلاف فکر و مذهب یا دور بودن طرف',
+        10: 'مادر یا کار: مخالفت مادر، یا مشغول بودن به کار و تحصیل',
+        11: 'امید و دوستان: توقع زیاد، ناامیدی یا حرف دوستان',
+        12: 'دشمن و حسود: بدگویی، حسادت یا دشمنی پنهان'
+    },
+    family: {
+        1: 'خود سائل: تندی، خستگی و فشار روحی یا رفتار خودش',
+        2: 'مال: تنگی دست، قرض و خرج خانه',
+        3: 'خواهر و برادر و خویشان: دخالت یا اختلاف با خویشان',
+        4: 'خانه و پدر: مسئله‌ی ملک و خانه یا پدر',
+        5: 'فرزندان: نگرانی یا ناسازگاری فرزند',
+        6: 'سحر، چشم‌زخم، حسد یا بیماری یکی از اهل خانه',
+        7: 'همسر: ناسازگاری یا اختلاف با همسر',
+        8: 'ترس و ارث: دعوای ارث، مال همسر یا ترس و خطر',
+        9: 'عقیده و دوری: اختلاف فکر یا دوری یکی از اعضا',
+        10: 'مادر یا کار: مادر یا گرفتاری شغلی',
+        11: 'دوستان و توقع‌ها: دخالت دوستان یا آرزوهای برآورده‌نشده',
+        12: 'دشمن و بدخواه: دشمن پنهان، حسادت یا بدگویی'
+    }
+};
+const eventOfName = name => extras[homeHouseOf(name) - 1].event;
+
+/* خانه‌هایی که علت گرفتاری خانه‌ی اصلی‌اند */
+function causeScan(m, kind){
+    const s = shapeOfHouse(m);
+    const wit = witnessColumn(m).filter(n => n !== m);
+    const chain = [], seen = new Set([m]);
+    let cur = s;
+    for(let k = 0; k < 5; k++){
+        const h = homeHouseOf(cur);
+        if(seen.has(h)) break;
+        seen.add(h); chain.push(h); cur = shapeOfHouse(h);
+    }
+    const rows = [];
+    for(let n = 1; n <= 12; n++){
+        if(n === m || !causeByHouse[kind][n]) continue;
+        const sh = shapeOfHouse(n), f = fortuneOfName(sh), st = stateOfName(sh);
+        if(f === 'سعد') continue;
+        const why = []; let score = 0;
+        if(f === 'نحس'){ score += 1; why.push('نحس'); }
+        if(sh === s){ score += 2; why.push(`همان شکل خانه‌ی ${fa(m)} این‌جا تکرار شده`); }
+        if(wit.includes(n)){ score += 1; why.push(`شاهد خانه‌ی ${fa(m)}`); }
+        if(chain.includes(n)){ score += 1; why.push('در گشتار خانه‌ی اصلی'); }
+        if(st === 'ثابت'){ score += 1; why.push('شکل ثابت (توقف)'); }
+        if(score >= 2) rows.push({ n, sh, score, why });
+    }
+    return rows.sort((a, b) => b.score - a.score || a.n - b.n);
+}
+function causeItems(rows, kind){
+    return rows.slice(0, 4).map(r => it(`<b>${causeByHouse[kind][r.n]}</b> — خانه‌ی ${fa(r.n)} «${r.sh}» (${r.why.join('، ')}). نشانه‌ی شکل: ${eventOfName(r.sh)}.`, [r.n], r.score >= 4 ? 'vbad' : 'bad'));
+}
+/* نشانه‌های بستگی و سحر، از همان قاعده‌های بخش سحر */
+function bindingSigns(){
+    const out = [];
+    const H = shapeOfHouse, hs = [1, 4, 6, 7];
+    if(sorceryBuriedEarth.includes(H(6))) out.push(it(`در خانه‌ی ۶ «${H(6)}» آمده؛ طبق قاعده‌ی سحر، نشانه‌ی سحر است.`, [6], 'bad'));
+    const bind = hs.filter(n => ['جماعت', 'اجتماع'].includes(H(n)));
+    if(bind.length) out.push(it('جماعت یا اجتماع در خانه‌های ۱، ۴، ۶ یا ۷: نشانه‌ی <b>بستگی بخت و کار</b>.', bind, 'bad'));
+    const ham = hs.filter(n => H(n) === 'حمره');
+    if(ham.length) out.push(it('حمره در خانه‌های ۱، ۴، ۶ یا ۷: نشانه‌ی بستن میان زن و مرد یا دعوا و تندی.', ham, 'bad'));
+    if(!out.length) out.push(it('نشانه‌ی سحر یا بستگی بخت در خانه‌های ۱، ۴، ۶ و ۷ دیده نمی‌شود.', [1, 4, 6, 7], 'good'));
+    else out.push(it('برای جزئیات، موضوع «سحر و جادو» را با همین رمل ببینید.', [], 'info'));
+    return out;
+}
+function endItem(){
+    const s = shapeOfHouse(16), f = fortuneOfHouse(16);
+    return it(`عاقبت کار (خانه‌ی ۱۶) «${s}» ${f} است: ${f === 'سعد' ? 'گره باز می‌شود و کار به خیر تمام می‌شود.' : f === 'نحس' ? 'گشایش با سختی و صبر است.' : 'گشایش میانه است؛ بخشی درست می‌شود.'}`, [16], fortuneTone(f));
+}
+
+/* ======================== قاعده‌های تفسیری ازدواج، خانه و گره‌های شخص ========================
+   از تفسیرها و آموزش‌های جمع‌شده؛ هر تابع فهرستی از «نشانه»ها برمی‌گرداند. */
+const SH = n => shapeOfHouse(n);
+const repOf = n => housesOfName(SH(n)).filter(h => h !== n);
+const repIn = (n, target) => repOf(n).includes(target);
+const isClosed = name => name === 'جماعت' || name === 'اجتماع';
+const elemOf = name => shapeByName[name].element;
+const elemEnemy = (a, b) => (a === 'آتشی' && b === 'آبی') || (a === 'آبی' && b === 'آتشی') || (a === 'بادی' && b === 'خاکی') || (a === 'خاکی' && b === 'بادی');
+const countShape = name => housesOfName(name).length;
+
+/* نشانه‌های بستگی و سحر در این سه موضوع */
+function groupBindingSigns(){
+    const out = [];
+    if(SH(9) === 'عتبه الخارج') out.push(it('عتبه‌الخارج در خانه‌ی ۹: نشانه‌ی <b>بستگی بخت و سحر</b>.', [9], 'bad'));
+    if(['عتبه الخارج', 'قبض الخارج'].includes(SH(6)) || ['قبض الخارج'].includes(SH(9))) out.push(it('شکل نحسِ آتشی (عتبه‌الخارج یا قبض‌الخارج) در خانه‌ی ۶ یا ۹: احتمال طلسم.', [6, 9].filter(n => ['عتبه الخارج', 'قبض الخارج'].includes(SH(n))), 'bad'));
+    if(fortuneOfHouse(6) === 'نحس' && countShape('عقله')) out.push(it('خانه‌ی ۶ نحس است و عقله در زایچه پیدا است: نشانه‌ی سحر.', [6, ...housesOfName('عقله')], 'bad'));
+    if(['عتبه الخارج', 'قبض الخارج'].includes(SH(5))) out.push(it('شکل نحسِ آتشی در خانه‌ی ۵: احتمال همزاد آتشی.', [5], 'bad'));
+    if(SH(7) === 'عتبه الخارج' && SH(4) === 'انکیس') out.push(it('عتبه‌الخارج در ۷ و انکیس در ۴: نشانه‌ی جن و همزاد در منزل پدری.', [7, 4], 'bad'));
+    if(SH(9) === 'نقی الخد') out.push(it('نقی‌الخد در خانه‌ی ۹ به‌تنهایی سحر نیست؛ شخصیت و اخلاق سائل را نشان می‌دهد.', [9], 'info'));
+    if(!out.some(x => x.tone === 'bad') && (fortuneOfHouse(6) === 'سعد' || SH(6) === 'بیاض')) out.push(it('خانه‌ی ۶ سالم است و نشانه‌ی سحری نیست: گرفتاری‌ها <b>طبیعی‌اند</b>، نه از دعا و جادو.', [6], 'good'));
+    out.push(it('هشدار: نشانه‌ی سحر را با یک شکل قطعی ندانید و از گمان زدن به دیگران پرهیز کنید؛ بسیاری با گفتن «بختت بسته است» فقط دعا می‌فروشند.', [], 'info'));
+    return out;
+}
+
+/* ---------- ازدواج می‌شود یا نه؟ ---------- */
+function marriageSigns(){
+    const pos = [], neg = [];
+    const s7 = SH(7), f7 = fortuneOfHouse(7), st7 = stateOfName(s7);
+    if(f7 === 'سعد' && st7 === 'داخل') pos.push(it(`خانه‌ی ۷ «${s7}» سعد و داخل است.`, [7], 'good'));
+    if(f7 === 'نحس' && st7 === 'خارج') neg.push(it(`خانه‌ی ۷ «${s7}» نحس و خارج است.`, [7], 'bad'));
+    if(s7 === 'حمره') neg.push(it('حمره (نحس ثابت) در خانه‌ی ۷: <b>توقف در ازدواج</b>.', [7], 'bad'));
+    if(s7 === 'قبض الخارج' || SH(15) === 'قبض الخارج') neg.push(it('قبض‌الخارج در خانه‌ی ۷ یا قاضی: نشانه‌ی عدم وصلت.', [7, 15].filter(n => SH(n) === 'قبض الخارج'), 'bad'));
+    if(s7 === 'عتبه الخارج') neg.push(it('عتبه‌الخارج در خانه‌ی ۷: پیوند صمیمی نیست و به جدایی می‌کشد.', [7], 'bad'));
+    if(SH(1) === 'نقی الخد' && s7 === 'نقی الخد') neg.push(it('نقی‌الخد در هر دو خانه‌ی ۱ و ۷: ازدواج صورت نمی‌گیرد.', [1, 7], 'bad'));
+    if(SH(3) === 'عتبه الخارج') neg.push(it('عتبه‌الخارج در خانه‌ی ۳: دلیل عدم ازدواج.', [3], 'bad'));
+    const st5 = stateOfName(SH(5));
+    if(st5 === 'داخل') pos.push(it('خانه‌ی ۵ داخل است: احتمال آمدن خواستگار هست.', [5], 'good'));
+    if(st5 === 'خارج') neg.push(it('خانه‌ی ۵ خارج است: فعلاً خواستگاری نمی‌آید و احتمال ازدواج پایین است.', [5], 'bad'));
+    if(SH(5) === 'جماعت'){
+        const w = [1, 9, 13], good = w.filter(n => fortuneOfHouse(n) === 'سعد').length, bad = w.filter(n => fortuneOfHouse(n) === 'نحس').length;
+        if(good > bad) pos.push(it('جماعت در خانه‌ی ۵ و شواهدش (۱، ۹، ۱۳) خوب‌اند: <b>عروسی</b>.', [5, ...w], 'good'));
+        else neg.push(it('جماعت در خانه‌ی ۵ ولی شواهدش (۱، ۹، ۱۳) خوب نیستند: مانع در عروسی.', [5, ...w], 'bad'));
+    }
+    if(repIn(7, 11)) pos.push(it('شکل خانه‌ی ۷ در خانه‌ی ۱۱ (امید) تکرار کرده: نظر مثبت و احتمال ازدواج.', [7, 11], 'good'));
+    if(stateOfName(SH(9)) === 'خارج') neg.push(it('خانه‌ی ۹ خارج است: <b>خطبه‌ی عقد خوانده نمی‌شود</b>.', [9], 'bad'));
+    if(isClosed(SH(11))) neg.push(it(`${SH(11)} (بسته) در خانه‌ی ۱۱: امید چندانی به این ازدواج نیست.`, [11], 'bad'));
+    const p17 = mulShapes(SH(1), s7);
+    if(stateOfName(p17) === 'خارج') neg.push(it(`ضرب خانه‌ی ۱ در ۷ = «${p17}» (خارج): خوب نیست.`, [1, 7], 'bad'));
+    const p716 = mulShapes(s7, SH(16));
+    if(isClosed(p716)) neg.push(it(`ضرب خانه‌ی ۷ در ۱۶ (عاقبت) = «${p716}» (بسته): خوب نیست.`, [7, 16], 'bad'));
+    const p71415 = mulShapes(s7, SH(14), SH(15));
+    if(stateOfName(p71415) === 'خارج') neg.push(it(`ضرب ۷ × ۱۴ × ۱۵ = «${p71415}» (خارج): یکی از دو طرف بی‌اختیار کنار می‌کشد.`, [7, 14, 15], 'bad'));
+    const t12 = SH(12);
+    if(fortuneOfName(t12) === 'نحس' || isClosed(t12)) neg.push(it(`مثلث ازدواج (۷ × ۸ = خانه‌ی ۱۲) «${t12}» است: خوب نیست.`, [12], 'bad'));
+    const e1 = elemOf(SH(1)), e7 = elemOf(s7);
+    if(elemEnemy(e1, e7)) neg.push(it(`طبع سائل (${e1}) و طبع طرف (${e7}) دشمن‌اند: ناسازگاری.`, [1, 7], 'bad'));
+    else if(e1 === e7 || ['آتشی|بادی', 'بادی|آتشی', 'آبی|خاکی', 'خاکی|آبی'].includes(e1 + '|' + e7)) pos.push(it(`طبع سائل (${e1}) و طبع طرف (${e7}) سازگارند.`, [1, 7], 'good'));
+    if(fortuneOfHouse(15) === 'سعد') pos.push(it(`قاضی (۱۵) «${SH(15)}» سعد است.`, [15], 'good'));
+    if(fortuneOfHouse(16) === 'سعد') pos.push(it(`عاقبت (۱۶) «${SH(16)}» سعد است.`, [16], 'good'));
+    const info = hokmMatlubInfo();
+    if(info && info.matlub && !housesOfName(info.matlub).length) neg.push(it(`مطلوب حکم «${info.matlub}» در زایچه نیست: باب حکم بسته است.`, [15], 'bad'));
+    return { pos, neg };
+}
+function interpMarriageWill(){
+    const res = { verdicts: [], sections: [], book: [7, 5, 9] };
+    const { pos, neg } = marriageSigns();
+    const v = neg.length > pos.length + 1 ? ['ازدواج دیده نمی‌شود یا بعید است.', 'bad'] : pos.length > neg.length ? ['احتمال ازدواج هست.', 'good'] : ['حکم میانه است؛ نشانه‌های خوب و بد نزدیک به هم‌اند.', 'mid'];
+    res.verdicts.push(it(`${fa(pos.length)} نشانه‌ی مثبت و ${fa(neg.length)} نشانه‌ی منفی: <b>${v[0]}</b>`, [], v[1]));
+    if(pos.length) res.sections.push(section('✅', 'نشانه‌های شدن', pos));
+    if(neg.length) res.sections.push(section('⛔', 'نشانه‌های نشدن', neg));
+    res.sections.push(section('⏳', 'زمان', [it('زمان ازدواج را از سیر نقطه (و موضوع «کی برآورده می‌شود») بگیرید؛ شکل خانه‌ی ۷ فقط خوب یا بد بودن ازدواج را نشان می‌دهد.', [7], 'info')]));
+    return res;
+}
+
+/* ---------- علت تأخیر ازدواج (قاعده‌ها) ---------- */
+function marriageDelayCauses(){
+    const out = [];
+    const s7 = SH(7);
+    if(s7 === 'حمره') out.push(it('حمره در خانه‌ی ۷: کار ازدواج به <b>توقف</b> افتاده است.', [7], 'bad'));
+    // گشتار: شکلی که در جایگاه شکل ۷ نشسته و جاهای تکرارش
+    const h = homeHouseOf(s7);
+    if(h !== 7){
+        const nx = SH(h), reps = housesOfName(nx).filter(n => n !== h && n <= 12 && n !== 7);
+        if(reps.length) out.push(it(`گشتار: در جایگاه «${s7}» (خانه‌ی ${fa(h)}) «${nx}» نشسته و در خانه‌های ${hList(reps)} تکرار کرده؛ علت از این خانه‌هاست: ${reps.map(n => causeByHouse.marriage[n] ? causeByHouse.marriage[n].split(':')[0] : houseShortLabel[n - 1]).join('، ')}.`, [h, ...reps], fortuneOfName(nx) === 'نحس' ? 'bad' : 'mid'));
+    }
+    if(repIn(7, 8)) out.push(it('شکل خانه‌ی ۷ در خانه‌ی ۸ تکرار کرده: <b>ترس، مال زن یا مهریه</b>.', [7, 8], 'bad'));
+    if(SH(8) === 'انکیس') out.push(it('انکیس در خانه‌ی ۸: مسئله‌ی مهریه؛ ازدواج از سر ناچاری یا آینده‌ی همراه با کدورت.', [8], 'bad'));
+    if(fortuneOfHouse(2) === 'نحس' && fortuneOfHouse(8) === 'نحس') out.push(it('خانه‌ی ۲ (مال خود) و ۸ (مال طرف) هر دو نحس‌اند: <b>بحث مالی و مهریه</b> مانع عقد است.', [2, 8], 'bad'));
+    if(repIn(7, 12)) out.push(it('شکل خانه‌ی ۷ در خانه‌ی ۱۲ (دشمن) تکرار کرده: دشمنی یا بدخواهی در کار است.', [7, 12], 'bad'));
+    if(repIn(10, 12)) out.push(it('شکل خانه‌ی ۱۰ (مادر) در ۱۲ تکرار کرده: <b>مخالفت یا دشمنی مادر</b>.', [10, 12], 'bad'));
+    if(repIn(4, 12)) out.push(it('شکل خانه‌ی ۴ (پدر) در ۱۲ تکرار کرده: مسئله از طرف پدر است.', [4, 12], 'bad'));
+    if(repIn(1, 14)) out.push(it('شکل خانه‌ی ۱ در ۱۴ تکرار کرده: <b>تردید و دودلی سائل</b> یا اختلاف با پدر.', [1, 14], 'bad'));
+    if(stateOfName(SH(5)) === 'خارج') out.push(it('خانه‌ی ۵ خارج است: خواستگار نمی‌آید یا فقط حرف زده و عمل نکرده.', [5], 'bad'));
+    if(countShape('عقله') >= 3) out.push(it(`عقله ${fa(countShape('عقله'))} بار آمده و غالب است: خواستگار مردد و دودل است.`, housesOfName('عقله'), 'bad'));
+    if(SH(1) === 'جماعت') out.push(it('جماعت در خانه‌ی ۱: فکر سائل بسته است.', [1], 'bad'));
+    if(SH(1) === 'انکیس') out.push(it('انکیس در خانه‌ی ۱: فکر سائل از جهت جنس مخالف و مسائل عاطفی بسته است.', [1], 'bad'));
+    if(SH(4) === 'اجتماع') out.push(it('اجتماع در خانه‌ی ۴: توقف در کار سائل.', [4], 'bad'));
+    if(stateOfName(SH(1)) === 'ثابت' && fortuneOfHouse(1) !== 'سعد') out.push(it('خانه‌ی ۱ نحس و ثابت: توقف و بستگی در کارهای خود سائل؛ یا سخت‌پسند است و سبک‌سنگین می‌کند.', [1], 'bad'));
+    if(SH(12) === 'عتبه الخارج') out.push(it('مثلث ازدواج (خانه‌ی ۱۲) عتبه‌الخارج است: سحر در کار است، به‌ویژه از جهت مال زن.', [12], 'bad'));
+    return out;
+}
+
+/* ---------- خانه و خانواده (قاعده‌ها) ---------- */
+function familyGroupSigns(){
+    const out = [];
+    if(SH(4) === 'عتبه الخارج'){
+        out.push(it('عتبه‌الخارج در خانه‌ی ۴: محیط منزل برای سائل مناسب نیست (شاید قدیمی و نمناک)، یا نشانه‌ی جن آتشی در منزل.', [4], 'bad'));
+        if(repIn(4, 13)) out.push(it('شکل خانه‌ی ۴ در ۱۳ (گواه سائل) تکرار کرده: خود سائل بدبین و منفی‌نگر شده و همین فضای خانه را سنگین‌تر کرده است.', [4, 13], 'bad'));
+    } else if(housesOfName('عتبه الخارج').length && repIn(housesOfName('عتبه الخارج')[0], 4)){
+        out.push(it('عتبه‌الخارج در خانه‌ی ۴ هم تکرار کرده: مکان منزل و عاقبت سائل زیر تأثیر سحر است.', [4], 'bad'));
+    }
+    if(SH(3) === 'حمره') out.push(it('حمره در خانه‌ی ۳: اختلاف میان خواهر و برادرها یا کم شدن محبت.', [3], 'bad'));
+    if(SH(3) === 'اجتماع') out.push(it('اجتماع در خانه‌ی ۳: مشورت یا جلسه‌ای میان اعضای خانواده در راه است.', [3], 'info'));
+    if(SH(7) === 'عقله' && housesOfName('عقله').includes(5)) out.push(it('عقله در خانه‌ی ۷ و تکرار در ۵: ناراحتی از ازدواج و مشکلات زناشویی در خانواده.', [7, 5], 'bad'));
+    if(repIn(10, 12)) out.push(it('شکل خانه‌ی ۱۰ در ۱۲ تکرار کرده: دشمنی مادر (یا مادرِ یکی از دو طرف) با کسی.', [10, 12], 'bad'));
+    if(repIn(4, 12)) out.push(it('شکل خانه‌ی ۴ در ۱۲ تکرار کرده: گرفتاری از طرف پدر یا ملک پدری.', [4, 12], 'bad'));
+    if(stateOfName(SH(7)) === 'خارج' && SH(12) === 'طریق') out.push(it('خانه‌ی ۷ خارج و مثلث ۱۲ طریق: مال یا وسایل خانه به دست همسر بیرون می‌رود.', [7, 12], 'bad'));
+    if(fortuneOfHouse(4) === 'نحس' && repIn(4, 11)) out.push(it('عاقبت (خانه‌ی ۴) نحس است و در ۱۱ تکرار کرده: بستگی در کارها و ناامیدی از دوستان.', [4, 11], 'bad'));
+    return out;
+}
+
+/* ---------- گره‌ها و مشکلات شخص ---------- */
+const causeBySelfHouse = {
+    2: 'مال و درآمد', 3: 'خواهر و برادر، رفت‌وآمد یا اسناد', 4: 'خانه، ملک یا پدر', 5: 'معشوق، فرزند یا خبرها',
+    6: 'بیماری، سحر یا حسد', 7: 'همسر، شریک یا خصم', 8: 'ترس و خطر، ارث یا قرض', 9: 'عقیده، دعا و تعویذ، سفر یا علم',
+    10: 'کار، مادر یا مقام', 11: 'امید و دوستان', 12: 'دشمن، حسود یا گرفتاری کهنه'
+};
+function interpSelf(){
+    const res = { verdicts: [], sections: [], book: [1, 8] };
+    const s1 = SH(1), f1 = fortuneOfHouse(1), st1 = stateOfName(s1);
+    const self = [];
+    if(s1 === 'جماعت') self.push(it('جماعت در خانه‌ی ۱: <b>فکر سائل بسته است</b>؛ بستگی و توقف در کارها.', [1], 'bad'));
+    if(s1 === 'اجتماع') self.push(it('اجتماع در خانه‌ی ۱: کارها بسته است و سائل به مشورت و تحقیق نیاز دارد.', [1], 'bad'));
+    if(s1 === 'انکیس') self.push(it('انکیس در خانه‌ی ۱: غم و نگرانی؛ فکرش از جهت مسائل عاطفی بسته است.', [1], 'bad'));
+    if(s1 === 'فرح') self.push(it('فرح در خانه‌ی ۱: تردید و دودلی؛ سائل سر دوراهی مانده است.', [1], 'mid'));
+    if(s1 === 'عتبه الخارج') self.push(it('عتبه‌الخارج در خانه‌ی ۱: سائل آمادگی و ثبات کافی ندارد یا مردد است.', [1], 'mid'));
+    if(!self.length) self.push(it(`خانه‌ی ۱ «${s1}»، ${f1} و ${st1}.`, [1], fortuneTone(f1)));
+    if(repIn(6, 1) || repOf(1).includes(6)) self.push(it('شکل خانه‌ی ۶ با خانه‌ی ۱ یکی است: حال سائل با بیماری و ناخوشی گره خورده است.', [1, 6], 'bad'));
+    if(repIn(4, 13)) self.push(it('شکل خانه‌ی ۴ در ۱۳ (گواه سائل) تکرار کرده: خود سائل بدبین و منفی‌نگر شده است.', [4, 13], 'bad'));
+    res.verdicts.push(...self);
+
+    // روش خانه‌ی ۸: شکل ۸ کجا تکرار کرده
+    const r8 = repOf(8).filter(n => n <= 12);
+    res.verdicts.push(r8.length
+        ? it(`مشکل اصلی از خانه‌ی ۸: «${SH(8)}» در خانه‌های ${hList(r8)} تکرار کرده؛ ریشه‌ی گرفتاری: <b>${r8.map(n => causeBySelfHouse[n] || houseShortLabel[n - 1]).join('، ')}</b>.`, [8, ...r8], fortuneOfHouse(8) === 'سعد' ? 'mid' : 'bad')
+        : it(`شکل خانه‌ی ۸ «${SH(8)}» در خانه‌های ۱ تا ۱۲ تکرار نکرده؛ ریشه را از خانه‌های زیر بخوانید.`, [8], 'info'));
+
+    const knots = [];
+    if(countShape('عقله') >= 3) knots.push(it(`عقله ${fa(countShape('عقله'))} بار آمده: گره در کارها.`, housesOfName('عقله'), 'bad'));
+    const chain = [], seen = new Set([1]); let cur = s1;
+    for(let k = 0; k < 5; k++){ const h = homeHouseOf(cur); if(seen.has(h)) break; seen.add(h); cur = SH(h); chain.push(cur); }
+    const closedInChain = [s1, ...chain].filter(n => isClosed(n) || n === 'بیاض').length;
+    if(closedInChain >= 2) knots.push(it('گشتار خانه‌ی ۱ میان شکل‌های بسته (جماعت، اجتماع، بیاض) می‌چرخد: بند و گره در کارها.', [1], 'bad'));
+    if(fortuneOfHouse(4) === 'نحس' && repIn(4, 11)) knots.push(it('عاقبت (۴) نحس و تکرار در ۱۱: بستگی در کارها و ناامیدی از دوستان.', [4, 11], 'bad'));
+    if(isClosed(SH(11))) knots.push(it(`${SH(11)} در خانه‌ی ۱۱ (امید): ناامیدی و فشار عصبی؛ خواسته فعلاً نمی‌رسد.`, [11], 'bad'));
+    if(SH(15) === 'جماعت') knots.push(it('جماعت در قاضی (۱۵): باب حکم بسته است؛ اول انقلاب (باطن) بگیرید.', [15], 'mid'));
+    if(knots.length) res.sections.push(section('🪢', 'گره‌ها و بستگی‌ها', knots));
+    const rows = causeScan(1, 'self');
+    if(rows.length) res.sections.push(section('🔎', 'علت‌های دیگر از معنی خانه‌ها', causeItems(rows, 'self'), { tag: 'به ترتیب قوت' }));
+    res.sections.push(section('🪬', 'سحر یا طبیعی؟', groupBindingSigns()));
+    res.verdicts.push(endItem());
+    return res;
+}
+
+causeByHouse.self = {
+    2: 'مال و درآمد: کم‌درآمدی، بی‌برکتی یا قرض',
+    3: 'خواهر و برادر، رفت‌وآمد یا اسناد و مدارک',
+    4: 'خانه، ملک یا پدر؛ و عاقبت کارها',
+    5: 'معشوق، فرزند یا خبرهای ناخوش',
+    6: 'بیماری، سحر، حسد یا چشم‌زخم',
+    7: 'همسر، شریک یا خصم',
+    8: 'ترس و خطر، ارث یا قرض',
+    9: 'عقیده و باور، دعا و تعویذ، یا سفر و علم',
+    10: 'کار و شغل، مادر یا مقام',
+    11: 'امید و دوستان: ناامیدی یا دوستان دشمن‌نما',
+    12: 'دشمن و حسود یا گرفتاری کهنه'
+};
+
+/* ======================== علت مشکلات: در خودم، در شخص دیگر، در خانه ========================
+   خانه‌ی اصلی: خودم ۱، شخص دیگر ۷، خانه و منزل ۴. معنی خانه‌ها برای شخص دیگر از خانه‌ی ۷ به بعد
+   چرخانده می‌شود (خانه‌ی ۸ مال او، ۱۲ بیماری او، ۲ ریشه‌ی گرفتاری او و...). */
+const wrap12 = n => ((n - 1) % 12 + 12) % 12 + 1;
+const relHouse = (n, m) => wrap12(n - m + 1);           // خانه‌ی n نسبت به خانه‌ی m چندمین است
+const troubleKinds = {
+    conflict: { label: 'دعوا، اختلاف و درگیری', ico: '⚔️', shapes: ['حمره', 'جماعت', 'نصره الخارج'] },
+    illness:  { label: 'بیماری و ناخوشی', ico: '🩺', shapes: ['قبض الخارج', 'عتبه الخارج', 'عقله'] },
+    fear:     { label: 'ترس، نگرانی و غم', ico: '😟', shapes: ['نقی الخد', 'طریق', 'انکیس', 'اجتماع'] }
+};
+const kindOfShape = name => Object.keys(troubleKinds).find(k => troubleKinds[k].shapes.includes(name));
+const troubleTargets = {
+    me:     { m: 1, label: 'خود سائل', map: 'self' },
+    person: { m: 7, label: 'شخص مورد سؤال', map: 'self' },
+    home:   { m: 4, label: 'خانه و اهل منزل', map: 'family' }
+};
+function meaningFor(n, t){
+    if(t.map === 'family') return causeByHouse.family[n] || houseShortLabel[n - 1];
+    const r = relHouse(n, t.m);
+    return r === 1 ? 'خود او' : (causeByHouse.self[r] || houseShortLabel[n - 1]);
+}
+function interpTrouble(key){
+    const t = troubleTargets[key] || troubleTargets.me;
+    const m = t.m, s = SH(m), f = fortuneOfHouse(m), st = stateOfName(s);
+    const res = { verdicts: [], sections: [], book: [m, wrap12(m + 7), wrap12(m + 5)] };
+    const who = key === 'person' ? 'او' : key === 'home' ? 'اهل خانه' : 'سائل';
+
+    // تار و پود خانه‌ی اصلی
+    const chain = [], seen = new Set([m]); let cur = s;
+    for(let k = 0; k < 5; k++){ const h = homeHouseOf(cur); if(seen.has(h)) break; seen.add(h); chain.push(h); cur = SH(h); }
+    const web = [...new Set([m, ...repOf(m), ...witnessColumn(m), ...chain, wrap12(m + 5), wrap12(m + 7), wrap12(m + 11), wrap12(m + 2)])].filter(n => n <= 12);
+    const byKind = { conflict: [], illness: [], fear: [] };
+    web.forEach(n => { const sh = SH(n), k = kindOfShape(sh); if(k && fortuneOfName(sh) !== 'سعد') byKind[k].push(n); });
+    const ranked = Object.keys(byKind).filter(k => byKind[k].length).sort((a, b) => byKind[b].length - byKind[a].length);
+
+    res.verdicts.push(it(`${t.label} (خانه‌ی ${fa(m)}) «${s}»، ${f} و ${st}. نشانه‌ی شکل: ${eventOfName(s)}.`, [m], fortuneTone(f)));
+    if(ranked.length) res.verdicts.push(it(`بیشترِ گرفتاری از جنس <b>${troubleKinds[ranked[0]].label}</b> است${ranked[1] ? `؛ بعد از آن ${troubleKinds[ranked[1]].label}` : ''}.`, byKind[ranked[0]], 'bad'));
+    else res.verdicts.push(it('در خانه‌های مرتبط، نشانه‌ی دعوا، بیماری یا ترسِ پررنگ دیده نمی‌شود.', [m], 'good'));
+
+    // ریشه از خانه‌ی هشتمِ او
+    const h8 = wrap12(m + 7), r8 = repOf(h8).filter(n => n <= 12 && n !== m);
+    if(r8.length) res.verdicts.push(it(`ریشه (خانه‌ی ${fa(h8)}، هشتمِ ${who}): «${SH(h8)}» در ${hList(r8)} تکرار کرده؛ ریشه‌ی گرفتاری: <b>${r8.map(n => meaningFor(n, t).split(':')[0]).join('، ')}</b>.`, [h8, ...r8], fortuneOfHouse(h8) === 'سعد' ? 'mid' : 'bad'));
+
+    // هر نوع گرفتاری: از جانب چه کسی یا چه چیزی
+    ranked.forEach(k => {
+        const items = byKind[k].map(n => it(`${n === m ? `در خودِ ${who}` : `از جانب <b>${meaningFor(n, t)}</b>`} — خانه‌ی ${fa(n)} «${SH(n)}» (${eventOfName(SH(n))}).`, [n], 'bad'));
+        if(k === 'conflict'){
+            if(countShape('حمره') >= 3) items.push(it(`حمره ${fa(countShape('حمره'))} بار آمده و غالب است: خون‌ریزی و آسیب در دعوا.`, housesOfName('حمره'), 'vbad'));
+            if(countShape('انکیس') + countShape('عقله') >= 3) items.push(it('انکیس و عقله غالب‌اند: از دشمن و خصم حذر کنید.', [...housesOfName('انکیس'), ...housesOfName('عقله')], 'bad'));
+            if(SH(wrap12(m + 2)) === 'حمره') items.push(it(`حمره در خانه‌ی خواهر و برادرِ ${who} (${fa(wrap12(m + 2))}): اختلاف میان خواهر و برادرها.`, [wrap12(m + 2)], 'bad'));
+        }
+        if(k === 'illness'){
+            const h6 = wrap12(m + 5);
+            if(SH(h6) === s) items.push(it(`شکل خانه‌ی بیماریِ ${who} (${fa(h6)}) با خانه‌ی اصلی یکی است: حال او با بیماری گره خورده.`, [m, h6], 'bad'));
+            if(key === 'me') housesOfName('عقله').filter(n => n <= 12).forEach(n => items.push(it(`عقله در خانه‌ی ${fa(n)}: علت بیماری ${agholeCauses[n]}.`, [n], 'bad')));
+        }
+        if(k === 'fear' && countShape('نقی الخد') >= 3) items.push(it(`نقی‌الخد ${fa(countShape('نقی الخد'))} بار آمده: ترس و دودلی در اقدام به کارها.`, housesOfName('نقی الخد'), 'bad'));
+        res.sections.push(section(troubleKinds[k].ico, troubleKinds[k].label, items));
+    });
+
+    // نشانه‌های ویژه
+    if(key === 'me'){
+        const x = interpSelf();
+        const keep = x.verdicts.filter(v => !/عاقبت کار|مشکل اصلی از خانه‌ی ۸|شکل خانه‌ی ۸|^خانه‌ی ۱ «/.test(v.html));
+        if(keep.length) res.sections.push(section('🧍', 'حال خود سائل', keep));
+        x.sections.filter(sc => /گره/.test(sc.title)).forEach(sc => res.sections.push(sc));
+    }
+    if(key === 'home'){
+        const fg = familyGroupSigns();
+        if(fg.length) res.sections.push(section('🏠', 'نشانه‌های منزل', fg));
+        res.sections.push(section('👪', 'حال اعضای خانه', familyMembers.map(([n, w]) => {
+            const sh = SH(n), fr = fortuneOfName(sh), k = kindOfShape(sh);
+            return it(`${w} (خانه‌ی ${fa(n)}): «${sh}»، ${fr}${k && fr !== 'سعد' ? ` — <b>${troubleKinds[k].label}</b>` : ''}.`, [n], fr === 'سعد' ? 'good' : k ? 'bad' : 'mid');
+        })));
+    }
+    if(key === 'person'){
+        const p = [];
+        if(SH(7) === 'جماعت') p.push(it('جماعت در خانه‌ی ۷: فکر او بسته است.', [7], 'bad'));
+        if(SH(7) === 'انکیس') p.push(it('انکیس در خانه‌ی ۷: غم و دلگیری درونی؛ جنگ سرد.', [7], 'bad'));
+        if(SH(7) === 'فرح') p.push(it('فرح در خانه‌ی ۷: تردید و دودلی.', [7], 'mid'));
+        if(repIn(7, 12)) p.push(it('شکل ۷ در ۱۲ تکرار کرده: دشمنی در کار است.', [7, 12], 'bad'));
+        if(p.length) res.sections.push(section('🧍', 'حال شخص مورد سؤال', p));
+    }
+    res.sections.push(section('🪬', 'سحر یا طبیعی؟', groupBindingSigns()));
+    const l = mulShapes(s, SH(16)), lst = stateOfName(l), lf = fortuneOfName(l);
+    const endTxt = lst === 'خارج' ? ['گرفتاری بیرون می‌رود و تمام می‌شود', 'good'] : lst === 'داخل' ? (lf === 'سعد' ? ['گرفتاری می‌ماند ولی سبک و قابل تحمل است', 'mid'] : ['گرفتاری ماندنی و سنگین است', 'bad']) : lst === 'ثابت' ? ['گرفتاری در همین حال می‌ماند', 'bad'] : ['حال دگرگون می‌شود', 'mid'];
+    res.verdicts.push(it(`عاقبت گرفتاری (خانه‌ی اصلی × ۱۶ = «${l}»، ${lf} و ${lst}): ${endTxt[0]}.`, [m, 16], endTxt[1]));
+    return res;
+}
+
+/* ---------- افزوده‌های بخش خانه‌ی اصلی: شاهد و ناظر، مثلث، لسان‌الامر ---------- */
+function extraMainHouseItems(m, topicId){
+    const items = [];
+    if(m <= 12){
+        const sq = wrap12(m + 1), nq = wrap12(m + 2), nb = wrap12(m + 6);
+        const d = n => `«${SH(n)}» ${fortuneOfHouse(n)}`;
+        const bad = [sq, nq, nb].filter(n => fortuneOfHouse(n) === 'نحس').length;
+        items.push(it(`شاهد قریب (${fa(sq)}) ${d(sq)}، ناظر قریب (${fa(nq)}) ${d(nq)}، ناظر بعید (${fa(nb)}) ${d(nb)}.`, [sq, nq, nb], bad >= 2 ? 'bad' : bad === 0 ? 'good' : 'mid'));
+    }
+    const owner = houses[m - 1].fortune, f = fortuneOfHouse(m);
+    if(f === 'نحس' && owner === 'سعد') items.push(it('شکل نحس در خانه‌ای که صاحبش سعد است: <b>اولش کمی خوب، آخرش بد</b>.', [m], 'mid'));
+    if(m <= 8){
+        const pair = m % 2 ? [m, m + 1] : [m - 1, m], child = 9 + Math.floor((m - 1) / 2);
+        const fa1 = fortuneOfHouse(pair[0]), fa2 = fortuneOfHouse(pair[1]), fc = fortuneOfHouse(child);
+        let q;
+        if(fc === 'سعد') q = fa1 === 'سعد' && fa2 === 'سعد' ? ['سعد از دو سعد: خوب', 'good'] : fa1 === 'نحس' && fa2 === 'نحس' ? ['سعد از دو نحس: سعادتش کم است', 'mid'] : ['سعد از سعد و نحس: میانه', 'mid'];
+        else if(fc === 'نحس') q = fa1 === 'سعد' && fa2 === 'سعد' ? ['نحس از دو سعد: نحوستش کم است', 'mid'] : fa1 === 'نحس' && fa2 === 'نحس' ? ['نحس از دو نحس: بد', 'bad'] : ['نحس از سعد و نحس: میانه رو به بد', 'bad'];
+        else q = ['شکل ممتزج: میانه', 'mid'];
+        items.push(it(`مثلث (${fa(pair[0])} × ${fa(pair[1])} = خانه‌ی ${fa(child)}) «${SH(child)}»: ${q[0]}.`, [child], q[1]));
+    }
+    const l = mulShapes(SH(m), SH(16)), kind = topicQuestionKind[topicId];
+    const lst = stateOfName(l);
+    let lv = `${fortuneOfName(l)} و ${lst}`;
+    if(kind) lv += ` ← ${witnessVerdict(lst, kind)[0]}`;
+    items.push(it(`لسان‌الامر دوم (خانه‌ی اصلی × ۱۶) «${l}»: ${lv}.`, [m, 16], kind ? witnessVerdict(lst, kind)[1] : fortuneTone(fortuneOfName(l))));
+    if(topicId !== 'illness' && countShape('طریق') >= 3) items.push(it(`طریق ${fa(countShape('طریق'))} بار آمده و غالب است: آخرش به مراد و دوستی می‌رسد.`, housesOfName('طریق'), 'good'));
+    return items;
+}
+
+/* ---------- علت تأخیر ازدواج ---------- */
+function interpMarriageDelay(){
+    const res = { verdicts: [], sections: [], book: [7, 1, 5] };
+    const s7 = shapeOfHouse(7), f7 = fortuneOfHouse(7), st7 = stateOfName(s7);
+    const stateText = {
+        'ثابت': 'کار ازدواج در <b>توقف</b> است؛ گره اصلی همین درنگ است.',
+        'خارج': 'خواستگار یا فرصت می‌آید ولی <b>به نتیجه نمی‌رسد</b> و از دست می‌رود.',
+        'منقلب': 'کار <b>چند بار جوش می‌خورد و به هم می‌خورد</b>.',
+        'داخل': 'در خود خانه‌ی ازدواج مانعی نیست؛ علت را باید در خانه‌های دیگر دید.'
+    };
+    res.verdicts.push(it(`خانه‌ی ۷ (ازدواج) «${s7}»، ${f7} و ${st7}: ${stateText[st7]}`, [7], st7 === 'داخل' ? fortuneTone(f7) : (f7 === 'سعد' ? 'mid' : 'bad')));
+    const rule = marriageRules.filter(r => r.shapes.includes(s7)).map(r => r.text).join(' ');
+    if(rule) res.verdicts.push(it(`حال طرف و پیوند: ${rule}`, [7], 'info'));
+    const rows = causeScan(7, 'marriage');
+    const gc = marriageDelayCauses();
+    if(gc.length) res.verdicts.push(it(`${fa(gc.length)} علت مشخص پیدا شد؛ مهم‌ترین: ${gc[0].html}`, gc[0].houses, 'bad'));
+    else if(rows.length) res.verdicts.push(it(`مهم‌ترین علت: <b>${causeByHouse.marriage[rows[0].n]}</b>`, [rows[0].n], 'bad'));
+    else res.verdicts.push(it('خانه‌ی نحسی که با خانه‌ی ازدواج پیوند داشته باشد پیدا نشد؛ تأخیر بیشتر از حال خود خانه‌ی ۷ است.', [7], 'mid'));
+    res.verdicts.push(endItem());
+    if(gc.length) res.sections.push(section('🔎', 'علت‌های تأخیر', gc, { tag: 'از قاعده‌های تفسیر' }));
+    if(rows.length) res.sections.push(section('🧩', 'علت‌های دیگر از معنی خانه‌ها', causeItems(rows, 'marriage'), { tag: 'به ترتیب قوت' }));
+    res.sections.push(section('🪢', 'بستگی بخت و سحر', groupBindingSigns()));
+    const kind = timeKindOf(s7);
+    res.sections.push(section('⏳', 'زمان گشایش', [
+        it(`شکل خانه‌ی ۷ از شکل‌های <b>${kind}</b> است؛ واحد زمان گشایش «${kind}» است. برای جزئیات، موضوع «کی برآورده می‌شود» را با گزینه‌ی ازدواج ببینید.`, [7], 'info')
+    ]));
+    return res;
+}
+
+/* ---------- علت مشکلات خانه و خانواده ---------- */
+const familyFocus = {
+    general:  [4, 'خانه و خانواده'],
+    spouse:   [7, 'همسر'],
+    parents:  [4, 'پدر'],
+    children: [5, 'فرزندان'],
+    siblings: [3, 'خواهر و برادر']
+};
+const familyMembers = [[1, 'خود سائل'], [4, 'پدر'], [10, 'مادر'], [7, 'همسر'], [5, 'فرزند'], [3, 'خواهر و برادر']];
+function interpFamily(key){
+    const [m, label] = familyFocus[key] || familyFocus.general;
+    const res = { verdicts: [], sections: [], book: key === 'parents' ? [4, 10] : [m] };
+    const s = shapeOfHouse(m), f = fortuneOfHouse(m), st = stateOfName(s);
+    let mood;
+    if(f === 'سعد') mood = ['پایه‌ی کار سالم است؛ گرفتاری گذراست.', 'good'];
+    else if(st === 'ثابت') mood = ['گرفتاری <b>ریشه‌دار و ماندگار</b> است و حل آن حوصله می‌خواهد.', 'bad'];
+    else if(st === 'داخل') mood = ['گرفتاری <b>از درون خانه</b> است.', 'bad'];
+    else if(st === 'خارج') mood = ['گرفتاری <b>از بیرون</b> آمده یا رو به رفتن است.', 'mid'];
+    else mood = ['حال خانه <b>در حال دگرگونی</b> است؛ گاهی آرام و گاهی پرتنش.', 'mid'];
+    res.verdicts.push(it(`${label} (خانه‌ی ${fa(m)}) «${s}»، ${f} و ${st}: ${mood[0]} نشانه‌ی شکل: ${eventOfName(s)}.`, [m], mood[1]));
+    if(key === 'parents'){
+        const s10 = shapeOfHouse(10), f10 = fortuneOfHouse(10);
+        res.verdicts.push(it(`مادر (خانه‌ی ۱۰) «${s10}»، ${f10} و ${stateOfName(s10)}. نشانه‌ی شکل: ${eventOfName(s10)}.`, [10], fortuneTone(f10)));
+    }
+    const rows = causeScan(m, 'family');
+    if(rows.length) res.verdicts.push(it(`مهم‌ترین علت: <b>${causeByHouse.family[rows[0].n]}</b>`, [rows[0].n], 'bad'));
+    else res.verdicts.push(it(`خانه‌ی نحسی که با خانه‌ی ${fa(m)} پیوند داشته باشد پیدا نشد؛ گرفتاری بیشتر از خود همین خانه است.`, [m], 'mid'));
+    res.verdicts.push(endItem());
+    const fg = familyGroupSigns();
+    if(fg.length) res.sections.push(section('🔎', 'نشانه‌های گرفتاری خانه', fg, { tag: 'از قاعده‌های تفسیر' }));
+    if(rows.length) res.sections.push(section('🧩', 'علت‌های دیگر از معنی خانه‌ها', causeItems(rows, 'family'), { tag: 'به ترتیب قوت' }));
+    const sm = shapeOfHouse(m);
+    res.sections.push(section('👪', 'حال اعضای خانواده', familyMembers.map(([n, who]) => {
+        const sh = shapeOfHouse(n), fr = fortuneOfName(sh);
+        const src = fr !== 'سعد' && (sh === sm && n !== m || rows.some(r => r.n === n));
+        return it(`${who} (خانه‌ی ${fa(n)}): «${sh}»، ${fr} و ${stateOfName(sh)}${src ? ' — <b>از منشأهای تنش</b>' : ''}.`, [n], src ? 'bad' : fortuneTone(fr));
+    })));
+    res.sections.push(section('🪬', 'سحر یا طبیعی؟', groupBindingSigns()));
+    return res;
+}
+
 /* ======================== سؤال یک، دو یا سه رکنی ======================== */
 const arkanRoleNames = ['سائل (رکن اول)', 'شخص مورد سؤال (رکن دوم)', 'شخص سوم (رکن سوم)'];
 const arkanOffsetLabels = {
@@ -3611,10 +4074,10 @@ const TOPICS = [
       subs: { label: 'سؤال درباره‌ی:', opts: [['theft', 'دزدی'], ['lost', 'شیء گم‌شده']] },
       run: s => interpTheft(s || 'theft') },
     { id: 'marriage', ico: '💍', title: 'ازدواج و همسر', desc: 'سازگاری، ثبات یا جدایی', lesson: 'marriage',
-      kw: ['ازدواج', 'عروسی', 'نامزد', 'همسر', 'شوهر', 'خواستگار', 'خواستگاری', 'طلاق', 'جدایی'],
-      subs: { label: 'نوع سؤال:', opts: [['main', 'سازگاری و ثبات'], ['two', 'دو همسر: کدام بیشتر دوست دارد']] },
-      pick: [['two', ['دو همسر', 'دو زن', 'هوو']]],
-      run: s => s === 'two' ? interpTwoWives() : interpMarriage() },
+      kw: ['ازدواج', 'عروسی', 'نامزد', 'همسر', 'شوهر', 'خواستگار', 'خواستگاری', 'طلاق', 'جدایی', 'بختم', 'بخت بسته'],
+      subs: { label: 'نوع سؤال:', opts: [['will', 'ازدواج می‌شود یا نه؟'], ['delay', 'علت تأخیر ازدواج'], ['main', 'سازگاری، آینده و عاقبت'], ['two', 'دو همسر: کدام بیشتر دوست دارد']] },
+      pick: [['two', ['دو همسر', 'دو زن', 'هوو']], ['delay', ['تاخیر', 'تأخیر', 'دیر', 'بخت', 'بسته', 'علت']], ['main', ['سازگار', 'عاقبت', 'آینده', 'طلاق']], ['will', ['ازدواج', 'خواستگار', 'عقد']]],
+      run: s => s === 'two' ? interpTwoWives() : s === 'delay' ? interpMarriageDelay() : s === 'main' ? interpMarriage() : interpMarriageWill() },
     { id: 'job', ico: '💼', title: 'شغل و کار', desc: 'وضعیت کار، مقایسه، انتخاب شغل', lesson: 'job',
       kw: ['شغل', 'استخدام', 'اشتغال', 'بیکار', 'حرفه', 'رشته', 'کار'],
       subs: { label: 'نوع سؤال:', opts: [['status', 'وضعیت کار / پیدا کردن کار'], ['multi', 'مقایسه‌ی ۲ تا ۴ کار'], ['field', 'چه شغلی انتخاب کنم']] },
@@ -3652,6 +4115,16 @@ const TOPICS = [
       run: s => s === 'love' ? interpLove() : interpRival() },
     { id: 'treasure', ico: '💎', title: 'دفینه و سهم غیب', desc: 'دفینه هست، کدام سمت', lesson: 'treasure',
       kw: ['دفینه', 'دفین', 'گنج'], run: () => interpTreasure() },
+    { id: 'self', ico: '🪢', title: 'علت مشکلات، دعوا و بیماری', desc: 'در خودم، در شخص دیگر یا در خانه', lesson: 'self',
+      kw: ['علت', 'این همه', 'چرا این', 'بدبیاری', 'بدشانسی', 'گره', 'گرفتاری', 'مشکلات زندگی', 'مشکلاتم', 'کارهایم بسته', 'کارم بسته', 'بسته است', 'نحسی', 'پیشرفت نمی', 'چرا کار', 'دعوا و', 'بیماری و', 'اختلاف و', 'جنگ'],
+      subs: { label: 'گرفتاری در:', opts: [['me', 'خودم'], ['person', 'شخص دیگر'], ['home', 'خانه و منزل']] },
+      pick: [['home', ['خانه', 'منزل', 'خانواده', 'خونه']], ['person', ['او ', 'طرف', 'شخص', 'فلانی', 'این آدم', 'اون']]],
+      run: s => interpTrouble(s || 'me') },
+    { id: 'family', ico: '🏠', title: 'اختلاف با اعضای خانواده', desc: 'با همسر، پدر و مادر، فرزند، خواهر و برادر', lesson: 'family',
+      kw: ['خانواده', 'خانوادگی', 'اختلاف', 'دعوای خانه', 'مشکلات خانه', 'آرامش خانه', 'تنش', 'قهر', 'با همسرم', 'با شوهرم', 'با پدرم', 'با مادرم', 'با برادرم', 'با خواهرم', 'با بچه', 'با فرزند'],
+      subs: { label: 'درباره‌ی:', opts: [['parents', 'با پدر و مادر'], ['spouse', 'با همسر'], ['children', 'با فرزندان'], ['siblings', 'با خواهر و برادر'], ['general', 'کل خانواده']] },
+      pick: [['spouse', ['همسر', 'شوهر', 'زنم']], ['parents', ['پدر', 'مادر']], ['children', ['فرزند', 'بچه']], ['siblings', ['برادر', 'خواهر']]],
+      run: s => interpFamily(s || 'parents') },
     { id: 'other', ico: '📚', title: 'سایر موضوعات و خویشان', desc: 'ملک، دشمن، امید، عمو، دایی، رنج پدر و مادر، جابه‌جایی…', lesson: 'houses',
       kw: ['خانه', 'ملک', 'زمین', 'دشمن', 'زندان', 'ارث', 'برادر', 'خواهر', 'دوست', 'عمو', 'عمه', 'دایی', 'خاله', 'پدربزرگ', 'عروس', 'جابجایی', 'جابه‌جایی', 'اسباب‌کشی'],
       subs: { label: 'موضوع:', opts: [['h5', 'معشوق، نامه و هدیه'], ['h4', 'پدر، خانه و ملک'], ['h3', 'برادر، خواهر و خویشان'], ['h8', 'خطر، ارث و مال غایب'], ['h11', 'امید، دوستان و بخت'], ['h12', 'دشمن، زندان و گرفتاری'], ...Object.entries(kinHouses).map(([k, v]) => [k, v[1]])] },
@@ -4428,7 +4901,7 @@ const LESSONS = [
         general: '۱۵ و ۱۶ (و ردیابی تا امّهات)', illness: '۶، ۱۰، ۱، ۴، ۷ و همه‌ی خانه‌ها برای محل درد', sorcery: '۱، ۲، ۴، ۶، ۷، ۱۲',
         missing: '۲، ۴، ۵، ۶، ۹، ۱۰، ۱۱، ۱۲ و شمار نقطه‌ها', theft: 'شمار نقطه‌ها و خانه‌ی ۸', marriage: '۷ و ۴', job: '۱، ۴، ۷، ۱۰',
         car: '۱ تا ۱۶ (بسته به خرید یا فروش)', trade: '۲', travel: '۱، ۴، ۷، ۱۰ و متن ۹ و ۳', mind: 'شمار نقطه‌ها؛ برای نام جای لحیان؛ برای راستی ۵ یا ۶ یا ۱۱', other: 'خانه‌ی موضوع یا خانه‌ی مشتق خویشاوند',
-        when: 'خانه‌ی مقصود، مطلوب و ۱۶', child: '۵، ۶، ۱۱', rival: 'دو نیمه‌ی زایچه و ۱۵؛ در محبت سطر آتش اوتاد', treasure: '۴، ۸، ۶، ۲، ۱۴', arkan: 'اصل هر رکن (۱ و ۷، یا ۱ و ۵ و ۹) و خانه‌های هم‌ردیف'
+        when: 'خانه‌ی مقصود، مطلوب و ۱۶', child: '۵، ۶، ۱۱', rival: 'دو نیمه‌ی زایچه و ۱۵؛ در محبت سطر آتش اوتاد', treasure: '۴، ۸، ۶، ۲، ۱۴', self: 'خانه‌ی اصلی (۱، ۷ یا ۴)، هشتم و ششم و دوازدهمِ آن، و نوع شکل‌ها (دعوا، بیماری، ترس)', family: 'خانه‌ی موضوع (۴، ۷، ۵ یا ۳) و خانه‌های نحسِ پیوسته با آن', arkan: 'اصل هر رکن (۱ و ۷، یا ۱ و ۵ و ۹) و خانه‌های هم‌ردیف'
     }[t.id]]))}
 
     <h2>مرحله‌ی ۲: زدن رمل</h2>
@@ -4874,8 +5347,53 @@ const LESSONS = [
     ])}
     <h2>۶. شواهد</h2>
     <p>سه خانه‌ی هم‌ستونِ خانه‌ی اصلی گواه آن‌اند و حکمشان با نوع سؤال سنجیده می‌شود (درس «اوتاد، مایل، زایل و شواهد»).</p>
+    <h2>۷. افزوده‌ها</h2>
+    <p>زیر هر تفسیر شاهد و ناظر قریب و بعید، کیفیت مثلث، لسان‌الامر دوم (خانه‌ی اصلی × ۱۶) و غلبه‌ی طریق هم می‌آید (درس «قاعده‌های تکمیلی حکم»).</p>
     ${callout('warn', 'با یک شکل حکم ندهید', 'حکم قطعی را از جمع نشانه‌ها بگیرید: خانه‌ی اصلی، تکرار، گشتار، شواهد، قاضی، آینه‌ی رمل (۱۴) و عاقبت (۱۶). سحر را هم از یک خانه نبینید؛ نشانه‌اش ترکیب خانه‌های ۶ و ۹ و تکرار در خانه‌های تاریک است.')}
     ${exampleBlock('general', null, [15])}` },
+
+{ id: 'adv-rules', group: 'پیشرفته', ico: '🧩', title: 'قاعده‌های تکمیلی حکم', blurb: 'شاهد و ناظر، مثلث، لسان‌الامر، انقلاب و چند قاعده‌ی کوتاه', kw: 'شاهد قریب ناظر بعید مثلث لسان الامر انقلاب اوتاد بزدح خواب استخاره غلبه طریق نقی مال دزدیده', topic: 'general',
+  body: () => `
+    <p class="lead">این قاعده‌ها کنار قاعده‌های خانه‌ی اصلی، حکم را دقیق‌تر می‌کنند. چندتایشان خودکار زیر هر تفسیر می‌آیند.</p>
+    <h2>۱. شاهد قریب، ناظر قریب و ناظر بعید</h2>
+    ${table(['نام', 'جای آن نسبت به خانه‌ی اصلی (n)', 'نمونه برای خانه‌ی ۱'], [
+        ['شاهد قریب', 'خانه‌ی بعدی (n+1)', HT(2)],
+        ['ناظر قریب', 'دو خانه بعد (n+2)', HT(3)],
+        ['ناظر بعید', 'روبه‌رو (n+6)', HT(7)]
+    ])}
+    <p>اگر بیشترِ این سه نحس باشند کار سخت‌تر است؛ اگر هر سه سعد باشند پشتیبان کارند.</p>
+    <h2>۲. کیفیت مثلث</h2>
+    <p>هر خانه‌ی ۹ تا ۱۲ از ضرب دو خانه‌ی امهات و بنات به دنیا آمده (۹ = ۱×۲، ۱۰ = ۳×۴، ۱۱ = ۵×۶، ۱۲ = ۷×۸). کیفیت فرزند به پدر و مادرش بستگی دارد:</p>
+    ${table(['فرزند', 'از', 'حکم'], [
+        ['سعد', 'دو سعد', 'خوب و کامل'],
+        ['سعد', 'دو نحس', 'سعادتش کم است'],
+        ['نحس', 'دو سعد', 'نحوستش کم است'],
+        ['نحس', 'دو نحس', 'بد'],
+        ['سعد یا نحس', 'یک سعد و یک نحس', 'میانه']
+    ])}
+    <h2>۳. لسان‌الامر دوم</h2>
+    <p>شکل خانه‌ی اصلی را در شکل خانه‌ی ۱۶ ضرب کنید. متولد، زبان آخر کار است: حالتش (داخل، خارج، ثابت، منقلب) با نوع سؤال سنجیده می‌شود، درست مثل شواهد.</p>
+    <h2>۴. نحس در خانه‌ای که صاحبش سعد است</h2>
+    <p>اگر شکل نحسی در خانه‌ای بنشیند که صاحب ابدحی‌اش سعد است (مثلاً حمره در خانه‌ی ۱ که صاحبش لحیان است)، کار <b>اولش کمی خوب و آخرش بد</b> است.</p>
+    <h2>۵. غلبه‌ی شکل‌ها</h2>
+    ${steps([
+        `${ST('طریق')} سه بار یا بیشتر: آخر کار به مراد و دوستی می‌رسد (برای سؤال بیماری این حکم را نگیرید).`,
+        `${ST('نقی الخد')} سه بار یا بیشتر: ترس و دودلی در اقدام.`,
+        `${ST('حمره')} سه بار یا بیشتر: دعوا و آسیب.`,
+        `${ST('انکیس')} و ${ST('عقله')} با هم سه بار یا بیشتر: از دشمن حذر کنید.`,
+        `${ST('عقله')} سه بار یا بیشتر: گره در کارها.`
+    ])}
+    <h2>۶. انقلاب زایچه</h2>
+    <p>وقتی زایچه بسته است یا جواب روشن نمی‌دهد (مثلاً ${ST('جماعت')} در قاضی)، آن را «منقلب» می‌کنند: چهار وتد (۱، ۴، ۷، ۱۰) را امهات تازه می‌گیرند و زایچه‌ی نو می‌سازند.</p>
+    ${callout('tip', 'انقلاب برای مال دزدیده', 'در سؤال مال دزدیده، زایچه را با ضرب ۵×۱، ۶×۲، ۷×۳ و ۸×۴ نو کنید و میزان (جماعت) را از ضرب دو شکل داخلیِ زایچه‌ی نو بگیرید.')}
+    <h2>۷. دایره‌ی بزدح</h2>
+    <p>غیر از ابدح، دایره‌ی دیگری هم هست که به سطرهای شکل وزن می‌دهد: سطر اول ۲، دوم ۷، سوم ۴ و چهارم ۸. سطرهای تک‌نقطه را جمع کنید و اگر از ۱۶ بیشتر شد ۱۶ را کم کنید؛ عدد حاصل، جای آن شکل در این دایره است.</p>
+    <h2>۸. ادب پرسیدن</h2>
+    ${steps([
+        'برای یک نیت یک بار رمل بیندازید؛ مثل استخاره، تکرار برای گرفتن جواب دلخواه درست نیست.',
+        'تعبیر خواب: خوابی که شب دیده شده تا ۹ شب و خوابی که روز دیده شده تا ۳ روز قابل پرسیدن است.'
+    ])}
+    ${exampleBlock('general', null, [16])}` },
 
 { id: 'aspects', group: 'پیشرفته', ico: '📐', title: 'نظرات: مقارنه تا مقابله', blurb: 'فاصله‌ی دو خانه و دوستی یا دشمنی آن‌ها', kw: 'مقارنه تسدیس تثلیث تربیع مقابله نظر ساقط',
   body: () => `
@@ -5061,7 +5579,7 @@ const LESSONS = [
     ${table(['باقی‌مانده‌ی طرح بر ۴', 'جنس گمشده'], [1, 2, 3, 4].map(n => [faDigits(n), pointsLostTypeInfo[n]]))}
     ${exampleBlock('theft', 'theft', [8])}` },
 
-{ id: 'marriage', group: 'موضوع‌ها', ico: '💍', title: 'ازدواج و همسر', blurb: 'خانه‌ی هفتم و چهارم، دو همسر', kw: 'ازدواج همسر نامزد خواستگار طلاق جدایی', topic: 'marriage',
+{ id: 'marriage', group: 'موضوع‌ها', ico: '💍', title: 'ازدواج و همسر', blurb: 'می‌شود یا نه، علت تأخیر، سازگاری، دو همسر', kw: 'ازدواج همسر نامزد خواستگار طلاق جدایی', topic: 'marriage',
   body: () => `
     <p class="lead">ازدواج، همسر و شریک در <b>خانه‌ی هفتم</b> دیده می‌شود.</p>
     ${steps([
@@ -5076,6 +5594,54 @@ const LESSONS = [
         'در سؤال طلاق: هر کدام <b>خارج</b> بود جدا می‌شود؛ <b>ثابت</b> ← طلاق در توقف می‌ماند؛ <b>منقلب</b> ← از طلاق برمی‌گردد.',
         'در صفحه: موضوع ازدواج ← «دو همسر».'
     ])}
+    <h2>خانه‌های ازدواج</h2>
+    ${table(['خانه', 'در سؤال ازدواج'], [
+        [HT(7), 'ازدواج، همسر و طرف مقابل؛ خانه‌ی اصلی'],
+        [HT(1), 'خود سائل؛ طبع خانه‌ی ۱ و ۷ سازگاری دو طرف را نشان می‌دهد'],
+        [HT(5), 'معشوق، خواستگاری، عروسی و خبر دعوت'],
+        [HT(9), 'خطبه‌ی عقد و نکاح (برخی این را قبول ندارند و ۹ را فقط سفر و عقیده می‌دانند)'],
+        [HT(8), 'آینده‌ی ازدواج، مال زن و مهریه، ترس'],
+        [HT(10), 'عاقبت ازدواج؛ و مادر'],
+        [HT(11), 'امید به ازدواج'],
+        [HT(12), 'مثلث ازدواج (۷ × ۸)، دشمن و بدخواه'],
+        [HT(15), 'قاضی؛ گواه خانه‌ی ۷'],
+        [HT(16), 'عاقبت نهایی']
+    ])}
+    <h2>ازدواج می‌شود یا نه؟</h2>
+    ${table(['نشانه‌های شدن', 'نشانه‌های نشدن'], [
+        ['خانه‌ی ۷ سعد و داخل', 'خانه‌ی ۷ نحس و خارج؛ یا عتبه‌الخارج در ۷'],
+        ['خانه‌ی ۵ داخل: خواستگار می‌آید', `${ST('حمره')} در ۷: توقف در ازدواج`],
+        [`${ST('جماعت')} در ۵ با شواهد خوب (۱، ۹، ۱۳): عروسی`, `${ST('قبض الخارج')} در ۷ یا ۱۵: عدم وصلت`],
+        ['تکرار شکل ۷ در ۱۱ (امید)', `${ST('نقی الخد')} در هر دو خانه‌ی ۱ و ۷`],
+        ['قاضی و عاقبت سعد', 'خانه‌ی ۵ خارج: خواستگار نمی‌آید'],
+        ['طبع ۱ و ۷ سازگار', 'خانه‌ی ۹ خارج: خطبه‌ی عقد خوانده نمی‌شود'],
+        ['', 'جماعت یا اجتماع در ۱۱: امیدی نیست'],
+        ['', `${ST('عتبه الخارج')} در ۳`],
+        ['', 'ضرب ۱×۷ خارج؛ ۷×۱۶ بسته؛ ۷×۱۴×۱۵ خارج (یکی بی‌اختیار کنار می‌کشد)'],
+        ['', 'مثلث ۱۲ نحس؛ طبع ۱ و ۷ دشمن (آتش و آب، باد و خاک)'],
+        ['', 'مطلوب حکم در زایچه نیست: باب حکم بسته است']
+    ])}
+    <h2>علت تأخیر یا نشدن</h2>
+    ${steps([
+        `<b>گشتار از خانه‌ی ۷:</b> ببینید در جایگاه شکل ۷ چه نشسته و آن شکل کجا تکرار کرده؛ معنی آن خانه‌ها علت است. نمونه: خانه‌ی ازدواج حمره، در جایگاه حمره (۲) طریق، و طریق در ۵ و ۲ تکرار کرده: مشکلات کاری و رزق.`,
+        '<b>مال و مهریه:</b> شکل ۷ در ۸ تکرار کند؛ انکیس در ۸ (ازدواج از سر ناچاری به خاطر مهریه)؛ یا ۲ و ۸ هر دو نحس.',
+        '<b>خانواده:</b> شکل ۱۰ در ۱۲ (مخالفت مادر)، شکل ۴ در ۱۲ (پدر)، شکل ۱ در ۱۴ (تردید سائل یا اختلاف با پدر). علت گاهی خود نزدیکان شخص‌اند.',
+        '<b>دشمن:</b> شکل ۷ در ۱۲ تکرار کند.',
+        `<b>خود سائل:</b> ${ST('جماعت')} در ۱ (فکرش بسته)، ${ST('انکیس')} در ۱ (فکرش از جهت عاطفی بسته)، ${ST('اجتماع')} در ۴ (توقف)، خانه‌ی ۱ نحس و ثابت (سخت‌پسندی و سبک‌سنگین کردن).`,
+        `<b>خواستگار:</b> خانه‌ی ۵ خارج (نمی‌آید یا فقط حرف می‌زند)؛ غلبه‌ی ${ST('عقله')} (خواستگار مردد است).`,
+        `<b>بستگی بخت و سحر:</b> ${ST('عتبه الخارج')} در ۹؛ خانه‌ی ۶ نحس همراه با عقله؛ مثلث ۱۲ عتبه‌الخارج (سحر از جهت مال زن)؛ عتبه‌الخارج در ۷ با انکیس در ۴ (همزاد در منزل پدری).`
+    ])}
+    ${callout('warn', 'بی‌دلیل حکم سحر ندهید', 'برخی تا سائل می‌آید می‌گویند «بختت بسته است» تا دعا بفروشند. سحر را از یک شکل قطعی نکنید و به کسی تهمت نزنید؛ اگر خانه‌ی ۶ سالم است، گرفتاری طبیعی است.')}
+    <h2>بعد از ازدواج</h2>
+    ${steps([
+        '<b>آینده (۸):</b> انکیس ← کدورت و بگومگو؛ تکرار شکل ۷ در ۸ ← همین روال ادامه دارد.',
+        '<b>عاقبت (۱۰):</b> تکرار در ۳ ← خویشان وساطت می‌کنند. قاضی سعد و داخل ← جدایی نیست؛ قبض‌الخارج در قاضی ← جدایی.',
+        `<b>سردی:</b> ${ST('جماعت')} در ۷ با تکرار در ۸.`,
+        `<b>مجرد یا متأهل:</b> شکل ۷ و جایگاهش را ببینید؛ نمونه: ${ST('نصره الداخل')} در ۷ و در جایگاهش ${ST('فرح')} (صاحب خانه‌ی ۵) ← متأهل یا عقد موقت.`,
+        '<b>زمان:</b> از سیر نقطه بگیرید، نه از شکل ۷ (موضوع «کی برآورده می‌شود»).'
+    ])}
+    ${callout('tip', 'در صفحه', 'موضوع ازدواج چهار گزینه دارد: «ازدواج می‌شود یا نه؟»، «علت تأخیر ازدواج»، «سازگاری، آینده و عاقبت» و «دو همسر». جدول زیر هم معنی هر خانه را به‌عنوان علت نشان می‌دهد.')}
+    ${table(['خانه‌ی علت', 'یعنی'], Object.entries(causeByHouse.marriage).map(([n, t]) => [HT(Number(n)), t]))}
     ${exampleBlock('marriage', null, [7, 4])}` },
 
 { id: 'job', group: 'موضوع‌ها', ico: '💼', title: 'شغل و کار', blurb: 'وضعیت کار، مقایسه‌ی چند کار، انتخاب شغل', kw: 'شغل کار استخدام بیکار حرفه رشته', topic: 'job',
@@ -5145,6 +5711,85 @@ const LESSONS = [
     <h2>آمدن غائب</h2>
     <p>نوع شکل خانه‌ی ۹ زمان آمدن را می‌گوید (روز، هفته، ماه، سال؛ درس «زمان برآمدن کار»).</p>
     ${exampleBlock('travel', null, [1, 4, 7, 10, 9, 3])}` },
+
+{ id: 'self', group: 'موضوع‌ها', ico: '🪢', title: 'علت مشکلات، دعوا و بیماری', blurb: 'در خودم، در شخص دیگر یا در خانه', kw: 'علت مشکلات دعوا اختلاف جنگ بیماری ترس غم گره بدبیاری بدشانسی گرفتاری نحسی خانه شخص', topic: 'self',
+  body: () => `
+    <p class="lead">سؤال «چرا این همه دعوا و بیماری و گرفتاری؟» جدا از ازدواج خوانده می‌شود. اول معلوم کنید گرفتاری در کیست، بعد جنس گرفتاری، بعد ریشه‌اش و در آخر عاقبتش.</p>
+    <h2>۱. گرفتاری در کیست؟ (خانه‌ی اصلی)</h2>
+    ${table(['سؤال', 'خانه‌ی اصلی', 'خانه‌ها چطور خوانده می‌شوند'], [
+        ['در خودم', HT(1), 'معنی خانه‌ها همان معنی معمول است'],
+        ['در شخص دیگر (همسر، شریک، فلانی)', HT(7), 'خانه‌ی ۷ «خانه‌ی ۱» او حساب می‌شود و بقیه از آن‌جا شمرده می‌شوند: ۸ مال او، ۹ خواهر و برادرش، ۱۲ بیماری او، ۲ ریشه‌ی گرفتاری او'],
+        ['در خانه و اهل منزل', HT(4), 'خانه‌ی ۴ اصل است و اعضای خانه هر کدام از خانه‌ی خودشان دیده می‌شوند']
+    ])}
+    <p>حال شکل خانه‌ی اصلی اولین حکم است: سعد ← پایه سالم است و گرفتاری گذراست؛ نحس و ثابت ← ریشه‌دار و ماندگار؛ نحس و داخل ← از درون خود شخص یا خانه؛ نحس و خارج ← از بیرون آمده یا رو به رفتن است.</p>
+    <h2>۲. جنس گرفتاری</h2>
+    <p>خانه‌های پیوسته به خانه‌ی اصلی را بگیرید: خودش، جاهایی که شکلش تکرار کرده، شواهد هم‌ستون، زنجیره‌ی گشتار، و از آن خانه (نسبی) خانه‌های ۳، ۶، ۸ و ۱۲. شکل‌های نحس و ممتزجِ این خانه‌ها را دسته کنید؛ دسته‌ای که بیشتر است جنس اصلی گرفتاری است.</p>
+    ${table(['جنس', 'شکل‌ها', 'نشانه‌ها'], [
+        ['⚔️ دعوا، اختلاف و درگیری', STs(['حمره', 'جماعت', 'نصره الخارج']), 'حمره سه بار یا بیشتر: خون‌ریزی و آسیب در دعوا. انکیس و عقله با هم سه بار یا بیشتر: از دشمن و خصم حذر کنید. حمره در خانه‌ی خواهر و برادر: اختلاف میان آن‌ها'],
+        ['🩺 بیماری و ناخوشی', STs(['قبض الخارج', 'عتبه الخارج', 'عقله']), 'شکل خانه‌ی بیماری (ششمِ شخص) با خانه‌ی اصلی یکی باشد: حال او با بیماری گره خورده. جای عقله علت بیماری را نشان می‌دهد'],
+        ['😟 ترس، نگرانی و غم', STs(['نقی الخد', 'طریق', 'انکیس', 'اجتماع']), 'نقی‌الخد سه بار یا بیشتر: ترس و دودلی در اقدام به کار']
+    ])}
+    <p>کنار هر نشانه، معنی همان خانه گفته می‌شود که گرفتاری «از جانب» کیست؛ مثلاً حمره‌ی نحس در خانه‌ی ۱۰ یعنی دعوا از جانب کار یا مادر.</p>
+    <h2>۳. ریشه: هشتمِ شخص</h2>
+    <p>خانه‌ی هشتم از خانه‌ی اصلی (برای خودم ۸، برای شخص دیگر ۲، برای خانه ۱۱) خانه‌ی ترس و گرفتاری است. ببینید شکلش در کجا تکرار کرده؛ معنی آن خانه‌ها ریشه‌ی ماجراست. مثلاً اگر شکل ۸ در ۹ تکرار کند، پای عقیده یا دعا و تعویذ در میان است؛ اگر در ۲ باشد، مال و درآمد.</p>
+    <h2>۴. حال خود سائل (وقتی سؤال «در خودم» است)</h2>
+    ${table(['شکل در ۱', 'یعنی'], [
+        [ST('جماعت'), 'فکر سائل بسته است؛ بستگی و توقف در کارها'],
+        [ST('اجتماع'), 'کارها بسته است؛ به مشورت و تحقیق نیاز دارد'],
+        [ST('انکیس'), 'غم و نگرانی؛ فکرش از جهت عاطفی بسته است'],
+        [ST('فرح'), 'تردید و دودلی؛ سر دوراهی'],
+        [ST('عتبه الخارج'), 'آمادگی و ثبات کافی ندارد']
+    ])}
+    ${steps([
+        `غلبه‌ی ${ST('عقله')} (سه بار یا بیشتر): گره در کارها.`,
+        'گشتار خانه‌ی ۱ میان شکل‌های بسته بچرخد (جماعت، اجتماع، بیاض): بند و گره در کارها.',
+        'شکل ۴ در ۱۳ تکرار کند: خود سائل بدبین و منفی‌نگر شده است.',
+        'جماعت یا اجتماع در ۱۱: ناامیدی و فشار عصبی.'
+    ])}
+    <h2>۵. وقتی سؤال از شخص دیگر یا خانه است</h2>
+    ${steps([
+        `${ST('جماعت')} در ۷: فکر او بسته است. ${ST('انکیس')} در ۷: غم و دلگیری درونی، جنگ سرد. ${ST('فرح')} در ۷: تردید و دودلی.`,
+        'شکل ۷ در ۱۲ تکرار کند: دشمنی در کار است.',
+        'برای خانه، حال هر عضو را از خانه‌ی خودش ببینید (پدر ۴، مادر ۱۰، همسر ۷، فرزند ۵، خواهر و برادر ۳)؛ عضوی که خانه‌اش نحس و از جنس دعوا یا بیماری است، از منشأهای گرفتاری است.',
+        `${ST('عتبه الخارج')} در ۴: منزل قدیمی و نمناک یا نامناسب است.`
+    ])}
+    <h2>۶. سحر است یا طبیعی؟</h2>
+    ${steps([
+        `سحر از خانه‌های ۶ و ۹ دیده می‌شود و همزاد آتشی از ۵. ${ST('عتبه الخارج')} در ۹ ← بستگی بخت؛ خانه‌ی ۶ نحس همراه با ${ST('عقله')} ← سحر.`,
+        `${ST('نقی الخد')} در ۹ به‌تنهایی سحر نیست؛ شخصیت و اخلاق سائل است.`,
+        'اگر خانه‌ی ۶ سالم است، گرفتاری‌ها طبیعی‌اند؛ گاهی علت معشوق، مادر یا کار است و جابه‌جایی کاری یا منزلی گره را باز می‌کند.'
+    ])}
+    ${callout('warn', 'احتیاط', 'تا سائل نپرسیده «سحر شده‌ام؟»، علت را ماورایی نکنید. خانه‌ی ۶ فقط سحر نیست و بیماری و رنج را هم نشان می‌دهد. برای بیماری جسمی، رمل جای پزشک را نمی‌گیرد.')}
+    <h2>۷. عاقبت گرفتاری</h2>
+    <p>شکل خانه‌ی اصلی را در شکل خانه‌ی ۱۶ ضرب کنید. متولد <b>خارج</b> ← گرفتاری بیرون می‌رود و تمام می‌شود؛ <b>داخل</b> ← می‌ماند (اگر سعد باشد سبک و قابل تحمل)؛ <b>ثابت</b> ← در همین حال می‌ماند؛ <b>منقلب</b> ← حال دگرگون می‌شود.</p>
+    ${table(['خانه‌ی علت (نسبت به خود شخص)', 'یعنی'], Object.entries(causeByHouse.self).map(([n, t]) => [HT(Number(n)), t]))}
+    ${exampleBlock('self', 'me', [1, 8])}` },
+
+{ id: 'family', group: 'موضوع‌ها', ico: '🏠', title: 'مشکلات خانه و خانواده', blurb: 'علت گرفتاری و تنش در خانه', kw: 'خانواده خانه اختلاف دعوا تنش همسر پدر مادر فرزند', topic: 'family',
+  body: () => `
+    <p class="lead">خانه و خانواده در <b>خانه‌ی ۴</b> دیده می‌شود. اگر سؤال از رابطه با یک نفر خاص است، خانه‌ی همان نفر خانه‌ی اصلی است: همسر ۷، فرزند ۵، خواهر و برادر ۳، پدر ۴ و مادر ۱۰.</p>
+    ${callout('tip', 'دعوا و بیماری در خانه', 'اگر سؤال «چرا در خانه‌ی ما این همه دعوا و بیماری است؟» است، درس «علت مشکلات، دعوا و بیماری» را ببینید؛ این درس برای اختلاف با یک عضو مشخص است.')}
+    ${steps([
+        '<b>حال خانه‌ی اصلی:</b> سعد ← پایه سالم است و گرفتاری گذراست؛ نحس و ثابت ← گرفتاری ریشه‌دار و ماندگار؛ نحس و داخل ← گرفتاری از درون خانه؛ نحس و خارج ← از بیرون آمده یا رو به رفتن است؛ منقلب ← حال خانه دگرگون است.',
+        '<b>یافتن علت:</b> مثل علت تأخیر ازدواج، خانه‌های نحس یا ثابتی را بگیرید که با خانه‌ی اصلی پیوند دارند (تکرار شکل، شاهد بودن، گشتار). معنی همان خانه علت است.',
+        '<b>اعضای خانواده:</b> خانه‌ی هر عضو را ببینید؛ عضوی که خانه‌اش نحس است و با خانه‌ی اصلی پیوند دارد، از منشأهای تنش است.',
+        '<b>سحر و چشم‌زخم:</b> همان نشانه‌های بستگی (جماعت و اجتماع و حمره در ۱، ۴، ۶، ۷؛ عقله و انکیس در ۶).',
+        '<b>عاقبت:</b> خانه‌ی ۱۶.'
+    ])}
+    <h2>نشانه‌های گرفتاری خانه</h2>
+    ${steps([
+        `${ST('عتبه الخارج')} در ۴: محیط منزل مناسب نیست (قدیمی و نمناک) یا نشانه‌ی جن آتشی در منزل. اگر شکل ۴ در ۱۳ تکرار کند، خود سائل بدبین و منفی‌نگر شده است.`,
+        `${ST('عتبه الخارج')} در ۷ و ${ST('انکیس')} در ۴: همزاد در منزل پدری.`,
+        `${ST('حمره')} در ۳: اختلاف میان خواهر و برادرها یا کم شدن محبت. ${ST('اجتماع')} در ۳: مشورت یا جلسه‌ی خانوادگی.`,
+        `${ST('عقله')} در ۷ و تکرار در ۵: ناراحتی از ازدواج و مشکلات زناشویی.`,
+        'شکل ۱۰ در ۱۲: دشمنی مادر. شکل ۴ در ۱۲: گرفتاری از طرف پدر.',
+        `خانه‌ی ۷ خارج و مثلث ۱۲ ${ST('طریق')}: مال یا وسایل خانه به دست همسر بیرون می‌رود.`,
+        'عاقبت (۴) نحس و تکرار در ۱۱: بستگی در کارها و ناامیدی از دوستان.',
+        'طلسم در خانه از ۶ و ۹ دیده می‌شود (شکل‌های نحس آتشی: عتبه‌الخارج و قبض‌الخارج). اگر خانه‌ی ۶ سالم بود، گرفتاری طبیعی است و جابه‌جایی کاری یا منزلی کمک می‌کند.'
+    ])}
+    ${table(['خانه‌ی علت', 'یعنی'], Object.entries(causeByHouse.family).map(([n, t]) => [HT(Number(n)), t]))}
+    ${callout('tip', 'نشانه‌ی شکل', 'کنار هر علت، «نشانه‌ی شکل» هم آمده (مثلاً حمره: قتال، نقی‌الخد: خوف و هراس، اجتماع: وقوع اراجیف یعنی شایعه و حرف). این نشانه جنس ماجرا را روشن‌تر می‌کند.')}
+    ${exampleBlock('family', 'general', [4])}` },
 
 { id: 'child', group: 'موضوع‌ها', ico: '👶', title: 'فرزند و بارداری', blurb: 'بچه‌دار شدن، شمار، وضع حمل، دختر یا پسر', kw: 'فرزند بچه حامله وضع حمل زایمان دختر پسر', topic: 'child',
   body: () => `
