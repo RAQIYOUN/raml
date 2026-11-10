@@ -861,7 +861,7 @@ img, svg{ -webkit-user-drag:none; user-drag:none; pointer-events:none; }
         <div class="panel anchor" id="tafsirCard"></div>
 
         <div class="anchor" id="zahirAnchor">
-            <div class="shield-section-title"><span class="zahir-tag">🔷 ظاهر رمل</span><small>روی هر خانه بزنید تا متن کتاب و جزئیاتش باز شود</small></div>
+            <div class="shield-section-title"><span class="zahir-tag">🔷 ظاهر رمل</span><small>روی هر خانه بزنید تا جزئیاتش باز شود</small></div>
             <details class="color-legend" id="colorLegend">
                 <summary>راهنمای رنگ‌ها</summary>
                 <div class="cl-body">
@@ -947,8 +947,6 @@ img, svg{ -webkit-user-drag:none; user-drag:none; pointer-events:none; }
             <div class="attrs" id="attrs"></div>
         </div>
 
-        <h4 class="box-sec">📜 حکم این شکل در این خانه (متن کتاب)</h4>
-        <div class="long-text" id="longText"></div>
 
         <div class="illness-box" id="illnessBox"></div>
 
@@ -1836,7 +1834,6 @@ const tEl = $('t');
 const attrsEl = $('attrs');
 const appearanceTextEl = $('appearanceText');
 const detailGroupsEl = $('detailGroups');
-const longTextEl = $('longText');
 const rowElementsEl = $('rowElements');
 const rowElementsWrapEl = $('rowElementsWrap');
 const zhLineSvg = $('zhLineSvg');
@@ -2315,10 +2312,6 @@ function openHouse(houseIndex, isBatin){
 
     renderIllnessSection(houseIndex, isBatin, shape.shape);
 
-    // فقط پاراگراف مربوط به همین شماره خانه از متن این شکل
-    const paras = shape.longText.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
-    const relevantPara = paras[houseIndex] || '(متنی برای این حالت ثبت نشده)';
-    longTextEl.innerHTML = `<p style="margin:0;">${highlightBitNumbers(relevantPara)}</p>`;
 
     modal.style.display = 'block';
     document.body.style.overflow = 'hidden';
@@ -2712,7 +2705,7 @@ const agholeCauses = {
 /* ======================================================================
    بخش تفسیر بر اساس نیت
    هر موضوع، فقط قاعده‌های همان موضوع را اجرا می‌کند و خروجی را به شکل
-   «حکم‌های کوتاه» + «بخش‌های جزئیات» + «متن کتاب خانه‌های اصلی» برمی‌گرداند.
+   «حکم‌های کوتاه» + «بخش‌های جزئیات» برمی‌گرداند؛ book[0] خانه‌ی اصلی است.
    همه‌ی قاعده‌ها عیناً همان قاعده‌های نسخه‌ی قبلی صفحه‌اند؛ فقط جمله‌های
    تکراری (یک حکم برای چند خانه) در یک خط با چند برچسب خانه جمع شده‌اند.
    ====================================================================== */
@@ -2801,8 +2794,11 @@ const rowsOfHouse = n => currentCast.housesRows[n - 1];
 const shapeOfRows = rows => patternIndex[rowsToCode(rows)];
 
 /* ======================== ۱) جواب کلی نیت ======================== */
-function interpGeneral(){
+function interpGeneral(mode){
     const res = { verdicts: [], sections: [], book: [15, 16] };
+    const yn = yesNoSummary(mode === 'do' ? 'do' : 'yes');
+    res.verdicts.push(yn.head);
+    res.sections.push(section('🧾', mode === 'do' ? 'انجام بدهم یا نه؟ نشانه‌ها' : 'بله یا نه؟ نشانه‌ها', yn.items, { tag: 'هر نشانه یک رأی' }));
     const j = shapeForHouse(14).shape;
     res.verdicts.push(it(`شکل قاضی (خانه‌ی ۱۵): «${j.shape}» — ${j.fortune}`, [15], fortuneTone(j.fortune)));
 
@@ -2836,6 +2832,8 @@ function interpGeneral(){
         items.push(it(`نقطه‌ی حکم به شکلی رسید («${info ? info.shapeName : '؟'}») که در توالیِ عنصر ${info ? info.element : ''} تعریف نشده، پس مطلوبی برایش محاسبه نمی‌شود.`, info ? [info.house + 1] : []));
     }
     res.sections.unshift(section('🎯', 'ضمیر، حکم و مطلوب', items));
+    const hs = hosulSection();
+    if(hs) res.sections.splice(1, 0, hs);
     return res;
 }
 
@@ -3083,7 +3081,7 @@ function interpMarriage(){
     if(lines.length){
         res.verdicts.push(it(`خانه‌ی هفتم (ازدواج): «${s7}» — ${lines.map(l => l.html.replace(/<[^>]+>/g, '')).join(' ')}`, [7], lines.some(l => l.tone === 'vbad') ? 'vbad' : (lines.some(l => l.tone === 'bad') ? 'bad' : (lines.some(l => l.tone === 'good') ? 'good' : 'mid'))));
     } else {
-        res.verdicts.push(it(`خانه‌ی هفتم (ازدواج): «${s7}» — ${fortuneOfHouse(7)}؛ برای این شکل قاعده‌ی ویژه‌ی ازدواج ثبت نشده، متن کتاب را در پایین بخوانید.`, [7], fortuneTone(fortuneOfHouse(7))));
+        res.verdicts.push(it(`خانه‌ی هفتم (ازدواج): «${s7}» — ${fortuneOfHouse(7)}؛ برای این شکل قاعده‌ی ویژه‌ی ازدواج ثبت نشده؛ حکم را از بخش خانه‌ی اصلی و شواهد بگیرید.`, [7], fortuneTone(fortuneOfHouse(7))));
     }
     const comp = [];
     const e1 = elemOf(SH(1)), e7 = elemOf(s7);
@@ -3144,18 +3142,8 @@ function interpJob(kind){
         else if(jobStuckShapes.includes(sh)) res.verdicts.push(it(`«${sh}»: <b>توقف</b> — هر کاری شروع کند حرکتی ندارد و بسته است.`, [n], 'mid'));
         else if(jobVeryBadShapes.includes(sh)) res.verdicts.push(it(`«${sh}»: <b>بسیار بد</b> — رونقی ندارد و خسارت هم دارد.`, [n], 'vbad'));
         else if(sh === 'بیاض') res.verdicts.push(it(`«${sh}»: میانه، خوب است.`, [n], 'mid'));
-        else res.verdicts.push(it(`«${sh}» (${fortuneOfHouse(n)}): برای این شکل حکم ویژه‌ی شغل ثبت نشده؛ متن کتاب را بخوانید.`, [n], fortuneTone(fortuneOfHouse(n))));
+        else res.verdicts.push(it(`«${sh}» (${fortuneOfHouse(n)}): برای این شکل حکم ویژه‌ی شغل ثبت نشده؛ حکم را از سعد و نحس و حالت شکل بگیرید.`, [n], fortuneTone(fortuneOfHouse(n))));
     });
-    return res;
-}
-
-/* ======================== ۹) معامله و مال ======================== */
-function interpTrade(){
-    const res = { verdicts: [], sections: [], book: [] };
-    const { shape } = shapeForHouse(1);
-    res.verdicts.push(it(`خانه‌ی دوم (مال و معامله): «${shape.shape}» — ${shape.fortune}`, [2], fortuneTone(shape.fortune)));
-    const paras = shape.longText.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
-    if(paras[1]) res.sections.push(section('💰', 'حکم کتاب برای مال، معامله و خرید و فروش', [it(highlightBitNumbers(paras[1]), [2])], { tag: 'خانه‌ی ۲' }));
     return res;
 }
 
@@ -3218,16 +3206,17 @@ function interpTravel(){
         if(travelTourismGood.includes(name)) items.push(it('برای تفریح رفتن خوب است.', [n], 'good'));
     });
     mergeItems(items).forEach(x => res.verdicts.push(x));
-    if(!items.length) res.verdicts.push(it('در خانه‌های ۱، ۴، ۷ و ۱۰ هیچ‌کدام از نشانه‌های ثبت‌شده‌ی سفر نیامده؛ متن کتاب خانه‌ی نهم (سفر دور) و سوم (سفر نزدیک) را بخوانید.', [1, 4, 7, 10], 'info'));
+    if(!items.length) res.verdicts.push(it('در خانه‌های ۱، ۴، ۷ و ۱۰ هیچ‌کدام از نشانه‌های ثبت‌شده‌ی سفر نیامده؛ حکم را از خانه‌ی نهم (سفر دور) و سوم (سفر نزدیک) و شواهدشان بگیرید.', [1, 4, 7, 10], 'info'));
     return res;
 }
 
-/* ======================== ۱۲) سایر موضوعات (فقط متن کتاب) ======================== */
-function interpHouseOnly(n){
+/* ======================== ۱۲) سایر موضوعات ======================== */
+function interpHouseOnly(n, bare){
     const res = { verdicts: [], sections: [], book: [n] };
     res.verdicts.push(it(`خانه‌ی ${ordinalFa[n - 1]} (${houseTopicShort[n - 1]}): «${shapeOfHouse(n)}» — ${fortuneOfHouse(n)}`, [n], fortuneTone(fortuneOfHouse(n))));
     const b = shapeForHouseBatin(n - 1).shape;
     res.verdicts.push(it(`همین خانه در باطن: «${b.shape}» — ${b.fortune}`, ['b' + n], fortuneTone(b.fortune)));
+    if(!bare) res.sections.push(...houseExtraSections(n));
     return res;
 }
 
@@ -3379,6 +3368,7 @@ function interpWhen(m){
     const units = rep.map(n => it(`تکرار در ${houseQuarter(n)} (خانه‌ی ${fa(n)}) ← یک واحد «${quarterUnit[houseQuarter(n)]}».`, [n]));
     if(!rep.length) units.push(it(`«${s}» تکرار نکرده؛ فقط واحد خود شکل («${kind}») را در نظر بگیرید.`, [m], 'mid'));
     res.sections.push(section('🗓️', 'تکرار شکل مقصود در چهار ربع زایچه', units, { tag: 'روز، هفته، ماه، سال' }));
+    res.verdicts.push(numberRangeItem(m));
     const tm = matlubTimingItems();
     res.sections.push(section('⏳', 'زمان از جای مطلوب', tm.length ? tm : [it('مطلوب حکم «طریق» است یا گرفته نمی‌شود؛ از این راه زمانی به دست نمی‌آید.', [15], 'mid')]));
     const s16 = shapeOfHouse(16), r16 = housesOfName(s16);
@@ -3560,8 +3550,10 @@ const kinHouses = {
 };
 function interpKin(key){
     const [n, title, why] = kinHouses[key] || kinHouses.amu;
-    const res = interpHouseOnly(n);
+    const res = interpHouseOnly(n, true);
     res.verdicts.unshift(it(`${title} از خانه‌ی ${fa(n)} دیده می‌شود (${why}).`, [n], 'info'));
+    const ps = kinPainSection(key);
+    if(ps) res.sections.unshift(ps);
     return res;
 }
 
@@ -3838,7 +3830,7 @@ const troubleKinds = {
 const kindOfShape = name => Object.keys(troubleKinds).find(k => troubleKinds[k].shapes.includes(name));
 const troubleTargets = {
     me:     { m: 1, label: 'خود سائل', map: 'self' },
-    person: { m: 7, label: 'شخص مورد سؤال', map: 'self' },
+    person: { m: 1, label: 'شخص مورد سؤال (نیت به نام خود او)', map: 'self' },
     home:   { m: 4, label: 'خانه و اهل منزل', map: 'family' }
 };
 function meaningFor(n, t){
@@ -3902,10 +3894,13 @@ function interpTrouble(key){
     }
     if(key === 'person'){
         const p = [];
-        if(SH(7) === 'جماعت') p.push(it('جماعت در خانه‌ی ۷: فکر او بسته است.', [7], 'bad'));
-        if(SH(7) === 'انکیس') p.push(it('انکیس در خانه‌ی ۷: غم و دلگیری درونی؛ جنگ سرد.', [7], 'bad'));
-        if(SH(7) === 'فرح') p.push(it('فرح در خانه‌ی ۷: تردید و دودلی.', [7], 'mid'));
-        if(repIn(7, 12)) p.push(it('شکل ۷ در ۱۲ تکرار کرده: دشمنی در کار است.', [7, 12], 'bad'));
+        p.push(it('نیت به نام همان شخص است؛ پس خانه‌ی ۱ خود او و خانه‌ی ۶ بیماری و گرفتاری اوست.', [1], 'info'));
+        if(SH(1) === 'جماعت') p.push(it('جماعت در خانه‌ی ۱: فکر او بسته است.', [1], 'bad'));
+        if(SH(1) === 'انکیس') p.push(it('انکیس در خانه‌ی ۱: غم و دلگیری درونی؛ جنگ سرد.', [1], 'bad'));
+        if(SH(1) === 'فرح') p.push(it('فرح در خانه‌ی ۱: تردید و دودلی.', [1], 'mid'));
+        if(SH(1) === 'عتبه الخارج') p.push(it('عتبه‌الخارج در خانه‌ی ۱: آمادگی و ثبات کافی ندارد.', [1], 'mid'));
+        if(repIn(1, 12)) p.push(it('شکل ۱ در ۱۲ تکرار کرده: دشمنی در کار است.', [1, 12], 'bad'));
+        if(countShape('عقله') >= 3) p.push(it('عقله غالب است: گره در کارهای او.', housesOfName('عقله'), 'bad'));
         if(p.length) res.sections.push(section('🧍', 'حال شخص مورد سؤال', p));
     }
     res.sections.push(section('🪬', 'سحر یا طبیعی؟', groupBindingSigns()));
@@ -3919,10 +3914,15 @@ function interpTrouble(key){
 function extraMainHouseItems(m, topicId){
     const items = [];
     if(m <= 12){
-        const sq = wrap12(m + 1), nq = wrap12(m + 2), nb = wrap12(m + 6);
+        const sq = wrap12(m + 1), nq = wrap12(m + 2), sb = wrap12(m + 4), nb = wrap12(m + 6);
         const d = n => `«${SH(n)}» ${fortuneOfHouse(n)}`;
-        const bad = [sq, nq, nb].filter(n => fortuneOfHouse(n) === 'نحس').length;
-        items.push(it(`شاهد قریب (${fa(sq)}) ${d(sq)}، ناظر قریب (${fa(nq)}) ${d(nq)}، ناظر بعید (${fa(nb)}) ${d(nb)}.`, [sq, nq, nb], bad >= 2 ? 'bad' : bad === 0 ? 'good' : 'mid'));
+        const four = [sq, nq, sb, nb], bad = four.filter(n => fortuneOfHouse(n) === 'نحس').length, good = four.filter(n => fortuneOfHouse(n) === 'سعد').length;
+        items.push(it(`شاهد قریب (${fa(sq)}) ${d(sq)}، ناظر قریب (${fa(nq)}) ${d(nq)}، شاهد بعید (${fa(sb)}) ${d(sb)}، ناظر بعید (${fa(nb)}) ${d(nb)}.`, four, bad >= 3 ? 'bad' : good >= 3 ? 'good' : 'mid'));
+        if(bad && good){
+            const x = mulShapes(mulShapes(SH(sq), SH(nq)), mulShapes(SH(sb), SH(nb)), SH(m)), xs = stateOfName(x), kd = topicQuestionKind[topicId];
+            const v = kd ? witnessVerdict(xs, kd) : [stateMeaning[xs], fortuneTone(fortuneOfName(x))];
+            items.push(it(`شاهدها با هم نمی‌خوانند؛ (شاهد قریب × ناظر قریب) × (شاهد بعید × ناظر بعید) × خانه‌ی اصلی = «${x}»، ${fortuneOfName(x)} و ${xs} ← ${v[0]}.`, [...four, m], v[1]));
+        }
     }
     const owner = houses[m - 1].fortune, f = fortuneOfHouse(m);
     if(f === 'نحس' && owner === 'سعد') items.push(it('شکل نحس در خانه‌ای که صاحبش سعد است: <b>اولش کمی خوب، آخرش بد</b>.', [m], 'mid'));
@@ -3940,6 +3940,8 @@ function extraMainHouseItems(m, topicId){
     let lv = `${fortuneOfName(l)} و ${lst}`;
     if(kind) lv += ` ← ${witnessVerdict(lst, kind)[0]}`;
     items.push(it(`لسان‌الامر دوم (خانه‌ی اصلی × ۱۶) «${l}»: ${lv}.`, [m, 16], kind ? witnessVerdict(lst, kind)[1] : fortuneTone(fortuneOfName(l))));
+    if(m !== 16) items.push(lisanItem());
+    items.push(...relationItems(m, topicId), tukhiItem(m), ...witnessRelationItems(m), ...awtadItems());
     if(topicId !== 'illness' && countShape('طریق') >= 3) items.push(it(`طریق ${fa(countShape('طریق'))} بار آمده و غالب است: آخرش به مراد و دوستی می‌رسد.`, housesOfName('طریق'), 'good'));
     return items;
 }
@@ -3981,6 +3983,410 @@ const familyFocus = {
     children: [5, 'فرزندان'],
     siblings: [3, 'خواهر و برادر']
 };
+
+/* ======================== قاعده‌های تکمیلی ۹.۷ ========================
+   اوتاد چهارگانه، اعتبار قرعه، خانه‌ی ۱۶، نسبت‌های چهارگانه (نظر، نطق، اتصال، انفصال)،
+   مال و ارث، دوستان و حاجت، زندان، علم، محبت و جدایی همسر، جزئیات سحر، علت رنج خویشان */
+const ownerSaad = n => houses[n - 1].fortune === 'سعد';
+const fMark = f => f === 'سعد' ? 'س' : f === 'نحس' ? 'ن' : 'م';
+
+/* اعتبار قرعه */
+function castWarnings(){
+    const all = Array.from({ length: 16 }, (_, i) => SH(i + 1));
+    const cnt = st => all.filter(x => stateOfName(x) === st).length;
+    const w = [];
+    if(SH(15) === 'طریق' && cnt('منقلب') >= 6) w.push(it(`طریق در قاضی و ${fa(cnt('منقلب'))} شکل منقلب در زایچه: بعضی رمّالان چنین قرعه‌ای را قابل اعتنا نمی‌دانند. با احتیاط حکم کنید.`, [15], 'mid'));
+    if(SH(15) === 'جماعت' && cnt('ثابت') >= 6) w.push(it(`جماعت در قاضی و ${fa(cnt('ثابت'))} شکل ثابت در زایچه: بعضی رمّالان چنین قرعه‌ای را قابل اعتنا نمی‌دانند. با احتیاط حکم کنید.`, [15], 'mid'));
+    return w;
+}
+
+/* مسیر کار از چهار وتد */
+const awtadAll = {
+    'سعد داخل': ['هر چهار وتد سعد و داخل‌اند: کارهای درآمدنی خوب است (ازدواج، خرید، بنای خانه، اقامت، شروع کار، دیدار بزرگان).', 'good'],
+    'سعد خارج': ['هر چهار وتد سعد و خارج‌اند: کارهای بیرون‌رفتنی خوب است (سفر، قرض دادن، صدقه، جابه‌جایی، کاشتن).', 'good'],
+    'نحس داخل': ['هر چهار وتد نحس و داخل‌اند: کارهای درآمدنی به نتیجه نمی‌رسد و اگر برسد زیان دارد.', 'bad'],
+    'نحس خارج': ['هر چهار وتد نحس و خارج‌اند: کارهای بیرون‌رفتنی بی‌نفع و با زیان است.', 'bad'],
+    'سعد ثابت': ['هر چهار وتد سعد و ثابت‌اند: آنچه دارد می‌ماند و خوش است ولی زیاد نمی‌شود.', 'mid'],
+    'نحس ثابت': ['هر چهار وتد نحس و ثابت‌اند: رنج و غم می‌ماند و کم نمی‌شود.', 'bad'],
+    'سعد منقلب': ['هر چهار وتد سعد و منقلب‌اند: کار برخلاف انتظار می‌چرخد و بد به خوب برمی‌گردد.', 'mid'],
+    'نحس منقلب': ['هر چهار وتد نحس و منقلب‌اند: بعضی حاصل می‌شود و بعضی نه، و آنچه به دست آمده زود از دست می‌رود.', 'bad']
+};
+const awtadSeq = {
+    'سسسس': ['از آغاز تا پایان خوب است', 'good'],
+    'نننن': ['از آغاز تا پایان سخت است', 'bad'],
+    'سننن': ['اولش خوب است و آخرش بد', 'bad'],
+    'نسنن': ['اول بد، بعد خوب، ولی در آخر محروم می‌شود', 'bad'],
+    'ننسن': ['اول بد، میانه خوب، آخرش پشیمانی', 'bad'],
+    'نننس': ['آخر کار نیکو می‌شود و به دست می‌آید', 'good'],
+    'سننس': ['آغاز و پایان خوب، میانه با رنج', 'good'],
+    'نسسن': ['اول رنج، میانه آسایش، در آخر از دست می‌رود', 'mid'],
+    'سسنن': ['نیمه‌ی اول خوب، نیمه‌ی دوم بد', 'mid'],
+    'ننسس': ['نیمه‌ی اول سخت، نیمه‌ی دوم خوب', 'good']
+};
+function awtadItems(){
+    const W = [1, 4, 7, 10], fs = W.map(fortuneOfHouse), sts = W.map(n => stateOfName(SH(n)));
+    const items = [];
+    if(fs.every(f => f === fs[0]) && sts.every(s => s === sts[0]) && awtadAll[`${fs[0]} ${sts[0]}`]){
+        const [t, tone] = awtadAll[`${fs[0]} ${sts[0]}`];
+        items.push(it(t, W, tone));
+    }
+    const seq = awtadSeq[fs.map(fMark).join('')];
+    if(seq) items.push(it(`مسیر کار از چهار وتد (۱ آغاز، ۴ و ۷ میانه، ۱۰ پایان): ${seq[0]}.`, W, seq[1]));
+    return items;
+}
+
+/* نسبت دو شکل: حاصل ضرب */
+const relationByProduct = { 'لحیان': 'نظر (دیدن و توجه)', 'حمره': 'نطق (گفتگو)', 'بیاض': 'اتصال (رسیدن و وصال)', 'انکیس': 'انفصال (جدایی)' };
+function relationItems(m, topicId){
+    const items = [];
+    if(m !== 1){
+        const p = mulShapes(SH(1), SH(m));
+        if(relationByProduct[p]) items.push(it(`خانه‌ی ۱ × خانه‌ی ${fa(m)} = «${p}»: میان سائل و موضوع <b>${relationByProduct[p]}</b> است.`, [1, m], p === 'انکیس' ? 'bad' : p === 'بیاض' ? 'good' : 'mid'));
+    }
+    if(topicId === 'general'){
+        const x = mulShapes(SH(1), 'بیاض'), hx = housesOfName(x);
+        items.push(it(hx.length ? `شکلِ اتصالِ طالع «${x}» (طالع × بیاض) در ${hList(hx)} آمده؛ راه رسیدن به مراد از منسوبات این خانه‌هاست.` : `شکلِ اتصالِ طالع «${x}» در زایچه نیامده؛ راه رسیدن روشن نیست.`, hx.length ? hx : [1], hx.length ? 'info' : 'mid'));
+    }
+    return items;
+}
+
+/* خانه‌ی ۱۶: لسان‌الامر */
+function lisanItem(){
+    const s = SH(16), f = fortuneOfHouse(16), st = stateOfName(s);
+    const T = {
+        'داخل سعد': ['کار به آسانی برمی‌آید', 'good'], 'داخل نحس': ['کار به دشواری انجام می‌شود', 'bad'],
+        'خارج سعد': ['سائل به اختیار خودش کار را رها می‌کند', 'mid'], 'خارج نحس': ['کار بی‌اختیار از دست می‌رود', 'bad'],
+        'منقلب سعد': ['کار با شتاب پیش می‌رود', 'good'], 'منقلب نحس': ['برای رسیدن حسرت و پریشانی می‌کشد و ناچار رها می‌کند', 'bad'],
+        'ثابت سعد': ['کار با درنگ ولی پایدار پیش می‌رود', 'mid'], 'ثابت نحس': ['کار در همین حال گیر می‌کند', 'bad']
+    };
+    const v = T[`${st} ${f}`] || ['مقصود انجام می‌شود ولی میانه', 'mid'];
+    return it(`لسان‌الامر (خانه‌ی ۱۶) «${s}»، ${f} و ${st}: ${v[0]}.`, [16], v[1]);
+}
+
+/* مال و معامله (خانه‌ی ۲) */
+function interpTrade(){
+    const res = { verdicts: [], sections: [], book: [2] };
+    const s = SH(2), f = fortuneOfHouse(2), st = stateOfName(s);
+    const rep = repOf(2);
+    res.verdicts.push(it(`خانه‌ی دوم (مال و معامله) «${s}»، ${f} و ${st}. نشانه‌ی شکل: ${eventOfName(s)}.`, [2], fortuneTone(f)));
+    const strong = rep.filter(n => [10, 11, 15, 16].includes(n));
+    const qd = housesOfName('قبض الداخل').filter(n => ownerSaad(n));
+    if(f === 'سعد' && st === 'داخل') res.verdicts.push(it(strong.length ? `سعد و داخل است و در ${hList(strong)} تکرار کرده: مال به آسانی و با قوت حاصل می‌شود.` : 'سعد و داخل است: مال حاصل می‌شود.', [2, ...strong], 'good'));
+    else if(f === 'سعد' && st === 'خارج') res.verdicts.push(it('سعد و خارج است: مال می‌رسد ولی به خوشی خرج می‌شود و نمی‌ماند.', [2], 'mid'));
+    else if(f === 'نحس' && st === 'خارج') res.verdicts.push(qd.length ? it(`نحس و خارج است: فعلاً دست تنگ است، ولی چون قبض‌الداخل (شکل مال) در خانه‌ی سعدِ ${hList(qd)} آمده، بعد از مدتی مال حاصل می‌شود.`, [2, ...qd], 'mid') : it('نحس و خارج است: مال از دست بیرون می‌رود.', [2], 'bad'));
+    else if(f === 'نحس') res.verdicts.push(it(`نحس و ${st} است: مال به سختی و با رنج حاصل می‌شود.`, [2], 'bad'));
+    else res.verdicts.push(it(`${st} است: ${stateMeaning[st]}.`, [2], 'mid'));
+    if(s === 'انکیس' && rep.some(n => [10, 11, 14].includes(n))) res.verdicts.push(it('انکیس در ۲ و تکرار در ۱۰، ۱۱ یا ۱۴: مال کم و با رنج و مشقت.', [2], 'bad'));
+    if(s === 'جماعت' || s === 'اجتماع') res.verdicts.push(it(`${s} در خانه‌ی ۲: درآمد ثابت است.`, [2], 'mid'));
+    if([1, 2, 10].every(n => fortuneOfHouse(n) === 'نحس')) res.verdicts.push(it('خانه‌های ۱، ۲ و ۱۰ هر سه نحس‌اند: سرگردانی و تنگی در کار و مال.', [1, 2, 10], 'vbad'));
+
+    const src = rep.filter(n => n <= 12).map(n => f === 'نحس' && st === 'خارج'
+        ? it(`تلف مال از جانب <b>${houseShortLabel[n - 1]}</b> (خانه‌ی ${fa(n)}).`, [n], 'bad')
+        : it(`مال از جانب <b>${houseShortLabel[n - 1]}</b> (خانه‌ی ${fa(n)}) می‌رسد.`, [n], f === 'نحس' ? 'mid' : 'good'));
+    const c = mulShapes(SH(10), SH(14)), hc = housesOfName(c).filter(n => n <= 12);
+    src.push(it(`سبب مال (۱۰ × ۱۴) «${c}»: ${hc.length ? `در ${hList(hc)} آمده؛ مال از منسوبات این خانه‌ها می‌رسد` : 'در خانه‌های ۱ تا ۱۲ نیامده'}.`, [10, 14, ...hc], 'info'));
+    const qAll = housesOfName('قبض الداخل');
+    if(qAll.length) src.push(it(`قبض‌الداخل (شکل مال) در ${hList(qAll)}: ${qAll.some(ownerSaad) ? 'در جای نیک است و مال را قوت می‌دهد' : 'در جای نیک نیامده'}.`, qAll, qAll.some(ownerSaad) ? 'good' : 'mid'));
+    res.sections.push(section('📍', 'مال از کجا می‌رسد', src));
+
+    const s8 = SH(8), st8 = stateOfName(s8), f8 = fortuneOfHouse(8);
+    const inh = [];
+    if(st8 === 'خارج' && st === 'داخل') inh.push(it(`خانه‌ی ۸ «${s8}» خارج و خانه‌ی ۲ داخل است: ارث، مال گم‌شده یا طلب به سائل می‌رسد، ${f8 === 'سعد' ? 'به آسانی' : 'به سختی'}.`, [8, 2], 'good'));
+    else if(st8 === 'داخل' || st8 === 'ثابت') inh.push(it(`خانه‌ی ۸ «${s8}» ${st8} است: ارث یا مال غایب فعلاً بیرون نمی‌آید.`, [8], 'mid'));
+    else inh.push(it(`خانه‌ی ۸ «${s8}» ${st8} و خانه‌ی ۲ ${st} است: رسیدن ارث یا مال غایب روشن نیست.`, [8, 2], 'mid'));
+    res.sections.push(section('📜', 'ارث، طلب و مال گم‌شده', inh));
+    return res;
+}
+
+/* ویژه‌ی خانه‌ها در «سایر موضوعات» */
+function houseExtraSections(n){
+    const out = [];
+    if(n === 11){
+        const s = SH(11), f = fortuneOfHouse(11), st = stateOfName(s), r = repOf(11);
+        const items = [];
+        const T = { 'سعد داخل': ['امیدها برمی‌آید و از دوستان خیر می‌بیند.', 'good'], 'نحس داخل': ['امید به سختی و بی‌اختیار برمی‌آید.', 'bad'],
+            'سعد خارج': ['دوستان از او فارغ‌اند؛ راحتی از ایشان نمی‌بیند.', 'mid'], 'نحس خارج': ['ناسازگاری دوستان؛ امیدی نیست.', 'bad'],
+            'سعد ثابت': ['حال دوستان خوب است و امید برمی‌آید ولی با درنگ.', 'mid'], 'نحس ثابت': ['از دوستان فایده نمی‌بیند و امید برنمی‌آید.', 'bad'],
+            'سعد منقلب': ['دوستان دودل‌اند؛ گاه نزدیک گاه دور. بعضی امیدها برمی‌آید.', 'mid'], 'نحس منقلب': ['دوستان سرگردان و ناپایدارند.', 'bad'] };
+        const v = T[`${f} ${st}`];
+        if(v) items.push(it(`خانه‌ی ۱۱ «${s}»، ${f} و ${st}: ${v[0]}`, [11], v[1]));
+        const fr = r.filter(h => [3, 5, 9].includes(h)), en = r.filter(h => [4, 7, 10, 12].includes(h));
+        if(fr.length) items.push(it(`شکل ۱۱ در ${hList(fr)} تکرار کرده: دوستان واقعاً دوست سائل‌اند.`, fr, 'good'));
+        if(en.length) items.push(it(`شکل ۱۱ در ${hList(en)} تکرار کرده: دوستان در باطن دشمن‌اند.`, en, 'bad'));
+        if(f === 'سعد' && r.some(h => [6, 12].includes(h))) items.push(it('شکل ۱۱ سعد است ولی در ۶ یا ۱۲ تکرار کرده: دوستی ظاهری است و پشت سر غیبت می‌کنند.', [11, ...r.filter(h => [6, 12].includes(h))], 'bad'));
+        if(r.some(h => [1, 5].includes(h))) items.push(it('شکل ۱۱ در ۱ یا ۵ تکرار کرده: میانشان محبت و اتفاق زیاد است.', r.filter(h => [1, 5].includes(h)), 'good'));
+        if(!fr.length && !en.length && r.length) items.push(it('شکل ۱۱ در خانه‌های دیگری تکرار کرده: نه دوست‌اند نه دشمن.', r, 'mid'));
+        const p = mulShapes(SH(1), s), hp = housesOfName(p);
+        items.push(it(hp.includes(2) ? `حاجت: ۱ × ۱۱ = «${p}» و در خانه‌ی ۲ نشسته؛ بی‌شک مقصود برمی‌آید.` : `حاجت: ۱ × ۱۱ = «${p}» (${fortuneOfName(p)}، ${stateOfName(p)})؛ ${stateMeaning[stateOfName(p)]}.`, [1, 11, ...(hp.includes(2) ? [2] : [])], hp.includes(2) ? 'good' : fortuneTone(fortuneOfName(p))));
+        out.push(section('🤝', 'دوستان، امید و حاجت', items));
+    }
+    if(n === 12){
+        const a = mulShapes(SH(1), SH(8)), b = mulShapes(SH(8), SH(12)), p = mulShapes(a, b), st = stateOfName(p), f = fortuneOfName(p);
+        const items = [it(`رهایی از زندان و گرفتاری: (۱ × ۸ = «${a}») × (۸ × ۱۲ = «${b}») = «${p}»، ${f} و ${st} ← ${st === 'خارج' ? `خلاص می‌شود${f === 'نحس' ? '، ولی با سختی و مشقت' : ''}` : st === 'منقلب' ? 'حالش دگرگون می‌شود؛ بخشی از گرفتاری رفع می‌شود' : 'فعلاً در گرفتاری و حبس می‌ماند'}.`, [1, 8, 12], st === 'خارج' ? (f === 'نحس' ? 'mid' : 'good') : st === 'منقلب' ? 'mid' : 'bad')];
+        const hm = [3, 8, 12].filter(h => SH(h) === 'حمره');
+        if(hm.length) items.push(it(`حمره در ${hList(hm)}: نشانه‌ی خطر و خون؛ احتیاط کنید.`, hm, 'vbad'));
+        out.push(section('🔒', 'زندان و رهایی', items));
+    }
+    if(n === 8) out.push(...interpTrade().sections.filter(sc => /ارث/.test(sc.title)));
+    if(n === 9){
+        const s = SH(9), s5 = SH(5);
+        const K = [[['نصره الداخل', 'قبض الداخل', 'عتبه الداخل'], 'علم می‌آموزد و کامل می‌شود'], [['جماعت'], 'ریاضی، هندسه و نجوم'], [['اجتماع'], 'فال و رمل'],
+            [['فرح'], 'هنر و موسیقی'], [['انکیس', 'عقله'], 'علوم روحانی، دعا و عزایم']];
+        const k = K.find(x => x[0].includes(s));
+        const items = [];
+        if(k) items.push(it(`«${s}» در خانه‌ی ۹: ${k[1]}${k[0].includes(s5) ? '؛ همین جنس شکل در خانه‌ی ۵ هم آمده و در آن سرآمد می‌شود' : ''}.`, k[0].includes(s5) ? [9, 5] : [9], 'good'));
+        else items.push(it(`«${s}» در خانه‌ی ۹ (${fortuneOfHouse(9)}): نصیب علمی را از منسوبات این شکل و حالش بگیرید.`, [9], fortuneTone(fortuneOfHouse(9))));
+        out.push(section('📚', 'نصیب از علم', items));
+    }
+    return out;
+}
+
+/* محبت و جدایی همسر */
+function marriageExtraSection(){
+    const items = [];
+    const love = SH(11), r = housesOfName(love);
+    if(r.includes(1)) items.push(it(`شکل خانه‌ی محبوبِ همسر (۱۱) «${love}» در خانه‌ی ۱ تکرار کرده: همسر بی‌شک سائل را دوست دارد.`, [11, 1], 'good'));
+    const s1 = SH(1), r1 = housesOfName(s1);
+    if(r1.includes(5)) items.push(it('شکل سائل در خانه‌ی دوستِ همسر (۵) آمده: شدت محبت کم شده ولی هنوز میل هست.', [1, 5], 'mid'));
+    if(r1.includes(6)) items.push(it('شکل سائل در خانه‌ی دشمنِ همسر (۶) آمده: رابطه به سردی و دشمنی کشیده؛ باید دید مقصر کیست.', [1, 6], 'bad'));
+    const d = mulShapes(SH(4), SH(7));
+    const sep = ['عتبه الخارج', 'قبض الخارج', 'نقی الخد'];
+    const momSep = [1, 2, 3, 4].filter(n => sep.includes(SH(n)));
+    items.push(it(`دوام ازدواج: ۴ × ۷ = «${d}» (${fortuneOfName(d)}، ${stateOfName(d)})${sep.includes(d) ? ' — نحس خارج است: نشانه‌ی جدایی' : ''}.`, [4, 7], sep.includes(d) ? 'bad' : fortuneTone(fortuneOfName(d))));
+    if(momSep.length >= 2) items.push(it(`شکل‌های نحس خارج در امهات (${hList(momSep)}) غلبه دارند: نشانه‌ی جدایی.`, momSep, 'bad'));
+    return section('💞', 'محبت و دوام', items);
+}
+
+/* شغل مناسب از ۱ × ۱۰ */
+function jobProductSection(){
+    const p = mulShapes(SH(1), SH(10)), hp = housesOfName(p);
+    const good = hp.filter(n => [2, 10, 11].includes(n)), bad = hp.filter(n => [6, 8, 12].includes(n));
+    const items = [it(`۱ × ۱۰ = «${p}»: کار از منسوبات این شکل${jobFieldByShape[p] ? ` (${jobFieldByShape[p]})` : ''}.`, [1, 10], 'info')];
+    if(good.length) items.push(it(`«${p}» در ${hList(good)} آمده: این کار مال و رزق می‌آورد.`, good, 'good'));
+    else if(bad.length) items.push(it(`«${p}» در ${hList(bad)} آمده: بهتر است از این کار پرهیز کند.`, bad, 'bad'));
+    else if(!hp.length) items.push(it(`«${p}» در زایچه نیامده: اگر این کار را بگیرد سود دارد، ولی احتمالاً سراغش نمی‌رود.`, [1, 10], 'mid'));
+    return section('🧩', 'شغل مناسب از ضرب ۱ در ۱۰', items);
+}
+
+/* جزئیات سحر از خانه‌ی ۶ */
+function sorceryDetailSection(){
+    const s = SH(6), f = fortuneOfHouse(6), st = stateOfName(s), items = [];
+    const type = { 'عتبه الخارج': 'آتشی (سوزانده یا در محیط پاشیده‌اند)', 'انکیس': 'خاکی (در خاک یا خرابه دفن کرده‌اند)', 'فرح': 'آبی (در آب انداخته یا خورانده‌اند)', 'عتبه الداخل': 'بادی (آویخته یا به باد داده‌اند)' };
+    if(type[s]) items.push(it(`«${s}» در خانه‌ی ۶: اگر سحری باشد، از نوع ${type[s]}.`, [6], 'bad'));
+    if(f === 'سعد' && st === 'خارج') items.push(it('خانه‌ی ۶ سعد و خارج است: سحری در کار نیست و گمان سائل خطاست.', [6], 'good'));
+    else if(f === 'نحس' && st === 'خارج') items.push(it('خانه‌ی ۶ نحس و خارج است: اگر سحری باشد سخت است؛ نشانه‌اش بی‌خوابی، بی‌قراری و سرگردانی.', [6], 'bad'));
+    else if(['جماعت', 'اجتماع', 'حمره'].includes(s)) items.push(it(`«${s}» شکل ثابت در خانه‌ی ۶: اگر سحری باشد، سخت و از روی دشمنی است.`, [6], 'vbad'));
+    else if(f === 'نحس') items.push(it(`خانه‌ی ۶ نحس و ${st} است: اگر سحری باشد، برای جدایی و دشمنی است.`, [6], 'bad'));
+    else if(f === 'سعد' && st === 'داخل') items.push(it('خانه‌ی ۶ سعد و داخل است: اگر کاری شده برای محبت بوده و زود رفع می‌شود.', [6], 'mid'));
+    if(s === 'عتبه الداخل') items.push(it('عتبه‌الداخل در ۶: سائل برای باطل کردن، دعا گرفته یا کاری کرده است.', [6], 'info'));
+    if(s === 'بیاض') items.push(it('بیاض در ۶: بیشتر ترس و وسواس است تا سحر.', [6], 'mid'));
+    if(s === 'طریق' || s === 'فرح') items.push(it(`«${s}» در ۶: دلسردی است و زود از بین می‌رود.`, [6], 'mid'));
+    if(['نصره الخارج', 'عقله'].includes(s)) items.push(it(`«${s}» در ۶: از نشانه‌های اثر جن است.`, [6], 'bad'));
+    const r = repOf(6);
+    if(r.includes(12)) items.push(it('شکل ۶ در ۱۲ تکرار کرده: از روی دشمنی و برای گرفتاری است.', [6, 12], 'bad'));
+    if(r.includes(8)) items.push(it('شکل ۶ در ۸ تکرار کرده: با قصد بدبختی و آسیب است.', [6, 8], 'bad'));
+    if(r.includes(10) || repIn(1, 10)) items.push(it('تکرار طالع یا شکل ۶ در ۱۰: نشانه‌ی کاری که برای او کرده‌اند.', [10], 'bad'));
+    if(SH(15) === 'عقله') items.push(it('عقله در قاضی: نشانه‌ی سحر.', [15], 'bad'));
+    const p = mulShapes(SH(2), s);
+    if(fortuneOfName(p) === 'نحس') items.push(it(`۲ × ۶ = «${p}» نحس است: یکی دیگر از دلیل‌های سحر.`, [2, 6], 'bad'));
+    items.push(it('این نشانه‌ها تنها حکم نیستند؛ تا سائل نپرسیده علت را ماورایی نکنید و برای بیماری به پزشک مراجعه کنید.', [], 'info'));
+    return section('🧿', 'جزئیات سحر از خانه‌ی ۶', items);
+}
+
+/* علت رنج خویشان */
+const kinBase = { rself: 1, rfath: 4, rmoth: 10, rbro: 3, rlove: 5, rwife: 7 };
+function kinPainSection(key){
+    const base = kinBase[key];
+    if(!base) return null;
+    const n = kinHouses[key][0], r = repOf(n).filter(h => h <= 12);
+    const items = r.map(h => {
+        const rel = relHouse(h, base);
+        const mean = rel === 1 ? 'خود او' : (causeByHouse.self[rel] || houseShortLabel[h - 1]);
+        return it(`شکل خانه‌ی رنج در خانه‌ی ${fa(h)} تکرار کرده (${ordinalFa[rel - 1]} از خود او): رنجش از جهت <b>${mean.split(':')[0]}</b>.`, [h], 'bad');
+    });
+    if(!items.length) items.push(it('شکل خانه‌ی رنج در خانه‌های ۱ تا ۱۲ تکرار نکرده؛ علت روشنی دیده نمی‌شود.', [n], 'mid'));
+    return section('🔎', 'علت رنج', items);
+}
+
+/* ======================== حصول و لاحصول، امید و نگرانی (روش مرکزها در ابدح) ========================
+   عنصر هر خانه از جایش در گروه چهارتایی (آتش، باد، آب، خاک). مرکز = نسبت عنصر نقطه با عنصر خانه‌ای که مطلوب در آن آمده:
+   موافق (هم‌عنصر)، مصادق (آتش و باد، آب و خاک)، مسالم (آتش و خاک، باد و آب)، مخالف (آتش و آب، باد و خاک).
+   ضمیر: موافق و مصادق ← امید؛ مسالم و مخالف ← نگرانی. حکم: نقطه با صاحب خانه بسته نشود ← حصول، بسته شود ← لاحصول. */
+const elOfHouse = n => elementByRow[(n - 1) % 4];
+function centerOf(a, b){
+    if(a === b) return 'موافق';
+    const k = [a, b].sort().join('-');
+    if(['آتش-باد', 'آب-خاک'].includes(k)) return 'مصادق';
+    if(['آتش-خاک', 'آب-باد'].includes(k)) return 'مسالم';
+    return 'مخالف';
+}
+const centerRank = { 'موافق': 0, 'مصادق': 1, 'مسالم': 2, 'مخالف': 3 };
+const quarterDeg = n => ['وتد', 'مایل', 'زایل', 'وتدالوتد'][Math.floor((n - 1) / 4)];
+function pointJudge(row){
+    const rows = currentCast.housesRows;
+    const info = computeMatlubFromChain(tracePoint(14, row, rows), rows);
+    if(!info || !info.matlub) return info ? { info } : null;
+    const el = info.element;
+    let where = 'ظاهر', cands = findHousesWithShape(info.matlub, rows);
+    if(!cands.length){ where = 'باطن'; cands = findHousesWithShape(info.matlub, currentCast.batinRows); }
+    if(!cands.length){
+        const home = homeHouseOf(info.matlub);
+        const ok = rowsFromShapeName(SH(home))[info.row] === 2;
+        return { info, n: home, where: 'جایگاه خودش در ابدح', center: centerOf(el, elOfHouse(home)), deg: quarterDeg(home), ok, el };
+    }
+    cands.sort((a, b) => centerRank[centerOf(el, elOfHouse(a))] - centerRank[centerOf(el, elOfHouse(b))] || a - b);
+    const n = cands[0];
+    const ok = Number(codeOf(houses[n - 1].pattern)[info.row]) === 2;
+    return { info, n, where, center: centerOf(el, elOfHouse(n)), deg: quarterDeg(n), ok, el, all: cands };
+}
+function hosulSection(){
+    const s15 = currentCast.housesRows[14].map((v, i) => v === 1 ? i : -1).filter(i => i !== -1);
+    if(s15.length < 2) return null;
+    const z = pointJudge(s15[0]), h = pointJudge(s15[1]);
+    const items = [];
+    let hope = null, got = null;
+    if(z && z.n){
+        hope = ['موافق', 'مصادق'].includes(z.center);
+        const pow = { 'وتد': 'قوی', 'مایل': 'میانه', 'زایل': 'کم‌قوت', 'وتدالوتد': 'بسیار شدید' }[z.deg];
+        items.push(it(`ضمیر: نقطه‌ی ${z.el} به «${z.info.shapeName}» رسید؛ مطلوبش «${z.info.matlub}» در ${z.where} (خانه‌ی ${fa(z.n)}، ${elOfHouse(z.n)}) است. مرکز <b>${z.center}</b> ← سؤال از <b>${hope ? 'امید' : 'نگرانی'}</b> است، با شدت ${pow} (${z.deg}).`, [z.n], hope ? 'good' : 'mid'));
+    } else items.push(it('مطلوب نقطه‌ی ضمیر گرفته نمی‌شود (طریق)؛ امید یا نگرانی از این راه معلوم نیست.', [15], 'mid'));
+    if(h && h.n){
+        got = h.ok;
+        const strong = ['موافق', 'مصادق'].includes(h.center);
+        const time = h.deg === 'وتد' ? 'زود (آحاد)' : h.deg === 'مایل' ? 'به عشرات' : h.deg === 'زایل' ? 'با تأخیر و سختی' : 'در درازمدت';
+        items.push(it(`حکم: نقطه‌ی ${h.el} به «${h.info.shapeName}» رسید؛ مطلوبش «${h.info.matlub}» در ${h.where} (خانه‌ی ${fa(h.n)}، مرکز ${h.center}، ${h.deg}) است. نقطه با صاحب خانه ${h.ok ? 'باز می‌ماند ← <b>حصول</b>' : 'بسته می‌شود ← <b>لاحصول</b>'}${strong ? ' (حکم قوی)' : ''}؛ زمان: ${time}.`, [h.n], h.ok ? 'good' : 'bad'));
+        if(h.all && h.all.length > 1) items.push(it(`مطلوب حکم در چند خانه آمده (${hList(h.all)})؛ به ترتیب مرکز موافق، مصادق، مسالم و مخالف، خانه‌ی ${fa(h.n)} ملاک شد.`, h.all, 'info'));
+    } else items.push(it('مطلوب نقطه‌ی حکم «طریق» است یا گرفته نمی‌شود؛ حکم منقلب است.', [15], 'mid'));
+    if(hope !== null && got !== null){
+        const fin = hope ? (got ? ['امیدش حاصل می‌شود.', 'good'] : ['امیدش حاصل نمی‌شود.', 'bad']) : (got ? ['نگرانی‌اش واقع می‌شود.', 'bad'] : ['نگرانی‌اش واقع نمی‌شود و رفع می‌شود.', 'good']);
+        items.push(it(`نتیجه: سؤال از ${hope ? 'امید' : 'نگرانی'} و حکم ${got ? 'حصول' : 'لاحصول'} است ← <b>${fin[0]}</b>`, [15], fin[1]));
+    }
+    return section('⚖️', 'حصول و لاحصول: امید یا نگرانی', items);
+}
+
+/* نسبت دو شکل: یکسان، نظر، نطق، اتصال، انفصال، تقابل تام */
+function relationOfShapes(a, b){
+    if(a === b) return 'یکسان';
+    return { 'لحیان': 'نظر', 'حمره': 'نطق', 'بیاض': 'اتصال', 'انکیس': 'انفصال', 'طریق': 'تقابل تام' }[mulShapes(a, b)] || null;
+}
+function witnessRelationItems(m){
+    const items = [], s = SH(m);
+    if(m <= 12){
+        const o = wrap12(m + 6), r = relationOfShapes(s, SH(o));
+        if(r === 'تقابل تام') items.push(it(`خانه‌ی اصلی «${s}» با خانه‌ی روبه‌رویش (${fa(o)}) «${SH(o)}» تقابل تام دارد: دلیل قوی بر نرسیدن.`, [m, o], 'bad'));
+    }
+    if(relationOfShapes(SH(1), SH(16)) === 'تقابل تام') items.push(it(`طالع «${SH(1)}» با عاقبت (۱۶) «${SH(16)}» تقابل تام دارد: کار به بن‌بست می‌رسد.`, [1, 16], 'bad'));
+    const wit = [13, 14, 15].filter(n => n !== m).map(n => ({ n, r: relationOfShapes(s, SH(n)), same: stateOfName(s) === stateOfName(SH(n)) }));
+    const linked = wit.filter(w => w.r || w.same);
+    if(linked.length) items.push(it(`پیوند شواهد با خانه‌ی اصلی: ${linked.map(w => `${fa(w.n)} «${SH(w.n)}» ${w.r ? w.r : 'هم‌حالت'}`).join('، ')}.`, linked.map(w => w.n), linked.some(w => w.r === 'تقابل تام') ? 'bad' : 'good'));
+    else items.push(it('شواهد ۱۳، ۱۴ و ۱۵ با شکل خانه‌ی اصلی هیچ نظر، نطق، اتصال یا انفصالی ندارند و هم‌حالت هم نیستند: یاری‌اش نمی‌کنند.', [13, 14, 15], 'bad'));
+    return items;
+}
+
+/* کشف: نور لحیان */
+function lahyanItem(){
+    const z = housesOfName('لحیان'), b = findHousesWithShape('لحیان', currentCast.batinRows);
+    if(z.length) return it(`لحیان (نور کشف) در ظاهر ${hList(z)} آمده: باطن همین خانه‌ها به سائل و حالش نظر دارد؛ مطلوب آشکار می‌شود.`, z, 'good');
+    if(b.length) return it(`لحیان در ظاهر نیست ولی در باطن خانه‌های ${b.map(fa).join('، ')} هست: کشف ممکن است.`, b.map(n => 'b' + n), 'mid');
+    return it('لحیان نه در ظاهر هست نه در باطن: نظر بسته است و از این راه کشفی رخ نمی‌دهد.', [], 'bad');
+}
+/* نظر، نطق، اتصال و انفصالِ شکل خانه‌ی اصلی در زایچه (رأی طوخی) */
+function tukhiItem(m){
+    const s = SH(m), parts = [];
+    [['لحیان', 'نظر', 'دیدن یا آشکار شدن'], ['حمره', 'نطق', 'گفتگو'], ['بیاض', 'اتصال', 'وصال'], ['انکیس', 'انفصال', 'جدایی']].forEach(([k, name, mean]) => {
+        const x = mulShapes(s, k), hx = housesOfName(x).filter(n => n !== m);
+        if(hx.length) parts.push({ t: `${name}ش «${x}» در ${hx.map(fa).join('، ')} (${mean})`, hx, name });
+    });
+    if(!parts.length) return it(`نظر، نطق، اتصال و انفصالِ «${s}» هیچ‌کدام در زایچه نیامده‌اند.`, [m], 'mid');
+    return it(`نسبت‌های «${s}» در زایچه: ${parts.map(p => p.t).join('؛ ')}.`, parts.flatMap(p => p.hx), parts.some(p => p.name === 'اتصال') ? 'good' : parts.every(p => p.name === 'انفصال') ? 'bad' : 'info');
+}
+
+/* ======================== دایره‌ی بزدح و جمع‌بندی «بله یا نه» ======================== */
+const bazdahPos = name => { const r = rowsFromShapeName(name); let s = 0; [2, 7, 4, 8].forEach((w, i) => { if(r[i] === 1) s += w; }); s %= 16; return s === 0 ? 16 : s; };
+const bazdahAt = pos => { const p = ((pos - 1) % 16 + 16) % 16 + 1; return SHAPE_NAMES_ALL.find(n => bazdahPos(n) === p); };
+const SHAPE_NAMES_ALL = houses.map(h => h.shape);
+/* عدد صغیر (وزن ۱، ۲، ۳، ۴) و وسیط (وزن ابدح ۱، ۲، ۴، ۸) */
+const smallNum = name => rowsFromShapeName(name).reduce((a, v, i) => a + (v === 1 ? i + 1 : 0), 0);
+const midNum = name => rowsFromShapeName(name).reduce((a, v, i) => a + (v === 1 ? [1, 2, 4, 8][i] : 0), 0);
+/* حکم از حالت شکل (روش شکلی) */
+function stateHosul(name){
+    const st = stateOfName(name), f = fortuneOfName(name);
+    if(st === 'داخل') return { yes: true, txt: f === 'نحس' ? 'حصول، به سختی' : 'حصول، به آسانی' };
+    if(st === 'خارج') return { yes: false, txt: f === 'نحس' ? 'لاحصول، بی‌اختیار' : 'لاحصول، به اختیار خودش' };
+    if(st === 'منقلب') return { yes: f !== 'نحس', txt: f === 'نحس' ? 'رفت‌وآمد میان حصول و لاحصول؛ در آخر لاحصول' : 'رفت‌وآمد میان حصول و لاحصول؛ در آخر حصول' };
+    if(f === 'ممتزج') return { yes: null, txt: 'متوقف بر سببی است: اگر سبب فراهم شود حصول' };
+    return { yes: f === 'سعد', txt: f === 'سعد' ? 'پس از توقف، حصول' : 'متوقف؛ لاحصول' };
+}
+/* روش بزدح: مطلوب = هفتمِ شکل خانه‌ی سؤال در بزدح؛ حکم = باطن خانه‌هایی که مطلوب در ظاهرشان آمده */
+function bazdahJudge(q){
+    const s = SH(q), m = bazdahAt(bazdahPos(s) + 6), z = housesOfName(m);
+    let parts, where;
+    if(z.length){ where = `در ظاهر ${hList(z)}`; parts = z.map(n => mulShapes(m, houses[n - 1].shape)); }
+    else {
+        const b = findHousesWithShape(m, currentCast.batinRows);
+        if(b.length){ where = `در باطن خانه‌های ${b.map(fa).join('، ')}`; parts = b.map(n => SH(n)); }
+        else { const h = homeHouseOf(m); where = `نه در ظاهر نه در باطن؛ از جایگاهش (خانه‌ی ${fa(h)})`; parts = [mulShapes(m, SH(h))]; }
+    }
+    const hk = parts.reduce((a, b) => mulShapes(a, b));
+    return { s, m, where, hk, ...stateHosul(hk), houses: z };
+}
+function voteItem(label, yes, txt, hs){
+    const mark = yes === true ? '✅' : yes === false ? '❌' : '⏸️';
+    return it(`${mark} <b>${label}</b>: ${txt}`, hs, yes === true ? 'good' : yes === false ? 'bad' : 'mid');
+}
+function yesNoSummary(mode){
+    const votes = [];
+    const add = (label, yes, txt, hs) => votes.push({ yes, item: voteItem(label, yes, txt, hs) });
+    if(mode === 'do'){
+        [[1, 'طالع (۱)'], [14, 'مطلوب و آینه‌ی رمل (۱۴)'], [15, 'قاضی (۱۵)'], [16, 'عاقبت (۱۶)'], [10, 'پایان کار (۱۰)']].forEach(([n, l]) => {
+            const f = fortuneOfHouse(n);
+            add(l, f === 'سعد' ? true : f === 'نحس' ? false : null, `«${SH(n)}» ${f} و ${stateOfName(SH(n))}`, [n]);
+        });
+    } else {
+        const q = stateHosul(SH(15));
+        add('قاضی (۱۵)', q.yes, `«${SH(15)}» ← ${q.txt}`, [15]);
+        const p = stateHosul(SH(14));
+        add('مطلوب و آینه‌ی رمل (۱۴)', p.yes, `«${SH(14)}» ← ${p.txt}`, [14]);
+        const l = stateHosul(SH(16));
+        add('لسان‌الامر و عاقبت (۱۶)', l.yes, `«${SH(16)}» ← ${l.txt}`, [16]);
+        const h = stateHosul(SH(11));
+        add('امید (۱۱)', h.yes, `«${SH(11)}» ← ${h.txt}`, [11]);
+        const bz = bazdahJudge(1);
+        add('روش بزدح', bz.yes, `مطلوبِ «${bz.s}» (هفتمش در بزدح) «${bz.m}» است، ${bz.where}؛ حکم «${bz.hk}» ← ${bz.txt}`, bz.houses.length ? bz.houses : [1]);
+    }
+    const s15 = currentCast.housesRows[14].map((v, i) => v === 1 ? i : -1).filter(i => i !== -1);
+    if(s15.length >= 2){
+        const z = pointJudge(s15[0]), h = pointJudge(s15[1]);
+        if(h && h.n){
+            const hope = z && z.n ? ['موافق', 'مصادق'].includes(z.center) : null;
+            if(hope === false) add('سیر نقطه (ابدح)', null, `حکم ${h.ok ? 'حصول' : 'لاحصول'} است ولی سؤال از نگرانی است: نگرانی سائل ${h.ok ? 'واقع می‌شود' : 'واقع نمی‌شود'}. اگر نگران «نشدن» است جوابش ${h.ok ? 'نه' : 'بله'}، و اگر نگران «شدن» است جوابش ${h.ok ? 'بله' : 'نه'}.`, [h.n]);
+            else add('سیر نقطه (ابدح)', h.ok, `${hope ? 'سؤال از امید است و ' : ''}حکم ${h.ok ? 'حصول' : 'لاحصول'} (مطلوب «${h.info.matlub}» در خانه‌ی ${fa(h.n)}، ${h.deg})`, [h.n]);
+        }
+    }
+    const y = votes.filter(v => v.yes === true).length, n = votes.filter(v => v.yes === false).length;
+    let head;
+    if(mode === 'do') head = y >= n + 2 ? ['انجام بده؛ بیشتر نشانه‌ها نیک‌اند.', 'good'] : n >= y + 2 ? ['انجام نده؛ بیشتر نشانه‌ها نحس‌اند.', 'bad'] : ['دست نگه دار یا با احتیاط و صبر پیش برو؛ نشانه‌ها نزدیک به هم‌اند.', 'mid'];
+    else head = y >= n + 2 ? ['بله، می‌شود.', 'good'] : n >= y + 2 ? ['نه، نمی‌شود.', 'bad'] : y > n ? ['احتمالاً بله، ولی با سختی یا درنگ.', 'mid'] : n > y ? ['احتمالاً نه، مگر سببی پیش بیاید.', 'mid'] : ['جواب روشن نیست؛ نشانه‌ها برابرند.', 'mid'];
+    return { head: it(`جمع‌بندی: <b>${head[0]}</b> (${fa(y)} نشانه‌ی ${mode === 'do' ? 'نیک' : 'بله'}، ${fa(n)} نشانه‌ی ${mode === 'do' ? 'نحس' : 'نه'})`, [], head[1]), items: votes.map(v => v.item) };
+}
+/* بازه‌ی عدد از ستون شواهد خانه‌ی مقصود */
+function numberRangeItem(m){
+    const col = [1, 2, 3, 4].map(k => ((m - 1) % 4) + 1 + (k - 1) * 4);
+    const lo = col.reduce((a, n) => a + smallNum(SH(n)), 0), hi = col.reduce((a, n) => a + midNum(SH(n)), 0);
+    const unit = timeKindOf(SH(m)) || 'روز';
+    return it(`بازه‌ی عدد از ستون خانه‌ی مقصود (${col.map(fa).join('، ')}): جمع عدد صغیر ${fa(lo)} و جمع عدد وسیط ${fa(hi)} ← حدود ${fa(Math.min(lo, hi))} تا ${fa(Math.max(lo, hi))} واحد؛ واحدِ شکل خانه‌ی مقصود «${unit}» است.`, col, 'info');
+}
+/* موفقیت در شغل: ۱ × ۱۰ × ۱۱ */
+function jobSuccessItem(){
+    const p = mulShapes(mulShapes(SH(1), SH(10)), SH(11)), st = stateOfName(p), f = fortuneOfName(p);
+    const T = { 'داخل': f === 'نحس' ? ['موفق می‌شود ولی به دشواری و با تأخیر', 'mid'] : ['موفق می‌شود، به راحتی و زود', 'good'],
+        'خارج': f === 'نحس' ? ['موفق نمی‌شود', 'bad'] : ['موفق نمی‌شود یا خودش کنار می‌کشد', 'bad'],
+        'منقلب': f === 'نحس' ? ['میان شدن و نشدن می‌چرخد و در آخر نمی‌شود', 'bad'] : ['میان شدن و نشدن می‌چرخد ولی در آخر موفق می‌شود', 'mid'],
+        'ثابت': f === 'سعد' ? ['پس از توقف موفق می‌شود', 'mid'] : ['کار متوقف می‌ماند', 'bad'] };
+    const v = T[st];
+    return it(`موفقیت در کار: ۱ × ۱۰ × ۱۱ = «${p}» (${f}، ${st}) ← ${v[0]}.`, [1, 10, 11], v[1]);
+}
+
 const familyMembers = [[1, 'خود سائل'], [4, 'پدر'], [10, 'مادر'], [7, 'همسر'], [5, 'فرزند'], [3, 'خواهر و برادر']];
 function interpFamily(key){
     const [m, label] = familyFocus[key] || familyFocus.general;
@@ -4051,7 +4457,12 @@ function interpArkan(k){
         const items = hs.map((n, i) => { const c = arkanCell(n); return it(`${arkanRoleNames[i]}: ${c.txt}.`, [n], fortuneTone(c.f)); });
         res.sections.push(section('🔗', `${arkanOffsetLabels[k][off]} هر رکن (خانه‌های ${hs.map(fa).join(' و ')})`, items));
     }
-    res.sections.push(section('👁️', 'شواهد و مؤیدات (۱۳ تا ۱۶)', [13, 14, 15, 16].map(n => { const c = arkanCell(n); return it(`${hLabel(n)}: «${c.s}» ${c.f} و ${c.st}.`, [n], fortuneTone(c.f)); })));
+    const wItems = starts.map((n, i) => {
+        const w = 13 + i, r = relationOfShapes(SH(n), SH(w)), same = stateOfName(SH(n)) === stateOfName(SH(w));
+        return it(`شاهد ${arkanRoleNames[i]} خانه‌ی ${fa(w)} «${SH(w)}» (${fortuneOfHouse(w)}، ${stateOfName(SH(w))})${r ? `؛ با خانه‌ی ${fa(n)} نسبت <b>${r}</b> دارد` : same ? '؛ با خانه‌ی اصلی هم‌حالت است' : '؛ با خانه‌ی اصلی پیوندی ندارد'}.`, [w, n], r === 'تقابل تام' ? 'bad' : (r || same) ? fortuneTone(fortuneOfHouse(w)) : 'mid');
+    });
+    if(k === 2){ const r = relationOfShapes(SH(1), SH(7)); if(r) wItems.push(it(`رکن اول (۱) و رکن دوم (۷): نسبت <b>${r}</b>.`, [1, 7], r === 'تقابل تام' ? 'bad' : r === 'انفصال' ? 'mid' : 'good')); }
+    res.sections.push(section('👁️', 'شواهد ارکان (غیر اهلها)', wItems));
     return res;
 }
 
@@ -4059,8 +4470,10 @@ function interpArkan(k){
    فهرست موضوع‌های نیت
    ====================================================================== */
 const TOPICS = [
-    { id: 'general', ico: '🎯', title: 'جواب کلی نیت', desc: 'ضمیر، حکم، مطلوب و حصول', lesson: 'zamir',
-      kw: [], run: () => interpGeneral() },
+    { id: 'general', ico: '🎯', title: 'جواب کلی نیت', desc: 'بله یا نه، انجام بدم یا نه، ضمیر و حصول', lesson: 'hosul',
+      kw: [], subs: { label: 'نوع سؤال:', opts: [['yes', 'می‌شود یا نه؟'], ['do', 'انجام بدم یا نه؟']] },
+      pick: [['do', ['انجام بدم', 'انجام بدهم', 'بکنم یا نه', 'برم یا نه', 'بخرم یا نه', 'صلاحه', 'صلاح است', 'خیر است']]],
+      run: s => interpGeneral(s || 'yes') },
     { id: 'illness', ico: '🩺', title: 'بیماری و درمان', desc: 'نوع بیماری، پزشک، سفر درمانی، محل درد', lesson: 'illness',
       kw: ['بیمار', 'بیماری', 'مریض', 'درد', 'سلامت', 'دکتر', 'پزشک', 'جراحی', 'شفا', 'درمان'],
       subs: { label: 'سن بیمار:', opts: [['adult', '۷ سال به بالا'], ['child', 'از تولد تا ۷ سالگی']] },
@@ -4127,7 +4540,7 @@ const TOPICS = [
       run: s => interpFamily(s || 'parents') },
     { id: 'other', ico: '📚', title: 'سایر موضوعات و خویشان', desc: 'ملک، دشمن، امید، عمو، دایی، رنج پدر و مادر، جابه‌جایی…', lesson: 'houses',
       kw: ['خانه', 'ملک', 'زمین', 'دشمن', 'زندان', 'ارث', 'برادر', 'خواهر', 'دوست', 'عمو', 'عمه', 'دایی', 'خاله', 'پدربزرگ', 'عروس', 'جابجایی', 'جابه‌جایی', 'اسباب‌کشی'],
-      subs: { label: 'موضوع:', opts: [['h5', 'معشوق، نامه و هدیه'], ['h4', 'پدر، خانه و ملک'], ['h3', 'برادر، خواهر و خویشان'], ['h8', 'خطر، ارث و مال غایب'], ['h11', 'امید، دوستان و بخت'], ['h12', 'دشمن، زندان و گرفتاری'], ...Object.entries(kinHouses).map(([k, v]) => [k, v[1]])] },
+      subs: { label: 'موضوع:', opts: [['h5', 'معشوق، نامه و هدیه'], ['h4', 'پدر، خانه و ملک'], ['h3', 'برادر، خواهر و خویشان'], ['h8', 'خطر، ارث و مال غایب'], ['h9', 'علم، تحصیل و سفر دور'], ['h11', 'امید، دوستان و بخت'], ['h12', 'دشمن، زندان و گرفتاری'], ...Object.entries(kinHouses).map(([k, v]) => [k, v[1]])] },
       pick: [['amu', ['عمو', 'عمه']], ['dayi', ['دایی', 'خاله']], ['grand', ['پدربزرگ']], ['bride', ['عروس']], ['mhome', ['جابجایی', 'جابه‌جایی', 'اسباب‌کشی']], ['h4', ['خانه', 'ملک', 'زمین']], ['h12', ['دشمن', 'زندان']], ['h8', ['ارث']], ['h3', ['برادر', 'خواهر']], ['h11', ['دوست']]],
       run: s => kinHouses[s] ? interpKin(s) : interpHouseOnly(Number((s || 'h5').slice(1))) }
 ];
@@ -4152,7 +4565,12 @@ function detectTopic(text){
 function runInterpretation(topicId, sub){
     const t = topicById(topicId);
     const res = t.run(sub);
-    res.verdicts = mergeItems(res.verdicts);
+    if(t.id === 'job' && sub === 'field') res.sections.push(jobProductSection());
+    if(t.id === 'job' && (sub || 'status') === 'status') res.verdicts.push(jobSuccessItem());
+    if(t.id === 'marriage' && (sub === 'main' || sub === 'will')) res.sections.push(marriageExtraSection());
+    if(t.id === 'sorcery') res.sections.push(sorceryDetailSection());
+    if(['theft', 'missing', 'mind', 'treasure'].includes(t.id)) res.verdicts.push(lahyanItem());
+    res.verdicts = [...castWarnings(), ...mergeItems(res.verdicts)];
     const main = res.book && res.book.length ? res.book[0] : 1;
     res.sections.push(...mainHouseSection(main, t.id));
     if(t.id === 'general'){
@@ -4553,17 +4971,7 @@ function renderTafsir(){
                 <div class="t-item ${x.tone ? 't-' + x.tone : ''}"><span class="ti-mark"></span><div class="ti-body">${chipsHtml(x.houses)}${faDigits(x.html)}</div></div>`).join('')}</div></div>`;
     });
     if(!res.verdicts.length && !res.sections.some(s => s.items.length)){
-        html += `<div class="empty-note" style="margin-top:14px;">هیچ‌کدام از نشانه‌های ثبت‌شده‌ی این موضوع در این رمل نیامده است. ${res.book.length ? 'متن کتاب خانه‌های مربوط را در پایین بخوانید.' : 'برای جزئیات، روی خانه‌های رمل بزنید.'}</div>`;
-    }
-    if(res.book.length){
-        html += `<div class="book">${res.book.map((n, k) => {
-            const sh = shapeForHouse(n - 1).shape;
-            const paras = sh.longText.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
-            const p = paras[n - 1];
-            if(!p) return '';
-            return `<details${k === 0 ? ' open' : ''}><summary>📜 متن کتاب — خانه‌ی ${faDigits(n)} (${houseTopicShort[n - 1]}) با شکل «${sh.shape}»</summary>
-                <div class="bk-txt">${highlightBitNumbers(p)}</div></details>`;
-        }).join('')}</div>`;
+        html += `<div class="empty-note" style="margin-top:14px;">هیچ‌کدام از نشانه‌های ثبت‌شده‌ی این موضوع در این رمل نیامده است. برای جزئیات، روی خانه‌های رمل بزنید.</div>`;
     }
     tafsirCard.innerHTML = html + others;
     tafsirCard.dataset.plain = buildPlainText(t, sl, res);
@@ -4931,10 +5339,9 @@ const LESSONS = [
     </ul>
     <h3>کارت تفسیر</h3>
     ${steps([
-        '<b>حکم‌های اصلی</b> در بالای کارت آمده‌اند. هر حکم برچسب خانه دارد (مثلاً <span class="hchip">خانه <span class="hc-n">۶</span></span>)؛ با زدن برچسب، همان خانه با متن کتاب باز می‌شود تا ببینید حکم از کجا آمده.',
+        '<b>حکم‌های اصلی</b> در بالای کارت آمده‌اند. هر حکم برچسب خانه دارد (مثلاً <span class="hchip">خانه <span class="hc-n">۶</span></span>)؛ با زدن برچسب، همان خانه با جزئیاتش باز می‌شود تا ببینید حکم از کجا آمده.',
         'رنگ هر حکم معنا دارد (جدول زیر). اگر یک حکم در چند خانه تکرار شده باشد، فقط یک بار با چند برچسب خانه نوشته می‌شود تا جواب تکراری نبینید.',
         'زیر حکم‌ها، <b>بخش‌های جزئیات</b> آمده‌اند (مثلاً در سحر: نوع سحر، محل، چند بار، دوست یا دشمن). فقط بخش‌هایی دیده می‌شوند که در این رمل نشانه‌ای دارند.',
-        '<b>📜 متن کتاب</b>: متن کامل کتاب برای شکلی که در خانه‌ی اصلی موضوع افتاده. روی عنوان بزنید تا باز یا بسته شود.',
         '<b>📖 این تفسیر چطور خوانده شد؟</b> شما را به آموزش همان موضوع می‌برد.',
         'در پایین کارت می‌توانید <b>همین رمل را برای موضوع دیگری</b> بخوانید، بدون اینکه دوباره رمل بزنید.'
     ])}
@@ -4955,7 +5362,7 @@ const LESSONS = [
         <li>خط‌های آبی و نارنجی مسیر نقطه‌ی <b>ضمیر</b> و <b>حکم</b> از خانه‌ی ۱۵ تا امّهات‌اند. برچسب «ض۱، ض۲…» و «ح۱، ح۲…» ترتیب عبور را نشان می‌دهد و خانه‌هایی که در مسیر نیستند کم‌رنگ می‌شوند.</li>
     </ul>
     <h3>پنجره‌ی خانه</h3>
-    <p>با زدن هر بلوک، پنجره‌ای باز می‌شود که به این ترتیب دارد: شماره و موضوع خانه، شکل افتاده، عنصر و سعد/نحس و عضو بدن، <b>📜 حکم این شکل در این خانه از متن کتاب</b>، برای خانه‌ی ۶ تفسیر بیماری، برای خانه‌ی ۱۵ ضمیر و حکم و ردیابی و مطلوب، مشخصات ظاهری شخص، و در آخر «منسوبات کامل» (رنگ، مکان، زمان، کوکب و…). با دکمه‌های ‹ › یا کلیدهای جهت‌نما به خانه‌ی قبل و بعد بروید؛ Esc یا «بستن» پنجره را می‌بندد.</p>
+    <p>با زدن هر بلوک، پنجره‌ای باز می‌شود که به این ترتیب دارد: شماره و موضوع خانه، شکل افتاده، عنصر و سعد/نحس و عضو بدن، برای خانه‌ی ۶ تفسیر بیماری، برای خانه‌ی ۱۵ ضمیر و حکم و ردیابی و مطلوب، مشخصات ظاهری شخص، و در آخر «منسوبات کامل» (رنگ، مکان، زمان، کوکب و…). با دکمه‌های ‹ › یا کلیدهای جهت‌نما به خانه‌ی قبل و بعد بروید؛ Esc یا «بستن» پنجره را می‌بندد.</p>
     <h3>مسیر ضمیر و حکم و باطن</h3>
     <p>کادر «🧭 مسیر نقطه‌ی ضمیر و حکم» قدم‌به‌قدم نشان می‌دهد هر نقطه از کدام خانه‌ها با چه طبعی گذشته است. «🔮 باطن رمل» همان ۱۶ خانه است که هر کدام در صاحب ثابتش در دایره‌ی ابدح ضرب شده؛ بلوک‌های باطن هم باز می‌شوند.</p>
 
@@ -5162,28 +5569,13 @@ const LESSONS = [
         [HT(15), 'میزان و قاضی رمل؛ امور کلی و دادگاه'],
         [HT(16), 'عاقبت و فرجام؛ پیرو خانه‌ی چهارم']
     ])}</details>
-    <h2>📜 کتاب‌خوان: حکم هر شکل در هر خانه</h2>
-    <p>بدون زدن رمل هم می‌توانید متن کتاب را برای هر شکل در هر خانه بخوانید:</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-        <select id="bkHouse" aria-label="خانه">${houses.map((h, i) => `<option value="${i}">خانه‌ی ${faDigits(i + 1)} — ${houseTopicShort[i]}</option>`).join('')}</select>
-        <select id="bkShape" aria-label="شکل">${houses.map((h, i) => `<option value="${i}">${h.shape}</option>`).join('')}</select>
-    </div>
-    <div class="long-text" id="bkText" style="margin-top:10px;"></div>
     <h2>روش خواندن هر موضوعی که قاعده‌ی ویژه ندارد</h2>
     ${steps([
         'خانه‌ی موضوع را از جدول بالا پیدا کنید (مثلاً فرزند ← خانه‌ی ۵، دشمن و زندان ← خانه‌ی ۱۲، ملک و خانه ← خانه‌ی ۴).',
         'ببینید چه شکلی در آن خانه افتاده و سعد است یا نحس.',
-        'متن کتاب همان شکل در همان خانه را بخوانید (در صفحه: روی همان بلوک بزنید، یا از «سایر موضوعات» استفاده کنید).',
+        'حالت شکل (داخل، خارج، ثابت، منقلب) را با نوع سؤال بسنجید و تکرار و شواهدش را ببینید (در صفحه از «سایر موضوعات» استفاده کنید).',
         'برای دقت بیشتر همان خانه را در باطن هم ببینید.'
-    ])}`,
-  after: () => {
-    const upd = () => {
-        const hi = Number($('bkHouse').value), si = Number($('bkShape').value);
-        const paras = houses[si].longText.split(/\n\s*\n/).map(p => p.trim()).filter(Boolean);
-        $('bkText').innerHTML = highlightBitNumbers(paras[hi] || '(متنی ثبت نشده)');
-    };
-    $('bkHouse').onchange = upd; $('bkShape').onchange = upd; upd();
-  } },
+    ])}` },
 
 { id: 'house-groups', group: 'پایه‌ها', ico: '🏛️', title: 'اوتاد، مایل، زایل و شواهد', blurb: 'قوت خانه‌ها و اینکه هر خانه گواه کدام است', kw: 'اوتاد مایل زایل شواهد زوائد شاهد گواه قوت',
   body: () => `
@@ -5214,7 +5606,7 @@ const LESSONS = [
     ${steps([
         'صاحب ثابت هر خانه در دایره‌ی ابدح: خانه‌ی ۱ لحیان، ۲ حمره، ۳ نصره‌الخارج … ۱۶ جماعت (جدول زیر).',
         'شکل ظاهر خانه را سطر به سطر با شکل صاحب خانه ضرب کنید (هم‌سان ← ••، ناهم‌سان ← •).',
-        'نتیجه، شکل باطن همان خانه است. متن کتابش را هم برای همان خانه بخوانید.'
+        'نتیجه، شکل باطن همان خانه است و حکمش را مثل شکل ظاهر بخوانید.'
     ])}
     ${table(['خانه', 'صاحب ثابت', 'ظاهر در رمل نمونه', 'باطن در رمل نمونه'], houses.map((h, i) => [HT(i + 1), ST(h.shape), ST(shapeNameOfRows(ex.housesRows[i])), ST(shapeNameOfRows(ex.batinRows[i]))]))}
     ${callout('', 'کاربرد', 'در «جواب کلی نیت» مطلوب هم در ظاهر و هم در باطن جست‌وجو می‌شود. در «سایر موضوعات» شکل باطن خانه‌ی موضوع هم کنار ظاهر آمده است.')}`; } },
@@ -5258,6 +5650,62 @@ const LESSONS = [
     <p><b>مسیر حکم:</b></p><div class="trace-chain">${faDigits(renderTraceChainHTML(hc))}</div>
     <p>${info && info.matlub ? `حکم به ${faDigits(houseFamilyName(info.house))} با شکل ${ST(info.shapeName)} در عنصر ${info.element} رسید؛ پس مطلوب ${ST(info.matlub)} است.` : 'در این مثال مطلوب گرفته نمی‌شود.'}</p>
     ${exampleBlock('general', null, [15])}`; } },
+
+{ id: 'hosul', group: 'پیشرفته', ico: '⚖️', title: 'حصول و لاحصول: امید یا نگرانی', blurb: 'سؤال از امید است یا نگرانی، و انجام می‌شود یا نه', kw: 'حصول لاحصول امید نگرانی اتصالی انفصالی مرکز موافق مصادق مسالم مخالف', topic: 'general',
+  body: () => `
+    <p class="lead"><b>حصول</b> یعنی انجام شدن نیت و <b>لاحصول</b> یعنی انجام نشدن. ولی جواب نهایی فقط از حصول درنمی‌آید. اول باید دانست سائل به چیزی <b>امید</b> دارد یا از چیزی <b>نگران</b> است.</p>
+    <h2>جواب «بله یا نه» در صفحه</h2>
+    <p>در «جواب کلی نیت» نوع سؤال را انتخاب کنید. صفحه چند نشانه‌ی جدا را می‌سنجد و هر کدام یک رأی می‌دهد: بله ✅، نه ❌ یا مشروط ⏸️. جواب نهایی از جمع رأی‌هاست؛ اگر رأی‌ها نزدیک باشند، جواب «احتمالاً» یا «روشن نیست» است.</p>
+    ${table(['سؤال', 'نشانه‌ها'], [
+        ['می‌شود یا نه؟', 'حالت شکل قاضی (۱۵)، مطلوب و آینه‌ی رمل (۱۴)، لسان‌الامر (۱۶)، امید (۱۱)، روش بزدح، و سیر نقطه‌ی ابدح'],
+        ['انجام بدهم یا نه؟', 'سعد و نحس طالع (۱)، آینه‌ی رمل (۱۴)، قاضی (۱۵)، عاقبت (۱۶) و پایان کار (۱۰)، به‌علاوه‌ی سیر نقطه']
+    ])}
+    <p>حالت هر شکل این‌طور رأی می‌دهد: داخل یعنی بله، خارج یعنی نه، منقلب سعد یعنی در آخر بله و منقلب نحس در آخر نه، ثابت سعد یعنی بله پس از توقف و ثابت نحس یعنی نه. شکل ثابتِ ممتزج یعنی کار به سببی بند است.</p>
+    <h2>روش بزدح</h2>
+    <p>در دایره‌ی بزدح جای هر شکل از جمع وزن سطرهای تک‌نقطه است (۲، ۷، ۴، ۸؛ اگر از ۱۶ گذشت، ۱۶ را کم کنید). <b>مطلوبِ</b> شکل خانه‌ی سؤال، هفتمین شکل بعد از آن در همین دایره است (و ضمیرش، پنجمین). ببینید مطلوب کجا آمده: اگر در ظاهر است، باطن آن خانه‌ها (مطلوب × صاحب خانه) حکم است؛ اگر فقط در باطن است، ظاهر آن خانه‌ها؛ و اگر هیچ‌جا نیست، مطلوب را در شکلِ نشسته در جایگاه خودش ضرب کنید. اگر چند حکم شد، در هم ضربشان کنید و حالت حاصل را بخوانید.</p>
+    <h2>۱. چهار حالت جواب</h2>
+    ${table(['ضمیر', 'حکم', 'یعنی'], [
+        ['امید', 'حصول', 'امیدش برمی‌آید'], ['امید', 'لاحصول', 'امیدش برنمی‌آید'],
+        ['نگرانی', 'حصول', 'آنچه از آن می‌ترسد واقع می‌شود'], ['نگرانی', 'لاحصول', 'نگرانی‌اش واقع نمی‌شود']
+    ])}
+    <p>نمونه: «دزد مالم را پس می‌دهد؟» اگر سائل امید دارد و حکم حصول است، مال برمی‌گردد. اما اگر نگران است که برنگردد و حکم حصول است، نگرانی‌اش واقع می‌شود و مال برنمی‌گردد. اگر سائل خودش گفته نگران است، دیگر لازم نیست امید یا نگرانی را از رمل دربیاورید.</p>
+    <h2>۲. مرکزها</h2>
+    <p>هر خانه عنصری دارد: در هر چهارتایی (۱–۴، ۵–۸، ۹–۱۲، ۱۳–۱۶) به ترتیب آتش، باد، آب و خاک. نسبت عنصر نقطه با عنصر خانه‌ای که مطلوبش در آن آمده، «مرکز» نام دارد:</p>
+    ${table(['مرکز', 'دو عنصر', 'در ضمیر'], [
+        ['موافق', 'هم‌عنصر', 'امید'], ['مصادق', 'آتش و باد، آب و خاک', 'امید'],
+        ['مسالم', 'آتش و خاک، باد و آب', 'نگرانی'], ['مخالف', 'آتش و آب، باد و خاک', 'نگرانی']
+    ])}
+    <h2>۳. ضمیر: امید یا نگرانی</h2>
+    ${steps([
+        'نقطه‌ی بالایی قاضی (ضمیر) را تا امهات و بنات سیر دهید و مطلوبش را بگیرید.',
+        'ببینید مطلوب در کدام خانه آمده و مرکزش چیست: موافق و مصادق ← امید؛ مسالم و مخالف ← نگرانی.',
+        'شدت از چهارتایی خانه‌ی مطلوب: ۱–۴ وتد (قوی)، ۵–۸ مایل (میانه)، ۹–۱۲ زایل (کم‌قوت)، ۱۳–۱۶ وتدالوتد (بسیار شدید).'
+    ])}
+    <h2>۴. حکم: حصول یا لاحصول</h2>
+    ${steps([
+        'نقطه‌ی پایینی قاضی (حکم) را سیر دهید و مطلوبش را بگیرید.',
+        'اگر مطلوب در چند خانه آمده، به ترتیب مرکز موافق، مصادق، مسالم و مخالف یکی را ملاک بگیرید.',
+        'همان نقطه را در صاحب آن خانه (شکل جایگاه خانه در ابدح) ضرب کنید: اگر نقطه باز بماند <b>حصول</b> است و اگر به خط تبدیل شود (بسته شود) <b>لاحصول</b>.',
+        'اگر مطلوب در ظاهر نبود، باطن را ببینید. اگر در باطن هم نبود، به جایگاه خود مطلوب در ابدح بروید و نقطه را در شکلی که آن‌جا نشسته ضرب کنید.',
+        'قوت و زمان: حکم در مرکز موافق یا مصادق قوی است. در وتد زود (آحاد)، در مایل به عشرات، و در زایل با تأخیر و سختی.'
+    ])}
+    ${callout('tip', 'نمونه', 'خانه‌ی ضمیر و مطلوب مسالم بودند، پس سؤال از نگرانی بود؛ مطلوب در مایل بود، پس نگرانی میانه بود. نقطه‌ی حکم بسته شد، پس لاحصول؛ در مرکز مصادق، پس لاحصول قوی. نقطه در مایل بسته شد (عشرات) و خانه وتد بود (آحاد): نگرانی در کمتر از ده روز رفع می‌شود.')}
+    <h2>۵. حالت شکل حکم</h2>
+    <p>در روش شکلی، حکم از حالت شکلِ حاصل گرفته می‌شود:</p>
+    ${table(['حالت', 'حصول؟', 'سعد', 'نحس'], [
+        ['داخل', 'حصول', 'به آسانی', 'به سختی'],
+        ['خارج', 'لاحصول', 'به اختیار خودش', 'بی‌اختیار؛ نگرانی‌اش رفع نمی‌شود'],
+        ['منقلب', 'میان حصول و لاحصول رفت‌وآمد دارد', 'در آخر حصول', 'در آخر لاحصول'],
+        ['ثابت', 'در یکی از دو حال متوقف است', 'حصول', 'لاحصول']
+    ])}
+    <p>شکل ثابتِ ممتزج (مثل ${ST('جماعت')}) یعنی کار <b>متوقف بر سببی</b> است: اگر سبب فراهم شود حصول است و اگر نه، لاحصول. سبب را از معنی خانه‌اش نسبت به خانه‌ی سؤال پیدا کنید (مثلاً دومِ آن ← مال).</p>
+    <h2>۶. سؤال‌های کشف: نور لحیان</h2>
+    <p>هر سؤالی که برای آشکار شدن چیزی است (دزد، گمشده، راز، فکر طرف) به نور نیاز دارد، و نورِ همه‌ی شکل‌ها از ${ST('لحیان')} است. اگر لحیان در ظاهر آمده باشد، باطن همان خانه به سائل نظر دارد. اگر فقط در باطن باشد، کشف ممکن است. اگر نه در ظاهر باشد نه در باطن، نظر بسته است و از این راه چیزی آشکار نمی‌شود. صفحه این را در موضوع‌های دزدی، غائب، فکر طرف و دفینه می‌گوید.</p>
+    <h2>۷. حکم ظاهری و حکم واقعی</h2>
+    <p>هر شکل اول یک حکم ظاهری دارد و حکم واقعی بعد از دیدن بقیه‌ی زایچه معلوم می‌شود. مثلاً ${ST('انکیس')} در طالعِ کسی که از مال می‌پرسد در ظاهر نحس است؛ ولی شکل داخلی و نشانه‌ی مال انباشته هم هست. اگر کنارش شکل‌های مال و شاهدهای موافق بیایند، برای او سعد است. در نواظر هم شکل‌های زحلی و مریخی (مثل ${STs(['عقله', 'انکیس', 'حمره'])}) حتی با تثلیث و تسدیس نحس حساب می‌شوند.</p>
+    ${callout('tip', 'ادب گفتن حکم', 'حکم را طوری بگویید که باعث کدورت، سوءظن و ناامیدی نشود؛ بی‌آنکه دروغ بگویید. مثلاً به جای «قبول نمی‌شوی» بگویید «به شرط تلاش قبول می‌شوی». فقط رملی را جدی تفسیر کنید که خودتان ریخته‌اید.')}
+    ${callout('warn', 'اول قاعده، بعد قرعه', 'پیش از انداختن رمل روشن کنید با کدام روش می‌خوانید و چه حالتی چه معنایی دارد؛ مثلاً در سفر «خارج یعنی سفر انجام می‌شود». برای یک سؤال چند روش را با هم قاطی نکنید.')}
+    ${exampleBlock('general', null, [15])}` },
 
 { id: 'points', group: 'پیشرفته', ico: '🔢', title: 'شمارش نقطه‌ها و طرح', blurb: 'فکر طرف، دزد، گمشده، راست و دروغ، حروف اسم', kw: 'طرح شمارش نقطه فکر دزد راست دروغ اسم حروف', topic: 'mind',
   body: () => {
@@ -5326,7 +5774,31 @@ const LESSONS = [
         `خانه‌ی ۲: ${ST(nm(2))}، شکل خارج ← پول از دست سائل بیرون رفته؛ خرجش کرده است.`,
         `خانه‌ی ۸: ${ST(nm(8))}، شکل داخل و سعد ← از سوی فرستنده پول به‌عنوان کمک رسیده است.`,
         '<b>جمع‌بندی:</b> فرستنده پول را به‌عنوان یاری پرداخته و سائل آن را خرج کرده است.'
-    ])}`; } },
+    ])}
+    <h2>۴. مقابله: کدام خانه را بگیریم؟</h2>
+    <p>خانه‌های روبه‌رو با هم سنجیده می‌شوند: ۱ با ۷، ۲ با ۸، ۳ با ۹، ۴ با ۱۰، ۵ با ۱۱ و ۶ با ۱۲. مقابله همیشه دشمنی کامل نیست؛ گاهی گسترش یا ضدیت جزئی است.</p>
+    ${table(['حالت', 'خانه'], [
+        ['کسی که با او پیوندی ندارید (طرف مقابل)', 'خانه‌ی ۷ و احوالش ۸ تا ۱۲'],
+        ['کسی که با شما پیوند دارد', 'در محدوده‌ی ۱ تا ۷'],
+        ['شریک فعلی («با شریکم ادامه بدهم؟»)', `${HT(2)} چون جزئی از سائل است`],
+        ['شریک آینده («با فلانی شریک شوم؟»)', `${HT(7)} چون هنوز در مقابل است`],
+        ['مردی درباره‌ی خواهرش (دو جنس مخالف)', HT(7)],
+        ['زنی درباره‌ی خواهرش', HT(3)]
+    ])}
+    ${table(['روبه‌رو', 'یکی', 'دیگری'], [
+        ['۴ و ۱۰', 'پدر، ملک و جای فعلی، عاقبت نزدیک، چیزهای پایدار', 'مادر، جایگاه و اعتبار، عاقبت دور، چیزهای متغیر'],
+        ['۵ و ۱۱', 'فرزند و محبوب حاضر، احساس آشکار، کار کوتاه‌مدت', 'محبوب پنهان یا غایب، احساس درونی، کار بلندمدت'],
+        ['۶ و ۱۲', 'بیماری و علت ظاهری، فراری، دام کوچک', 'بیماری و علت پنهان، زندانی، دام بزرگ']
+    ])}
+    <p>اگر کسی درباره‌ی کار یا حال نفر دیگری بپرسد («دخترم در فرودگاه استخدام می‌شود؟»)، خانه‌ی ۷ طالع آن نفر است و خانه‌ی شغل را نسبت به او می‌سنجیم نه نسبت به سائل؛ چون شغل به پدر یا مادر مربوط نیست. در سؤال «فلانی همسرم می‌شود؟» اگر شکل‌های سعد خانه‌های ۷ تا ۱۲ در خانه‌های سعد ۱ تا ۶ تکرار کنند، حکم به ازدواج است.</p>
+    <h2>۵. شواهد اهلها و غیر اهلها</h2>
+    ${table(['نوع رمل', 'شواهد غیر اهلها (زائد)'], [
+        ['یک‌رکنی', '۱۳ و ۱۴'], ['دورکنی', '۱۳ شاهد رکن اول، ۱۴ شاهد رکن دوم'],
+        ['سه‌رکنی', '۱۳، ۱۴ و ۱۵ به ترتیب برای سه رکن'], ['چهاررکنی', '۱۳ تا ۱۶']
+    ])}
+    <p><b>شاهد اهلها</b> شاهد خود هر خانه است: سومینِ آن خانه از دو طرف. در رمل یک‌رکنی شاهد خانه‌ی ۶ خانه‌های ۴ و ۸ است؛ در رمل دورکنی فقط ۴، چون ۸ از سهم رکن دوم است.</p>
+    <p>شاهد وقتی یاری می‌کند که با شکل خانه نسبتی داشته باشد (نظر، نطق، اتصال یا انفصال) یا دست‌کم هم‌حالت باشد. شاهدی که هیچ پیوندی ندارد، بیگانه است و پشت کار را خالی می‌کند. صفحه در سؤال‌های دو و سه‌رکنی، نسبت هر رکن با شاهدش را می‌گوید.</p>
+    ${callout('tip', 'نمونه: استخدام در فرودگاه', 'خانه‌ی ۱۰ (شغل) عقله و خانه‌ی ۴ اجتماع بود: این دو تقابل تام دارند (حاصل ضربشان طریق است). شواهد ۱۳ و ۱۴ و شاهدهای اهلها هیچ نسبتی با عقله نداشتند، میزان هم بیگانه بود، و طالع (حمره) با عاقبت (نقی‌الخد) هم تقابل تام داشت. حکم: نرسیدن به این شغل.')}`; } },
 
 { id: 'main-house', group: 'پیشرفته', ico: '🧭', title: 'خانه‌ی اصلی: تکرار، گشتار و باطن', blurb: 'قاعده‌هایی که زیر هر تفسیر می‌آیند', kw: 'تکرار گشتار سکن باطن اجتماع جماعت مطلوب غائب سحر قاعده', topic: 'general',
   body: () => `
@@ -5357,11 +5829,12 @@ const LESSONS = [
     <p class="lead">این قاعده‌ها کنار قاعده‌های خانه‌ی اصلی، حکم را دقیق‌تر می‌کنند. چندتایشان خودکار زیر هر تفسیر می‌آیند.</p>
     <h2>۱. شاهد قریب، ناظر قریب و ناظر بعید</h2>
     ${table(['نام', 'جای آن نسبت به خانه‌ی اصلی (n)', 'نمونه برای خانه‌ی ۱'], [
-        ['شاهد قریب', 'خانه‌ی بعدی (n+1)', HT(2)],
-        ['ناظر قریب', 'دو خانه بعد (n+2)', HT(3)],
-        ['ناظر بعید', 'روبه‌رو (n+6)', HT(7)]
+        ['شاهد قریب', 'دومِ آن (n+1)', HT(2)],
+        ['ناظر قریب', 'سومِ آن (n+2)', HT(3)],
+        ['شاهد بعید', 'پنجمِ آن (n+4)', HT(5)],
+        ['ناظر بعید', 'هفتمِ آن، روبه‌رو (n+6)', HT(7)]
     ])}
-    <p>اگر بیشترِ این سه نحس باشند کار سخت‌تر است؛ اگر هر سه سعد باشند پشتیبان کارند.</p>
+    <p>اگر بیشترِ این چهار نحس باشند کار سخت‌تر است؛ اگر سعد باشند پشتیبان کارند. اگر با هم نخوانند (بعضی سعد، بعضی نحس)، این ضرب را بکنید: <b>(شاهد قریب × ناظر قریب) × (شاهد بعید × ناظر بعید) × خانه‌ی اصلی</b> و حکم را از حالت شکل حاصل بگیرید.</p>
     <h2>۲. کیفیت مثلث</h2>
     <p>هر خانه‌ی ۹ تا ۱۲ از ضرب دو خانه‌ی امهات و بنات به دنیا آمده (۹ = ۱×۲، ۱۰ = ۳×۴، ۱۱ = ۵×۶، ۱۲ = ۷×۸). کیفیت فرزند به پدر و مادرش بستگی دارد:</p>
     ${table(['فرزند', 'از', 'حکم'], [
@@ -5373,6 +5846,34 @@ const LESSONS = [
     ])}
     <h2>۳. لسان‌الامر دوم</h2>
     <p>شکل خانه‌ی اصلی را در شکل خانه‌ی ۱۶ ضرب کنید. متولد، زبان آخر کار است: حالتش (داخل، خارج، ثابت، منقلب) با نوع سؤال سنجیده می‌شود، درست مثل شواهد.</p>
+    <h2>۳-۲. لسان‌الامر (خانه‌ی ۱۶)</h2>
+    ${table(['شکل ۱۶', 'حکم'], [
+        ['داخل و سعد', 'کار به آسانی برمی‌آید'], ['داخل و نحس', 'به دشواری انجام می‌شود'],
+        ['خارج و سعد', 'سائل به اختیار خودش کار را رها می‌کند'], ['خارج و نحس', 'کار بی‌اختیار از دست می‌رود'],
+        ['منقلب و سعد', 'کار با شتاب پیش می‌رود'], ['منقلب و نحس', 'حسرت و پریشانی؛ ناچار رها می‌کند'],
+        ['ثابت', 'کار با درنگ پیش می‌رود یا در همین حال می‌ماند']
+    ])}
+    <h2>۳-۳. مسیر کار از چهار وتد</h2>
+    <p>وتد اول (۱) آغاز کار، چهارم و هفتم میانه، و دهم پایان کار است.</p>
+    ${table(['سعد و نحس ۱، ۴، ۷، ۱۰', 'مسیر کار'], [
+        ['سعد، نحس، نحس، نحس', 'اولش خوب، آخرش بد'], ['نحس، سعد، نحس، نحس', 'اول بد، بعد خوب، در آخر محروم'],
+        ['نحس، نحس، سعد، نحس', 'اول بد، میانه خوب، آخرش پشیمانی'], ['نحس، نحس، نحس، سعد', 'آخر کار نیکو می‌شود'],
+        ['سعد، نحس، نحس، سعد', 'آغاز و پایان خوب، میانه با رنج'], ['نحس، سعد، سعد، نحس', 'اول رنج، میانه آسایش، در آخر از دست می‌رود']
+    ])}
+    ${table(['هر چهار وتد', 'حکم'], [
+        ['سعد و داخل', 'کارهای درآمدنی خوب است: ازدواج، خرید، بنای خانه، اقامت، شروع کار'],
+        ['سعد و خارج', 'کارهای بیرون‌رفتنی خوب است: سفر، قرض دادن، صدقه، جابه‌جایی'],
+        ['نحس و داخل', 'کارهای درآمدنی به نتیجه نمی‌رسد یا زیان دارد'], ['نحس و خارج', 'کارهای بیرون‌رفتنی بی‌نفع است'],
+        ['سعد و ثابت', 'آنچه دارد می‌ماند ولی زیاد نمی‌شود'], ['نحس و ثابت', 'رنج می‌ماند'],
+        ['سعد و منقلب', 'بد به خوب برمی‌گردد'], ['نحس و منقلب', 'بعضی حاصل می‌شود و آنچه به دست آمده زود می‌رود']
+    ])}
+    <h2>۳-۴. نظر، نطق، اتصال و انفصال</h2>
+    <p>دو شکل را در هم ضرب کنید؛ حاصل نسبت آن دو را می‌گوید:</p>
+    ${table(['حاصل ضرب', 'نسبت', 'یعنی'], [[ST('لحیان'), 'نظر', 'دیدن و توجه'], [ST('حمره'), 'نطق', 'گفتگو'], [ST('بیاض'), 'اتصال', 'رسیدن طالب به مطلوب، وصال'], [ST('انکیس'), 'انفصال', 'جدایی و دوری']])}
+    <p>برای پیدا کردن «نظرِ» هر شکل، آن را در ${ST('لحیان')} ضرب (طرح) کنید؛ به همین دلیل لحیان را میزانِ نظر می‌گویند. مثلاً قبض‌الخارج × لحیان = بیاض، پس «بیاض نظرِ قبض‌الخارج است». نطق هر شکل همین‌طور از ضرب در حمره، اتصالش از ضرب در بیاض و انفصالش از ضرب در انکیس به دست می‌آید. اگر حاصل ضرب دو شکل ${ST('طریق')} شود، هر نقطه‌شان برعکس دیگری است: <b>تقابل تام</b>، یعنی ضدیت کامل.</p>
+    <p>به رأی طوخی، اگر نظرِ شکل در زایچه باشد، آن شخص یا چیز را می‌بیند یا دیده است. اگر نطقش باشد با او حرف می‌زند، اگر اتصالش باشد وصال حاصل می‌شود و علتش از شکل اتصال پیداست، و اگر انفصالش باشد جدایی است و علتش از همان شکل. صفحه این چهار را برای شکل خانه‌ی اصلی در زایچه جست‌وجو می‌کند.</p>
+    <p>نظر فقط «دیدن» نیست؛ هر چیزی است که آشکار و روشن می‌شود: علم، راز پنهان، مال گم‌شده. بر پایه‌ی رأی طوخی، طبع شکل‌ها هم از حالتشان است: خارج آتشی، داخل آبی، منقلب بادی و ثابت خاکی.</p>
+    <p>صفحه خانه‌ی ۱ را در خانه‌ی اصلی ضرب می‌کند و اگر یکی از این چهار بیاید می‌گوید. تقابل تام خانه‌ی اصلی با روبه‌رویش، یا طالع با عاقبت (۱۶)، دلیل قوی بر نرسیدن است. پیوند شواهد ۱۳ تا ۱۵ با شکل خانه‌ی اصلی هم بررسی می‌شود. برای جواب کلی هم «شکلِ اتصالِ طالع» را پیدا می‌کند: شکلی که اگر در طالع ضرب شود بیاض بدهد (یعنی طالع × بیاض). جایی که این شکل آمده، راه رسیدن به مراد است.</p>
     <h2>۴. نحس در خانه‌ای که صاحبش سعد است</h2>
     <p>اگر شکل نحسی در خانه‌ای بنشیند که صاحب ابدحی‌اش سعد است (مثلاً حمره در خانه‌ی ۱ که صاحبش لحیان است)، کار <b>اولش کمی خوب و آخرش بد</b> است.</p>
     <h2>۵. غلبه‌ی شکل‌ها</h2>
@@ -5388,7 +5889,16 @@ const LESSONS = [
     ${callout('tip', 'انقلاب برای مال دزدیده', 'در سؤال مال دزدیده، زایچه را با ضرب ۵×۱، ۶×۲، ۷×۳ و ۸×۴ نو کنید و میزان (جماعت) را از ضرب دو شکل داخلیِ زایچه‌ی نو بگیرید.')}
     <h2>۷. دایره‌ی بزدح</h2>
     <p>غیر از ابدح، دایره‌ی دیگری هم هست که به سطرهای شکل وزن می‌دهد: سطر اول ۲، دوم ۷، سوم ۴ و چهارم ۸. سطرهای تک‌نقطه را جمع کنید و اگر از ۱۶ بیشتر شد ۱۶ را کم کنید؛ عدد حاصل، جای آن شکل در این دایره است.</p>
-    <h2>۸. ادب پرسیدن</h2>
+    <h2>۷-۲. سهم‌ها</h2>
+    ${table(['خانه', 'سهم', 'قوتش از'], [
+        [HT(10), 'سهم‌الظفر: کار، مقام و گشایش مادی', 'سهم‌السعادت'], [HT(11), 'سهم‌الرجاء: امید و آرزوهای دور', 'سهم‌الغیب'],
+        [HT(13), 'سهم‌السعادت: مال و پیروزی؛ گواهش ۹', `جای ${ST('قبض الداخل')}: اگر در خانه‌ی نیک باشد قوی است`],
+        [HT(14), 'سهم‌الغیب: امید و شادی و رهایی از غم؛ گواهش ۱۵', `جای ${ST('طریق')}: اگر در خانه‌ی نیک باشد، کار زودتر می‌رسد`]
+    ])}
+    <h2>۷-۳. چند نفر؟</h2>
+    <p>برای «چند نفر سر سفره‌اند» یا «چند مهمان داریم»، خانه‌ی ۳ را در ۵ ضرب کنید و از شکل حاصل عدد بگیرید (مثلاً با وزن‌های ابدح ۱، ۲، ۴، ۸ یا بزدح ۲، ۷، ۴، ۸ برای سطرهای تک‌نقطه). روش‌ها در کتاب‌ها فرق دارد؛ اگر چند روش یک عدد دادند، همان را بگیرید.</p>
+    <h2>۸. اعتبار قرعه و ادب پرسیدن</h2>
+    ${callout('warn', 'قرعه‌ی قابل اعتنا', 'به قول بعضی رمّالان اگر طریق در خانه‌ی ۱۵ باشد و شکل‌های منقلب در زایچه غالب باشند، یا جماعت در ۱۵ و شکل‌های ثابت غالب، قرعه قابل اعتنا نیست. بعضی دیگر چنین قرعه‌ای را هم تفسیر می‌کنند؛ صفحه در این حالت فقط هشدار می‌دهد. بهترین محک، خواندن حال کنونی سائل از زایچه و تطبیقش با واقعیت است.')}
     ${steps([
         'برای یک نیت یک بار رمل بیندازید؛ مثل استخاره، تکرار برای گرفتن جواب دلخواه درست نیست.',
         'تعبیر خواب: خوابی که شب دیده شده تا ۹ شب و خوابی که روز دیده شده تا ۳ روز قابل پرسیدن است.'
@@ -5408,7 +5918,7 @@ const LESSONS = [
     <p>خانه‌هایی که هیچ‌یک از این نظرها را با هم ندارند (مثل ۱ با ۲، ۶، ۸ و ۱۲) <b>ساقط</b>اند.</p>
     ${callout('warn', 'اندازه نگه دارید', 'نظرات بیشتر در سیر نقطه و سنجش درصدی به کار می‌آیند. کل زایچه را با آن‌ها معنی نکنید؛ خانه‌ی اصلی و شواهد مقدم‌اند.')}` },
 
-{ id: 'time', group: 'پیشرفته', ico: '⏳', title: 'زمان برآمدن کار', blurb: 'روز، هفته، ماه یا سال', kw: 'زمان کی روز هفته ماه سال تاریخ یومی اسبوعی سنوی', topic: 'when',
+{ id: 'time', group: 'پیشرفته', ico: '⏳', title: 'زمان برآمدن کار', blurb: 'روز، هفته، ماه یا سال', kw: 'زمان کی روز هفته ماه سال تاریخ یومی اسبوعی سنوی عدد صغیر وسیط آحاد عشرات', topic: 'when',
   body: () => `
     <h2>۱. از جای مطلوب</h2>
     ${table(['مطلوب کجا آمده', 'زمان'], [['امهات (۱ تا ۴)', 'یومی: کمتر از ۹ روز'], ['بنات (۵ تا ۸)', 'اسبوعی: تا یک ماه'], ['شواهد (۱۳ تا ۱۶)', 'سنوی: تا یک سال']])}
@@ -5423,7 +5933,15 @@ const LESSONS = [
         'عدد هر واحد را از جدول عدد شکل‌ها بردارید و همه را جمع بزنید.'
     ])}
     ${callout('', 'در صفحه', 'موضوع «کی برآورده می‌شود» واحدهای زمان را از هر سه راه نشان می‌دهد. عدد دقیق هر شکل هنوز در صفحه نیامده است.')}
-    ${exampleBlock('when', '15', [15, 16])}` },
+    ${exampleBlock('when', '15', [15, 16])}
+    <h2>عدد صغیر و وسیط: چند روز؟</h2>
+    <p>هر شکل دو عدد دارد. <b>عدد صغیر</b> جمع وزن سطرهای تک‌نقطه با وزن‌های ۱، ۲، ۳، ۴ است (مثلاً قبض‌الداخل ۶). <b>عدد وسیط</b> همان عدد ابدح است، یعنی وزن‌های ۱، ۲، ۴، ۸ (و برابر شماره‌ی جایگاه شکل در ابدح). برای خانه‌ی مقصود، چهار خانه‌ی هم‌ستونش را بگیرید (مثلاً برای پول ۲، ۶، ۱۰، ۱۴). جمع عددهای صغیرشان کمترین و جمع عددهای وسیطشان بیشترین مدت است. نمونه: صغیرها ۷+۶+۳+۹ = ۲۵ و وسیط‌ها ۱۱+۷+۳+۱۴ = ۳۵ ← ۲۵ تا ۳۵ روز.</p>
+    <h2>چند قاعده‌ی دیگر</h2>
+    ${steps([
+        'آمدن غائب از خانه‌ی ۹: اگر شکلش از شکل‌های روز است حکم روز کنید، از شکل‌های هفته حکم هفته، و همین‌طور ماه و سال.',
+        'در روش ابدح، اگر نقطه‌ی حکم در مایل بسته شود عدد از عشرات است و اگر خانه از اوتاد باشد، از آحاد.',
+        'شمار حروف اسم: صاحب طالع (در ابدح لحیان) در هر خانه‌ای نشسته باشد، نام همان‌قدر حرف دارد.'
+    ])}` },
 
 { id: 'kin', group: 'پیشرفته', ico: '👪', title: 'خانه‌های خویشان، رنج و جابه‌جایی', blurb: 'عمو، دایی، خاله، رنج پدر و مادر، عاقبت شغل', kw: 'خویشان عمو عمه دایی خاله رنج جابجایی عاقبت شغل', topic: 'other', sub: 'amu',
   body: () => `
@@ -5431,7 +5949,9 @@ const LESSONS = [
     ${table(['کیست', 'خانه', 'چطور'], Object.values(kinHouses).map(([n, t, w]) => [t, HT(n), w]))}
     <h2>قاعده‌ی رنج</h2>
     <p>رنج و بیماری هر کس پنج خانه بعد از خانه‌ی خودش است، همان‌طور که رنج سائل (۱) در خانه‌ی ۶ است. بعد از ۱۲ شمارش از ۱ ادامه می‌یابد؛ مثلاً رنج مادر: ۱۰ ← ۳.</p>
-    ${callout('tip', 'یک نیت، یک رمل', 'برای هر خویشاوند و هر سؤال رمل جدا بزنید.')}` },
+    <h2>علت رنج</h2>
+    <p>ببینید شکل خانه‌ی رنجِ آن شخص کجا تکرار کرده. آن خانه را از خانه‌ی خود او بشمارید؛ معنی‌اش علت رنج است. مثلاً اگر شکل خانه‌ی رنج پدر (۹) در خانه‌ی مالِ پدر (۵، یعنی دومِ ۴) تکرار کند، رنجش از جهت مال است؛ اگر در خانه‌ی فرزندانِ پدر (۸) باشد، از جهت فرزندان.</p>
+    ${callout('tip', 'یک نیت، یک رمل', 'برای هر خویشاوند و هر سؤال رمل جدا بزنید. اگر نیت فقط درباره‌ی خود آن خویشاوند است («پدرم چرا بیمار است؟»)، رمل را به نام خود او بزنید؛ آن‌وقت خانه‌ی ۱ خود اوست و رنجش در ۶.')}` },
 
 { id: 'examples', group: 'پیشرفته', ico: '🧾', title: 'نمونه‌های خواندن زایچه', blurb: 'قاعده‌ها کنار هم، قدم به قدم', kw: 'نمونه مثال تفسیر زایچه',
   body: () => `
@@ -5454,7 +5974,7 @@ const LESSONS = [
         'سعد یا نحس بودن شکل خانه‌ی ششم را هم ببینید؛ صفحه آن را اولین حکم می‌نویسد.',
         'بعد سراغ <b>خانه‌ی دهم</b> بروید تا ببینید پزشک داناست یا نه (آموزش «پزشک، سفر درمانی و محل بیماری»).',
         'برای سفر درمانی خانه‌های <b>۱، ۴، ۷، ۱۰</b> و برای محل درد شکل‌های طریق، نقی‌الخد، فرح و عقله را در همه‌ی خانه‌ها ببینید.',
-        'در آخر متن کتاب خانه‌ی ششم را هم برای همان شکل بخوانید.'
+        'در آخر سعد و نحس و حالت شکل خانه‌ی ششم را هم بسنجید.'
     ])}
     <h2>جدول خانه‌ی ششم — ۷ سال به بالا</h2>
     ${table(['شکل', 'حکم'], houses.map(h => [ST(h.shape), illnessHouse6[h.shape] ? illnessHouse6[h.shape].adult : '—']))}
@@ -5528,6 +6048,19 @@ const LESSONS = [
         [STs(friendShapes), '<b>دوست است</b> — سحر برای جلب مهربانی، نزدیک شدن، مال و زبان‌بندی بوده.'],
         [STs(enemyShapes), '<b>دشمن است</b> — سحر برای دشمنی، جدایی، آوارگی و زبان‌بندی بوده؛ مدتی طول می‌کشد تا باطل شود، مگر با باطل‌سحر یا قربانی مرغ یا گوسفند.']
     ])}
+    <h2>جزئیات از خانه‌ی ۶</h2>
+    ${table(['شکل یا حال ۶', 'یعنی'], [
+        [ST('عتبه الخارج'), 'سحر آتشی (سوزانده یا در محیط پاشیده‌اند)'], [ST('انکیس'), 'سحر خاکی (در خاک یا خرابه دفن کرده‌اند)'],
+        [ST('فرح'), 'سحر آبی (در آب انداخته یا خورانده‌اند)'], [ST('عتبه الداخل'), 'سحر بادی؛ یا سائل برای باطل کردنش دعا گرفته'],
+        ['سعد و خارج', 'سحری نیست و گمان سائل خطاست'], ['نحس و خارج', 'سحر سخت؛ بی‌خوابی، بی‌قراری و سرگردانی'],
+        ['نحس و داخل یا ثابت', 'برای جدایی و دشمنی'], [STs(['جماعت', 'اجتماع', 'حمره']), 'سخت و از روی دشمنی'],
+        ['سعد و داخل', 'برای محبت بوده و زود رفع می‌شود'], [ST('بیاض'), 'بیشتر ترس و وسواس است'],
+        [STs(['طریق', 'فرح']), 'دلسردی که زود از بین می‌رود'], [STs(['نصره الخارج', 'عقله']), 'از نشانه‌های اثر جن']
+    ])}
+    ${steps([
+        'شکل ۶ در ۱۲ تکرار کند: از روی دشمنی و برای گرفتاری است. در ۸: با قصد بدبختی و آسیب.',
+        'تکرار طالع در ۱۰، یا عقله در قاضی، از دلیل‌های سحر است. اگر ۲ × ۶ نحس شود هم همین‌طور.'
+    ])}
     ${exampleBlock('sorcery', null, [1, 2, 4, 6, 7, 12])}` },
 
 { id: 'missing', group: 'موضوع‌ها', ico: '📍', title: 'غائب و فراری', blurb: 'جهت، داخل یا خارج شهر، برمی‌گردد، چه مدت', kw: 'غائب غایب گمشده فراری مسافر برنمی‌گردد', topic: 'missing',
@@ -5561,13 +6094,13 @@ const LESSONS = [
 
 { id: 'theft', group: 'موضوع‌ها', ico: '🔑', title: 'دزدی و گمشده‌ی مال', blurb: 'دزد کیست، زن یا مرد، پیدا می‌شود، جنس گمشده', kw: 'دزد دزدی سرقت گمشده گم کرده', topic: 'theft',
   body: () => `
-    <p class="lead">در این صفحه دزدی و شیء گمشده با <b>شمارش نقطه‌های رمل</b> خوانده می‌شود. خانه‌ی ۸ هم (دزد بردن مال، مال غایب) متن کتاب را می‌دهد.</p>
+    <p class="lead">در این صفحه دزدی و شیء گمشده با <b>شمارش نقطه‌های رمل</b> خوانده می‌شود. خانه‌ی ۸ هم خانه‌ی دزد بردن مال و مال غایب است.</p>
     <h2>اگر سؤال درباره‌ی دزدی است</h2>
     ${steps([
         'در صفحه «🔑 دزدی و گمشده‌ی مال» و گزینه‌ی «دزدی» را بزنید.',
         'همه‌ی نقطه‌ها را بشمارید و طرح بر ۲ کنید: <b>فرد ← دزد مرد است، زوج ← دزد زن است.</b>',
         'همان عدد را طرح بر ۱۲ کنید و از جدول زیر ببینید دزد کیست.',
-        'متن کتاب خانه‌ی ۸ را برای شکلی که در آن افتاده بخوانید.'
+        'سعد و نحس و حالت شکل خانه‌ی ۸ را هم بسنجید.'
     ])}
     ${table(['باقی‌مانده‌ی طرح بر ۱۲', 'دزد کیست'], Array.from({ length: 12 }, (_, i) => [faDigits(i + 1), pointsThiefInfo[i + 1]]))}
     <h2>اگر چیزی گم شده است</h2>
@@ -5585,7 +6118,7 @@ const LESSONS = [
     ${steps([
         'شکل خانه‌ی هفتم را ببینید و حکم آن را در جدول زیر بخوانید. یک شکل ممکن است دو حکم داشته باشد (مثلاً نقی‌الخد هم «رابطه را بسیار دوست دارد» و هم «سرددل»)؛ هر دو را با هم بخوانید.',
         'اگر در خانه‌ی هفتم عتبه‌الخارج یا قبض‌الخارج افتاده (نشانه‌ی جدایی)، به خانه‌ی چهارم هم نگاه کنید: اگر آن‌جا هم یکی از همین دو شکل باشد، <b>جدایی فوری</b> است.',
-        'اگر شکل خانه‌ی هفتم در جدول نیست، قاعده‌ی ویژه‌ای ندارد؛ متن کتاب خانه‌ی هفتم را بخوانید.'
+        'اگر شکل خانه‌ی هفتم در جدول نیست، قاعده‌ی ویژه‌ای ندارد؛ حکم را از حالت شکل و شواهد خانه‌ی هفتم بگیرید.'
     ])}
     ${table(['شکل خانه‌ی ۷', 'حکم'], marriageRules.map(r => [STs(r.shapes), r.text + (r.separation ? ' اگر در خانه‌ی ۴ هم همین شکل‌ها باشد، جدایی فوری است.' : '')]))}
     <h2>دو همسر</h2>
@@ -5642,6 +6175,13 @@ const LESSONS = [
     ])}
     ${callout('tip', 'در صفحه', 'موضوع ازدواج چهار گزینه دارد: «ازدواج می‌شود یا نه؟»، «علت تأخیر ازدواج»، «سازگاری، آینده و عاقبت» و «دو همسر». جدول زیر هم معنی هر خانه را به‌عنوان علت نشان می‌دهد.')}
     ${table(['خانه‌ی علت', 'یعنی'], Object.entries(causeByHouse.marriage).map(([n, t]) => [HT(Number(n)), t]))}
+    <h2>محبت و دوام ازدواج</h2>
+    ${steps([
+        'شکل خانه‌ی محبوبِ همسر (۱۱، یعنی پنجمِ خانه‌ی ۷) اگر در خانه‌ی ۱ تکرار کند، همسر بی‌شک سائل را دوست دارد.',
+        'شکل سائل (۱) در خانه‌ی دوستِ همسر (۵) بیاید: محبت کم شده ولی هنوز میل هست.',
+        'شکل سائل در خانه‌ی دشمنِ همسر (۶) بیفتد: رابطه به سردی و دشمنی کشیده؛ از دو شکل ۱ و ۷ ببینید مقصر کیست.',
+        `دوام: خانه‌ی ۴ (خانه‌ی مشترک) را در ۷ ضرب کنید. اگر نحس خارج شود (${STs(['عتبه الخارج', 'قبض الخارج', 'نقی الخد'])}) نشانه‌ی جدایی است؛ غلبه‌ی همین شکل‌ها در امهات هم همین را می‌گوید.`
+    ])}
     ${exampleBlock('marriage', null, [7, 4])}` },
 
 { id: 'job', group: 'موضوع‌ها', ico: '💼', title: 'شغل و کار', blurb: 'وضعیت کار، مقایسه‌ی چند کار، انتخاب شغل', kw: 'شغل کار استخدام بیکار حرفه رشته', topic: 'job',
@@ -5660,18 +6200,35 @@ const LESSONS = [
     ${table(['حکم', 'شکل‌ها'], [['بسیار بد', STs(jobVeryBadShapes)], ['خوب است', STs(jobMultiGood)], ['بد است', STs(jobMultiBad)], ['میانه', STs(jobMultiMid)]])}
     <h2>۳. چه شغلی انتخاب کنم — خانه‌های ۱ و ۱۰</h2>
     ${table(['شکل', 'نوع کار مناسب'], Object.entries(jobFieldByShape).map(([s, f]) => [ST(s), f]))}
+    <h2>۳-۲. موفق می‌شوم؟ ۱ × ۱۰ × ۱۱</h2>
+    <p>طالع را در خانه‌ی شغل و بعد در خانه‌ی امید ضرب کنید. داخل یعنی موفق می‌شود (سعد زود و آسان، نحس با تأخیر). منقلب سعد یعنی میان شدن و نشدن می‌چرخد ولی در آخر موفق است. ثابت سعد یعنی پس از توقف موفق می‌شود. خارج برعکس این‌هاست.</p>
+    <h2>۴. شغلی که مال می‌آورد: ۱ × ۱۰</h2>
+    <p>شکل خانه‌ی ۱ را در ۱۰ ضرب کنید. کار از منسوبات شکل حاصل است. اگر حاصل در خانه‌ی ۲، ۱۰ یا ۱۱ آمده باشد، آن کار رزق می‌آورد؛ اگر در جای بد (۶، ۸، ۱۲) تکرار کند، بهتر است از آن کار پرهیز کند؛ و اگر در زایچه نیامده باشد، آن کار سود دارد ولی احتمالاً سراغش نمی‌رود.</p>
     ${exampleBlock('job', 'status', [1, 10])}` },
 
-{ id: 'trade', group: 'موضوع‌ها', ico: '💰', title: 'معامله و مال', blurb: 'خرید و فروش، سود و زیان، قرض — خانه‌ی دوم', kw: 'معامله خرید فروش پول قرض سود ضرر', topic: 'trade',
+{ id: 'trade', group: 'موضوع‌ها', ico: '💰', title: 'مال، معامله و ارث', blurb: 'درآمد، سود و زیان، منبع مال، ارث و طلب', kw: 'معامله خرید فروش پول قرض سود ضرر مال درآمد ارث میراث طلب', topic: 'trade',
   body: () => `
-    <p class="lead">مال، معاش، معامله، خرید و فروش، سود و زیان و قرض در <b>خانه‌ی دوم</b> است. حکم آن متن کتاب برای شکلی است که در خانه‌ی دوم افتاده.</p>
-    ${steps(['شکل خانه‌ی دوم را ببینید.', 'سعد بودن آن نشانه‌ی خیر و نحس بودن نشانه‌ی زیان است.', 'متن کتاب همان شکل را برای خانه‌ی دوم بخوانید (فهرست زیر).'])}
-    <h2>متن کتاب برای هر شکل در خانه‌ی دوم</h2>
-    <div class="book">${houses.map(h => {
-        const p = h.longText.split(/\n\s*\n/).map(x => x.trim()).filter(Boolean)[1];
-        return `<details><summary>${h.shape} — ${h.fortune}</summary><div class="bk-txt">${highlightBitNumbers(p || '—')}</div></details>`;
-    }).join('')}</div>
-    ${exampleBlock('trade', null, [2])}` },
+    <p class="lead">مال، معاش، معامله، سود و زیان و قرض در <b>خانه‌ی دوم</b> است.</p>
+    <h2>۱. حال خانه‌ی دوم</h2>
+    ${table(['حال شکل ۲', 'حکم'], [
+        ['سعد و داخل، و تکرار در ۱۰، ۱۱، ۱۵ یا ۱۶', 'مال به آسانی و با قوت حاصل می‌شود'],
+        ['سعد و خارج', 'مال می‌رسد ولی به خوشی خرج می‌شود و نمی‌ماند'],
+        ['نحس و خارج', 'مال از دست می‌رود؛ مگر قبض‌الداخل در جای نیک باشد که بعد از مدتی دوباره مال می‌آید'],
+        [ST('انکیس') + ' و تکرار در ۱۰، ۱۱ یا ۱۴', 'مال کم و با رنج'],
+        [STs(['جماعت', 'اجتماع']), 'درآمد ثابت'],
+        ['۱، ۲ و ۱۰ هر سه نحس', 'سرگردانی و تنگی در کار و مال']
+    ])}
+    <h2>۲. مال از کجا می‌رسد؟</h2>
+    ${steps([
+        'هر خانه‌ای که شکل ۲ در آن تکرار کند، مال از منسوبات همان خانه می‌رسد؛ اگر شکل ۲ نحس و خارج باشد، تلف مال از همان‌جاست.',
+        'سبب مال: خانه‌ی ۱۰ را در ۱۴ ضرب کنید و ببینید حاصل کجا آمده.',
+        `${ST('قبض الداخل')} شکل مال است؛ اگر در خانه‌ای بیاید که صاحبش سعد است، مال را قوت می‌دهد.`,
+        'شغلی که مال می‌آورد: ۱ × ۱۰؛ اگر حاصل در ۲، ۱۰ یا ۱۱ باشد، آن کار رزق می‌آورد (درس شغل).'
+    ])}
+    <h2>۳. ارث، طلب و مال گم‌شده</h2>
+    <p>ارث و مال غایب در خانه‌ی ۸ است و رسیدنش به سائل در خانه‌ی ۲: اگر ۸ <b>خارج</b> و ۲ <b>داخل</b> باشد، مال به سائل می‌رسد؛ سعد بودن ۸ آسانی و نحس بودنش سختی است.</p>
+    ${table(['خانه', 'جنس مال'], [[HT(2), 'مال منقول سائل: پول و ماشین'], [HT(4), 'ملک و زمین و مغازه'], [HT(6), 'دام کوچک'], [HT(8), 'ارث و مال منقول همسر'], [HT(10), 'ملک همسر'], [HT(12), 'دام بزرگ']])}
+    ${exampleBlock('trade', null, [2, 8])}` },
 
 { id: 'car', group: 'موضوع‌ها', ico: '🚗', title: 'خرید و فروش ماشین', blurb: 'سالم، خراب، کهنه؛ فروش زود یا دیر', kw: 'ماشین خودرو خرید فروش', topic: 'car',
   body: () => `
@@ -5697,7 +6254,7 @@ const LESSONS = [
   body: () => `
     ${steps([
         'شکل خانه‌های <b>۱، ۴، ۷ و ۱۰</b> را ببینید و در جدول زیر پیدا کنید.',
-        'متن کتاب <b>خانه‌ی ۹</b> (سفرهای دور و بازگشت از سفر و امنیت راه) و <b>خانه‌ی ۳</b> (نقل و حرکت نزدیک) را برای شکل‌هایی که در آن‌ها افتاده بخوانید.',
+        'حال <b>خانه‌ی ۹</b> (سفرهای دور و بازگشت از سفر و امنیت راه) و <b>خانه‌ی ۳</b> (نقل و حرکت نزدیک) را هم بسنجید.',
         'برای سفر درمانی از موضوع «بیماری و درمان» استفاده کنید؛ آن‌جا «بستری شدن در وطن» هم سنجیده می‌شود.'
     ])}
     ${table(['حکم', 'شکل‌ها'], [['سفر خارج از وطن خوب است', STs(travelAbroadGood)], ['سفر خارج از وطن بسیار بد است؛ نرود', STs(travelAbroadBad)], ['برای تفریح رفتن خوب است', STs(travelTourismGood)]])}
@@ -5712,13 +6269,37 @@ const LESSONS = [
     <p>نوع شکل خانه‌ی ۹ زمان آمدن را می‌گوید (روز، هفته، ماه، سال؛ درس «زمان برآمدن کار»).</p>
     ${exampleBlock('travel', null, [1, 4, 7, 10, 9, 3])}` },
 
+{ id: 'hopes', group: 'موضوع‌ها', ico: '🤝', title: 'دوستان، حاجت، زندان و علم', blurb: 'خانه‌های ۱۱، ۱۲ و ۹', kw: 'دوست دوستان امید حاجت زندان حبس رهایی علم تحصیل درس', topic: 'other', sub: 'h11',
+  body: () => `
+    <h2>۱. دوستان و امید (خانه‌ی ۱۱)</h2>
+    ${table(['حال شکل ۱۱', 'حکم'], [
+        ['سعد و داخل', 'امیدها برمی‌آید و از دوستان خیر می‌بیند'], ['نحس و داخل', 'امید به سختی برمی‌آید'],
+        ['سعد و خارج', 'دوستان از او فارغ‌اند'], ['نحس و خارج', 'ناسازگاری دوستان؛ امیدی نیست'],
+        ['سعد و ثابت', 'امید با درنگ برمی‌آید'], ['منقلب', 'دوستان دودل‌اند؛ گاه نزدیک گاه دور']
+    ])}
+    ${steps([
+        'شکل ۱۱ در ۳، ۵ یا ۹ تکرار کند: دوست واقعی‌اند. در ۴، ۷، ۱۰ یا ۱۲: در باطن دشمن‌اند. جای دیگر: نه دوست نه دشمن.',
+        'شکل ۱۱ سعد باشد ولی در ۶ یا ۱۲ تکرار کند: دوستی ظاهری و غیبت پشت سر.',
+        'شکل ۱۱ در ۱ یا ۵ تکرار کند: محبت و اتفاق زیاد.',
+        '<b>حاجت:</b> ۱ را در ۱۱ ضرب کنید؛ اگر حاصل در خانه‌ی ۲ نشسته باشد، بی‌شک مقصود برمی‌آید؛ وگرنه حکم را از حالت حاصل بگیرید.'
+    ])}
+    <h2>۲. زندان و رهایی (خانه‌ی ۱۲)</h2>
+    <p>۱ را در ۸ و ۸ را در ۱۲ ضرب کنید و دو حاصل را در هم. اگر نتیجه <b>خارج</b> باشد خلاص می‌شود (نحس باشد با سختی)، منقلب باشد حالش دگرگون می‌شود، و داخل یا ثابت باشد فعلاً در حبس می‌ماند. ${ST('حمره')} در ۳، ۸ یا ۱۲ نشانه‌ی خطر و خون است.</p>
+    <h2>۳. نصیب از علم (خانه‌ی ۹)</h2>
+    ${table(['شکل ۹', 'نصیب'], [
+        [STs(['نصره الداخل', 'قبض الداخل', 'عتبه الداخل']), 'علم می‌آموزد و کامل می‌شود'], [ST('جماعت'), 'ریاضی، هندسه و نجوم'],
+        [ST('اجتماع'), 'فال و رمل'], [ST('فرح'), 'هنر و موسیقی'], [STs(['انکیس', 'عقله']), 'علوم روحانی، دعا و عزایم']
+    ])}
+    <p>اگر همان جنس شکل در خانه‌ی ۵ هم بیاید، در آن علم سرآمد می‌شود.</p>
+    ${exampleBlock('other', 'h11', [11, 1, 2])}` },
+
 { id: 'self', group: 'موضوع‌ها', ico: '🪢', title: 'علت مشکلات، دعوا و بیماری', blurb: 'در خودم، در شخص دیگر یا در خانه', kw: 'علت مشکلات دعوا اختلاف جنگ بیماری ترس غم گره بدبیاری بدشانسی گرفتاری نحسی خانه شخص', topic: 'self',
   body: () => `
     <p class="lead">سؤال «چرا این همه دعوا و بیماری و گرفتاری؟» جدا از ازدواج خوانده می‌شود. اول معلوم کنید گرفتاری در کیست، بعد جنس گرفتاری، بعد ریشه‌اش و در آخر عاقبتش.</p>
     <h2>۱. گرفتاری در کیست؟ (خانه‌ی اصلی)</h2>
     ${table(['سؤال', 'خانه‌ی اصلی', 'خانه‌ها چطور خوانده می‌شوند'], [
         ['در خودم', HT(1), 'معنی خانه‌ها همان معنی معمول است'],
-        ['در شخص دیگر (همسر، شریک، فلانی)', HT(7), 'خانه‌ی ۷ «خانه‌ی ۱» او حساب می‌شود و بقیه از آن‌جا شمرده می‌شوند: ۸ مال او، ۹ خواهر و برادرش، ۱۲ بیماری او، ۲ ریشه‌ی گرفتاری او'],
+        ['در شخص دیگر (نیت به نام خود او)', HT(1), 'خانه‌ی ۱ خود همان شخص است و بقیه‌ی خانه‌ها مال او: ۶ بیماری و گرفتاری او، ۸ ریشه‌ی گرفتاری او'],
         ['در خانه و اهل منزل', HT(4), 'خانه‌ی ۴ اصل است و اعضای خانه هر کدام از خانه‌ی خودشان دیده می‌شوند']
     ])}
     <p>حال شکل خانه‌ی اصلی اولین حکم است: سعد ← پایه سالم است و گرفتاری گذراست؛ نحس و ثابت ← ریشه‌دار و ماندگار؛ نحس و داخل ← از درون خود شخص یا خانه؛ نحس و خارج ← از بیرون آمده یا رو به رفتن است.</p>
@@ -5731,7 +6312,7 @@ const LESSONS = [
     ])}
     <p>کنار هر نشانه، معنی همان خانه گفته می‌شود که گرفتاری «از جانب» کیست؛ مثلاً حمره‌ی نحس در خانه‌ی ۱۰ یعنی دعوا از جانب کار یا مادر.</p>
     <h2>۳. ریشه: هشتمِ شخص</h2>
-    <p>خانه‌ی هشتم از خانه‌ی اصلی (برای خودم ۸، برای شخص دیگر ۲، برای خانه ۱۱) خانه‌ی ترس و گرفتاری است. ببینید شکلش در کجا تکرار کرده؛ معنی آن خانه‌ها ریشه‌ی ماجراست. مثلاً اگر شکل ۸ در ۹ تکرار کند، پای عقیده یا دعا و تعویذ در میان است؛ اگر در ۲ باشد، مال و درآمد.</p>
+    <p>خانه‌ی هشتم از خانه‌ی اصلی (برای خودم و شخص دیگر ۸، برای خانه ۱۱) خانه‌ی ترس و گرفتاری است. ببینید شکلش در کجا تکرار کرده؛ معنی آن خانه‌ها ریشه‌ی ماجراست. مثلاً اگر شکل ۸ در ۹ تکرار کند، پای عقیده یا دعا و تعویذ در میان است؛ اگر در ۲ باشد، مال و درآمد.</p>
     <h2>۴. حال خود سائل (وقتی سؤال «در خودم» است)</h2>
     ${table(['شکل در ۱', 'یعنی'], [
         [ST('جماعت'), 'فکر سائل بسته است؛ بستگی و توقف در کارها'],
@@ -5747,9 +6328,10 @@ const LESSONS = [
         'جماعت یا اجتماع در ۱۱: ناامیدی و فشار عصبی.'
     ])}
     <h2>۵. وقتی سؤال از شخص دیگر یا خانه است</h2>
+    ${callout('tip', 'خانه‌ی ۱ همیشه صاحب نیت است', 'اگر نیت درباره‌ی خود آن شخص است («برادرم چرا این همه دعوا می‌کند؟»)، خانه‌ی ۱ خود اوست؛ فرقی نمی‌کند برادر باشد یا پدر یا دوست. فقط وقتی پای سائل هم وسط است («برادرم با من چرا دعوا می‌کند؟») سائل خانه‌ی ۱ و برادر خانه‌ی ۳ است. برای آدم ناشناس (همسر آینده، دزد، ساحر) خانه‌ی ۷ را می‌گیرند.')}
     ${steps([
-        `${ST('جماعت')} در ۷: فکر او بسته است. ${ST('انکیس')} در ۷: غم و دلگیری درونی، جنگ سرد. ${ST('فرح')} در ۷: تردید و دودلی.`,
-        'شکل ۷ در ۱۲ تکرار کند: دشمنی در کار است.',
+        `${ST('جماعت')} در ۱: فکر او بسته است. ${ST('انکیس')} در ۱: غم و دلگیری درونی، جنگ سرد. ${ST('فرح')} در ۱: تردید و دودلی.`,
+        'شکل ۱ در ۱۲ تکرار کند: دشمنی در کار است.',
         'برای خانه، حال هر عضو را از خانه‌ی خودش ببینید (پدر ۴، مادر ۱۰، همسر ۷، فرزند ۵، خواهر و برادر ۳)؛ عضوی که خانه‌اش نحس و از جنس دعوا یا بیماری است، از منشأهای گرفتاری است.',
         `${ST('عتبه الخارج')} در ۴: منزل قدیمی و نمناک یا نامناسب است.`
     ])}
@@ -5836,7 +6418,7 @@ const LESSONS = [
     <h3>می‌توانم یک رمل را برای چند موضوع بخوانم؟</h3>
     <p>صفحه این امکان را می‌دهد (پایین کارت تفسیر)، ولی بهتر است برای هر سؤال تازه، نیت تازه و رمل تازه بزنید.</p>
     <h3>چرا بعضی موضوع‌ها «نشانه‌ای نیامده» می‌گویند؟</h3>
-    <p>قاعده‌های هر موضوع فقط برای شکل‌های مشخصی حکم دارند. اگر هیچ‌کدام از آن شکل‌ها در خانه‌های موضوع نیفتاده باشد، حکم ویژه‌ای نیست و باید از متن کتاب خانه‌ی موضوع کمک گرفت.</p>
+    <p>قاعده‌های هر موضوع فقط برای شکل‌های مشخصی حکم دارند. اگر هیچ‌کدام از آن شکل‌ها در خانه‌های موضوع نیفتاده باشد، حکم ویژه‌ای نیست و حکم از قاعده‌های خانه‌ی اصلی (حالت، تکرار، گشتار و شواهد) گرفته می‌شود.</p>
     <h3>رمل‌هایم کجا ذخیره می‌شود؟</h3>
     <p>فقط روی همین دستگاه و مرورگر. اگر حافظه‌ی مرورگر پاک شود، فهرست هم پاک می‌شود. برای نگه داشتن یک رمل، لینک آن را کپی کنید.</p>` }
 ];
@@ -5847,6 +6429,7 @@ const lessonById = id => LESSONS.find(l => l.id === id);
 function lessonFor(topicId, sub){
     if(topicId === 'illness') return sub === 'child' ? 'illness-child' : 'illness-adult';
     if(topicId === 'other' && kinHouses[sub]) return 'kin';
+    if(topicId === 'other' && ['h9', 'h11', 'h12'].includes(sub)) return 'hopes';
     return topicById(topicId).lesson;
 }
 
