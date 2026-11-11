@@ -1,10 +1,11 @@
 // هر بار که آپدیت جدیدی منتشر می‌کنید، فقط همین عدد را زیاد کنید
-const CACHE_VERSION = 'v9.15.1';
+const CACHE_VERSION = 'v10.1';
 const CACHE_NAME = `niyat-ramal-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
   './',
   './index.html',
+  './zenati.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
