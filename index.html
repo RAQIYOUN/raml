@@ -818,6 +818,7 @@ img, svg{ -webkit-user-drag:none; user-drag:none; pointer-events:none; }
             <div class="mothers-grid" id="mothersGrid"></div>
             <div class="cast-row">
                 <button class="cast-btn" id="manualCastBtn">✦ ثبت و تفسیر رمل</button>
+                <button type="button" class="btn" id="mothersLinkBtn">🔗 کپی لینک با این شکل‌ها</button>
                 <span class="status-badge" id="statusBadgeManual" style="display:none;"></span>
             </div>
         </div>
@@ -5174,6 +5175,18 @@ function updateShareLink(){
     if(currentCast.niyat) p.set('n', currentCast.niyat);
     currentShareUrl = getPageBaseUrl() + '?' + p.toString();
 }
+$('mothersLinkBtn').addEventListener('click', async () => {
+    const names = motherSelectIds.map(id => $(id).value);
+    if(names.some(n => !n)){ toast('اول هر چهار امّ را انتخاب کنید'); return; }
+    const p = new URLSearchParams();
+    p.set('m', names.map(n => houses.findIndex(h => h.shape === n) + 1).join(','));
+    if(state.topic !== 'general') p.set('t', state.topic);
+    const t = topicById(state.topic);
+    if(t.subs && state.sub[t.id]) p.set('s', state.sub[t.id]);
+    if(niyatInput.value.trim()) p.set('n', niyatInput.value.trim());
+    const ok = await copyToClipboard(getPageBaseUrl() + '?' + p.toString());
+    toast(ok ? 'لینک این چهار شکل کپی شد ✅' : 'کپی نشد');
+});
 $('shareBtn').addEventListener('click', async () => {
     if(!currentShareUrl) return;
     const ok = await copyToClipboard(currentShareUrl);
