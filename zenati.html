@@ -364,6 +364,19 @@ textarea:focus, input:focus, select:focus{ outline:2px solid var(--gold); outlin
 .t-section > h3{ display:flex; align-items:center; gap:8px; font-size:15px; font-weight:900; margin:0 0 8px; color:var(--ink); }
 .t-section > h3 .ts-ico{ font-size:17px; }
 .t-section > h3 .ts-tag{ font-size:11px; font-weight:700; color:var(--muted); background:var(--bg-2); border-radius:999px; padding:1px 9px; }
+.t-fold{ border:1px solid var(--line, #e5e7eb); border-radius:14px; padding:10px 12px; background:var(--bg-2); }
+.t-fold > summary{ list-style:none; cursor:pointer; }
+.t-fold > summary::-webkit-details-marker{ display:none; }
+.t-fold > summary h3{ display:flex; align-items:center; gap:8px; font-size:15px; font-weight:900; margin:0; color:var(--ink); flex-wrap:wrap; }
+.t-fold > summary .ts-ico{ font-size:17px; }
+.t-fold > summary .ts-tag{ font-size:11px; font-weight:700; color:var(--muted); background:var(--bg); border-radius:999px; padding:1px 9px; }
+.t-fold > summary .ts-open{ margin-inline-start:auto; font-size:12px; font-weight:800; color:var(--info); }
+.t-fold > summary .ts-open::after{ content:' ▾'; }
+.t-fold[open] > summary .ts-open{ font-size:0; }
+.t-fold[open] > summary .ts-open::after{ content:'▴'; font-size:12px; }
+.t-fold[open] > summary{ margin-bottom:8px; }
+.ts-help{ font-size:13px; line-height:2; color:var(--muted); background:var(--bg); border-radius:10px; padding:8px 11px; margin:0 0 8px; }
+.ts-help b{ color:var(--ink); }
 .t-items{ display:flex; flex-direction:column; border:1px solid var(--line-2); border-radius:13px; overflow:hidden; background:var(--surface-2); }
 .t-item{ display:flex; gap:10px; align-items:flex-start; padding:10px 12px; font-size:14px; line-height:1.95; border-top:1px solid var(--line-2); }
 .t-item:first-child{ border-top:0; }
@@ -689,6 +702,23 @@ table.tbl{ width:100%; border-collapse:collapse; font-size:13.5px; line-height:1
 .toast{ position:fixed; bottom:calc(var(--tabbar-h) + 18px); left:50%; transform:translateX(-50%) translateY(20px); opacity:0; pointer-events:none; z-index:3000; background:var(--ink); color:var(--bg); padding:9px 18px; border-radius:999px; font-size:13.5px; font-weight:700; transition:opacity .2s, transform .2s; box-shadow:var(--shadow-2); }
 .toast.show{ opacity:1; transform:translateX(-50%); }
 
+
+/* ---------- پاسخ به پرسش‌ها (دانیال و شجره و ثمره) ---------- */
+#extCard h2{ margin:0 0 4px; font-size:18px; font-weight:900; }
+#extCard .ext-sub{ margin:0 0 10px; color:var(--muted); font-size:13px; }
+.ext-topics{ display:flex; flex-wrap:wrap; gap:6px; margin:6px 0 10px; }
+.ext-topics button{ border:1px solid var(--line-2); background:var(--surface); color:var(--ink); border-radius:999px; padding:5px 12px; font:inherit; font-size:13px; cursor:pointer; }
+.ext-topics button[aria-pressed="true"]{ background:var(--brand); color:var(--bg); border-color:var(--brand); }
+.ext-sec h4{ margin:12px 0 6px; font-size:14px; color:var(--ink-2); }
+.ext-q{ border:1px solid var(--line-2); border-radius:12px; margin:6px 0; background:var(--surface); overflow:hidden; }
+.ext-q > button{ width:100%; text-align:right; display:flex; justify-content:space-between; gap:8px; padding:10px 12px; border:0; background:none; color:var(--ink); font:inherit; font-size:14px; font-weight:700; cursor:pointer; }
+.ext-ans{ padding:2px 12px 12px; }
+.ext-ans ul{ list-style:none; margin:0; padding:0; }
+.ext-ans li{ margin:6px 0; padding:8px 10px; border-radius:10px; border-inline-start:4px solid var(--line-2); background:var(--bg); line-height:1.9; font-size:14px; }
+.ext-ans li.t-good{ border-color:#2b8a3e; } .ext-ans li.t-bad{ border-color:#c92a2a; } .ext-ans li.t-mid{ border-color:#e67700; } .ext-ans li.t-info{ border-color:#1c7ed6; }
+.ext-ans .ext-h{ display:inline-block; margin:2px; padding:0 8px; border-radius:999px; background:var(--brand); color:var(--bg); font-size:11.5px; line-height:1.9; }
+.ext-ans details{ margin-top:6px; font-size:13px; color:var(--muted); }
+
 footer{ text-align:center; padding:18px 16px 22px; font-size:12px; color:var(--muted); border-top:1px solid var(--line); }
 footer strong{ color:var(--ink-2); }
 
@@ -905,7 +935,7 @@ img, svg{ -webkit-user-drag:none; user-drag:none; pointer-events:none; }
             <a href="#learn" data-view="learn"><span class="ti" aria-hidden="true">📖</span><span>آموزش</span></a>
             <a href="#shapes" data-view="shapes"><span class="ti" aria-hidden="true">⁘</span><span>۱۶ شکل</span></a>
             <a href="#fal" data-view="fal"><span class="ti" aria-hidden="true">✦</span><span>فالنامه</span></a>
-            <a href="index.html" class="ext-tab"><span class="ti" aria-hidden="true">↩</span><span>رمل ابدح</span></a>
+            <a href="rasael.html" class="ext-tab"><span class="ti" aria-hidden="true">📜</span><span>رساله‌ها</span></a><a href="index.html" class="ext-tab"><span class="ti" aria-hidden="true">↩</span><span>رمل ابدح</span></a>
         </nav>
         <div class="theme-wrap">
             <button type="button" class="icon-btn" id="themeBtn" aria-label="تغییر حالت روشن و تاریک" title="روشن / تاریک">◐</button>
@@ -917,29 +947,72 @@ img, svg{ -webkit-user-drag:none; user-drag:none; pointer-events:none; }
 <section class="view" id="view-cast" aria-label="رمل زدن">
     <div class="z-hero">
         <h1>رمل زناتی</h1>
-        <p>چهار امّ را انتخاب کنید یا رمل تصادفی بزنید. زایچه‌ی شانزده خانه به قاعده‌ی زناتی ساخته می‌شود؛ روی هر خانه بزنید تا حکمش را ببینید و از فهرست پرسش‌ها، پرسش خود را بیابید.</p>
+        <p>اول موضوع و پرسش خود را انتخاب کنید، بعد رمل بزنید؛ جواب پرسش از همان رمل حساب می‌شود.</p>
     </div>
-    <div class="panel">
-        <div class="mothers" id="mothers"></div>
-        <div class="z-actions">
-            <button type="button" class="btn btn-primary cast-btn" id="castBtn">ساختن زایچه با این امّهات</button>
-            <button type="button" class="btn cast-btn" id="randBtn">رمل تصادفی</button>
-            <button type="button" class="btn cast-btn" id="linkBtn">کپی لینک با این شکل‌ها</button>
+    <div class="panel" id="stepNiyat">
+        <div class="panel-head">
+            <span class="step-num">۱</span>
+            <div><h2>پرسش شما درباره‌ی چیست؟</h2><p>موضوع را انتخاب کنید و روی پرسش خود بزنید. بعد از رمل زدن، جوابش از همان رمل باز می‌شود.</p></div>
+        </div>
+        <input type="search" id="qSearch" class="zq-search" placeholder="جستجوی پرسش، مثلاً: سفر، بیمار، دزد، ازدواج…" aria-label="جستجوی پرسش">
+        <div class="topic-grid" id="qTopics" role="group" aria-label="موضوع پرسش"></div>
+        <div id="qList" class="zq-wrap"></div>
+        <div class="niyat-row">
+            <label class="label" for="niyatInput">متن نیت (اختیاری):</label>
+            <textarea id="niyatInput" placeholder="مثلاً: آیا مسافرم به سلامت باز می‌گردد؟"></textarea>
+        </div>
+    </div>
+    <div class="panel" id="stepCast">
+        <div class="panel-head">
+            <span class="step-num">۲</span>
+            <div><h2>رمل را بزنید</h2><p>اگر روی کاغذ رمل زده‌اید چهار امّ را وارد کنید؛ وگرنه نقطه به نقطه همین‌جا بزنید.</p></div>
+        </div>
+        <div class="mode-row" role="tablist">
+            <button type="button" class="mode-btn active" id="modeManualBtn" role="tab">✍️ رمل زده‌ام</button>
+            <button type="button" class="mode-btn" id="modeClickBtn" role="tab">👆 نقطه به نقطه می‌زنم</button>
+        </div>
+        <div id="manualModeBox">
+            <label class="label">شکل هر یک از چهار امّ را انتخاب کنید (روی هر کدام بزنید):</label>
+            <div class="mothers" id="mothers"></div>
+            <div class="z-actions">
+                <button type="button" class="btn btn-primary cast-btn" id="castBtn">✦ ثبت و تفسیر رمل</button>
+                <button type="button" class="btn cast-btn" id="randBtn">رمل تصادفی</button>
+                <button type="button" class="btn cast-btn" id="linkBtn">🔗 کپی لینک با این شکل‌ها</button>
+            </div>
+        </div>
+        <div id="clickModeBox" style="display:none;">
+            <p class="tap-note">۱۶ خط امّهات را یکی‌یکی بسازید: با تمرکز بر نیت، روی کادر <b>بدون شمردن</b> ضربه بزنید، سپس «پایان این خط» را بزنید. نقطه‌ها دوتا دوتا حذف می‌شوند؛ اگر یکی ماند آن سطر <b>نقطه (•)</b> و اگر چیزی نماند <b>خط (••)</b> است.</p>
+            <div class="click-progress" id="clickProgress"></div>
+            <div class="click-pad-wrap">
+                <div class="click-pad-label" id="clickPadLabel"></div>
+                <div class="click-pad" id="clickPad" tabindex="0" role="button" aria-label="کادر ضربه زدن">
+                    <div class="click-dots" id="clickDots"></div>
+                    <div class="click-hint">روی این کادر ضربه بزنید</div>
+                </div>
+                <div class="click-pad-actions">
+                    <button type="button" class="cast-btn" id="finishLineBtn">✅ پایان این خط</button>
+                    <button type="button" class="mode-btn" id="resetClickBtn">↺ شروع دوباره</button>
+                </div>
+            </div>
         </div>
     </div>
     <div id="zResults" hidden>
-        <div class="panel z-sec">
-            <div class="zbox-top"><h2 style="margin:0;font-size:18px;font-weight:900;">زایچه</h2><button type="button" class="btn btn-sm" id="shareBtn">کپی لینک این رمل</button></div>
-            <div id="chart"></div>
+        <div class="res-hero">
+            <div class="res-kicker">نتیجه‌ی رمل</div>
+            <div class="res-title" id="resTitle"></div>
+            <div class="res-meta" id="resMeta"></div>
+            <div class="res-actions">
+                <button type="button" class="btn btn-sm" id="shareBtn">🔗 کپی لینک این رمل</button>
+                <button type="button" class="btn btn-sm" id="newCastBtn">↺ رمل جدید</button>
+            </div>
         </div>
-        <div class="panel z-sec">
-            <h2 class="zq-title">پرسش شما درباره‌ی چیست؟</h2>
-            <p class="zq-sub">موضوع را انتخاب کنید، بعد روی پرسش خود بزنید تا جوابش از همین رمل باز شود.</p>
-            <input type="search" id="qSearch" class="zq-search" placeholder="جستجوی پرسش، مثلاً: سفر، بیمار، دزد، ازدواج…" aria-label="جستجوی پرسش">
-            <div class="topic-grid" id="qTopics" role="group" aria-label="موضوع پرسش"></div>
-            <div id="qList" class="zq-wrap"></div>
+        <div class="panel z-sec" id="selAnswer" hidden></div>
+        <div class="shield-section-title"><span class="zahir-tag">🔷 زایچه</span><small>روی هر خانه بزنید تا جزئیاتش باز شود</small></div>
+        <div class="shield-wrap show" id="shieldWrap">
+            <svg class="shield-trace-svg" id="shieldDivideSvg"></svg>
+            <div class="shield" id="chart"></div>
         </div>
-        <div class="panel z-sec" id="general"></div>
+        <div class="panel z-sec" id="general" style="margin-top:18px;"></div>
     </div>
 </section>
 
@@ -992,6 +1065,7 @@ img, svg{ -webkit-user-drag:none; user-drag:none; pointer-events:none; }
 
 <footer>
     <p style="margin:0;">رمل زناتی · <a href="index.html">بازگشت به رمل ابدح</a></p>
+    <p style="margin:4px 0 0;font-size:11px;opacity:.7;">نسخه <span class="app-ver">v13.8</span></p>
 </footer>
 
 <script>
@@ -2067,7 +2141,7 @@ const countFrom1 = (n, mod) => { const r = n % mod || mod; return ((r - 1) % 16)
 const BIMAR_SH = { 'انکیس': 'بیماری دراز کشد', 'عتبه الداخل': 'بعد از مدتی به شود', 'جماعت': 'بیماری از خون است', 'قبض الخارج': 'بیماری از بلغم است', 'قبض الداخل': 'بیماری از سودا است', 'حمره': 'بیماری از گرمی است و عافیت یابد', 'طریق': 'بیمار بمیرد', 'عقله': 'عافیت یابد', 'نقی الخد': 'بیمار به شود', 'فرح': 'بیماری دراز کشد و عاقبت هلاک شود', 'لحیان': 'بیماری زیادت گردد، چنانکه بیم مرگ باشد', 'نصره الداخل': 'بعد از هفته‌ای از رنج برآید و به شود', 'نصره الخارج': 'در آن مدت از بیماری رها شود' };
 const SAL_SH = { 'جماعت': 'در آن سال ارزانی شود و نعمت فراخ گردد و آفات کمتر باشد و پادشاه نیک‌حال گردد و بیماری‌ها سهل باشد و غله را آفت کم رسد، ولیکن رطوبت بسیار باشد', 'لحیان': 'برده و چهارپا خوار گردد و کسب و کار و تجارت نیک باشد و غله را آفت کم رسد', 'نصره الخارج': 'بارش کمتر باشد و نرخ‌ها میانه، و کار بازرگانان بد باشد و بادهای سخت وزد و در دریا کشتی‌ها غرق شود و مرگ چهارپایان باشد', 'فرح': 'آب‌ها اندک باشد و سفرها نیک، و بادها بسیار وزد و سرما کمتر باشد', 'انکیس': 'سفرها و نبات‌ها نیک باشد، و بادهای مخالف بسیار جهد و سلطان بر رعیت ظلم کند و فتنه‌ها پدید شود و تلف بسیار باشد', 'قبض الداخل': 'دشمنان ملک بسیار شوند، و بیماری‌ها اندک باشد و فراخی نعمت باشد، و بادهای خطرناک بسیار جهد و سرما سخت باشد و دزدان چیره شوند و راهزنان دست برآورند، و میوه‌ها نیک باشد', 'طریق': 'بارش بسیار باشد و تنگ‌سالی، اندک خیر، و آب‌ها کم شود و نرخ‌ها بیفزاید و بهتان و دروغ از اطراف ظاهر گردد، و ممکن است در این سال زلزله باشد', 'عقله': 'سال مبارک باشد ولیکن بادها بسیار جهد و بیماری بسیار باشد، و در عمارت و زراعت بیفزاید و گرما گرم و سرما سرد باشد، و در آخر سال در بعضی اطراف خرابی باشد و بازرگانان را خطر افتد و کشتی‌ها در دریا غرق شود', 'نصره الداخل': 'از اول سال تا آخرش بیماری بسیار باشد', 'عتبه الداخل': 'مردم پریشان باشند' };
 const RAFTAN_SH = { 'اجتماع': 'در آن سال گنج یابد', 'لحیان': 'از معدنیات چیزی بیابد', 'انکیس': 'از راه بازگردد', 'نصره الخارج': 'بسیار سرگردانی کشد' };
-/* استخراج اسامی (صفحه‌ی ۱۵۷ و ۱۶۱): حروف هر شکل */
+/* استخراج اسامی: حروف هر شکل */
 const NAME_HARF = Object.fromEntries([['1222', 'ا ف'], ['2221', 'ب ص'], ['2122', 'ج ق'], ['2212', 'د ر'], ['2211', 'ه ش'], ['1122', 'و ت'], ['2111', 'ز ث'], ['1112', 'ح خ'], ['1121', 'ط ذ'], ['1211', 'ی ض'], ['2121', 'ک ظ'], ['1212', 'ل غ'], ['2222', 'م'], ['1221', 'ن'], ['2112', 'س'], ['1111', 'ع']].map(([c, t]) => [nameOf(c.split('').map(Number)), t.split(' ')]));
 const NAME_HARF_ORDER = ['1222', '2221', '2122', '2212', '2211', '1122', '2111', '1112', '1121', '1211', '2121', '1212', '2222', '1221', '2112', '1111'].map(c => nameOf(c.split('').map(Number)));
 function nameExtract(){
@@ -3161,6 +3235,39 @@ const Q_TOPICS = [
         ['سال و شهر', [102, 139, 40, 240]] ] },
 ];
 
+/* نکته‌های تفسیر ؛ در هر سه صفحه به کار می‌رود */
+const NOKAT = [
+ ['جای خانه‌ها', [
+  'اوتاد (۱، ۴، ۷، ۱۰) قوی‌ترین خانه‌هایند و دلیل زمان حال؛ مایل‌ها (۲، ۵، ۸، ۱۱) میانه‌اند و دلیل آینده؛ زایل‌ها (۳، ۶، ۹، ۱۲) ضعیف‌اند و دلیل گذشته. شکل سعد در وتد قوت تمام دارد.',
+  'خانه‌های ۲، ۶، ۸ و ۱۲ «ساقط»اند، یعنی به طالع نظر ندارند؛ آنچه در آن‌ها بیاید کمتر به سائل می‌رسد.',
+  'از هر خانه، سوم و یازدهم تسدیس، پنجم و نهم تثلیث (دوستی)، چهارم و دهم تربیع، و هفتم مقابله (دشمنی) است. خانه‌ی کار اگر با طالع تثلیث یا تسدیس داشته باشد و شکلش سعد باشد، کار به آسانی برآید.',
+  'خانه‌ی هر کس را از خانه‌ی خودش بشمارید: بیماری برادر ششمِ سوم است، یعنی خانه‌ی هشتم؛ مال همسر دومِ هفتم، یعنی خانه‌ی هشتم.',
+  'هشت خانه‌ی اول از آنِ سائل است و هشت خانه‌ی دوم از آنِ مسئول: پنجم نفس دوم سائل است و نهم نفس دوم مسئول.']],
+ ['شاهد و دلیل', [
+  'هر خانه را شکل دو خانه بعدش شاهد است و شکل چهار خانه بعدش دلیل: خانه‌ی اول را سوم شاهد است و پنجم دلیل؛ دوم را چهارم و ششم؛ و بر این قیاس.',
+  'چون شاهد و دلیل هر دو سعد باشند، حکم آن خانه بر سعادت است؛ و چون هر دو نحس باشند بر نحوست؛ و اگر یکی سعد و یکی نحس باشد، میزان (۱۵) حکم را روشن می‌کند.',
+  'برای برآمدن مراد، میزان رمل و شکل نفس (۱) باید سعد باشند. میزان سعد نحوست را ضعیف می‌کند و عاقبت را به سعادت می‌کشاند.']],
+ ['حال شکل‌ها', [
+  'شکل داخل دلیل آمدن و ماندن و گرفتن است؛ شکل خارج دلیل رفتن و دادن و جدا شدن. در خرید و فروش، داخل خریدن را بهتر نشان می‌دهد و خارج فروختن را.',
+  'شکل ثابت دلیل ماندن و دوام است (عمر دراز، منصب پایدار، ثبات در قول)؛ منقلب دلیل گشتن و زوال است؛ ذوجسدین گاه این و گاه آن.',
+  'شکل ثقیل (پرنقطه) دلیل دیری و سختی است و شکل خفیف (کم‌نقطه) دلیل زودی و آسانی.',
+  'شکل صاعد (نقطه‌ی بالایش گشاده) دلیل مرد و زنده و موجود است؛ شکل هابط (نقطه‌ی بالایش بسته) دلیل زن و معدوم.',
+  'شکل نر و ماده در حکم فرزند، دزد و غایب به کار می‌آید؛ و شکلی که در رمل بسیار تکرار کند، حکمش بر کل رمل غالب است.']],
+ ['کواکب', [
+  'اگر در رمل اشکال سعدین (زهره و مشتری) غلبه کنند، دلیل حصول مراد و شادی است؛ اگر نحسین (زحل و مریخ)، دلیل نامرادی و بستگی کار؛ اگر نیرین (آفتاب و ماه)، دلیل قدر و جاه؛ و اگر اشکال عطارد، ببین با کدام کوکب پیوسته است.',
+  'هر کوکب را منسوباتی است از رنگ و طعم و جای و جانور و معدن؛ برای وصف چیز پنهان یا شخص، کوکب شکل خانه‌ی آن را بنگرید.']],
+ ['سیر نقطه', [
+  'نقطه‌های فرد میزان را تا مادرها بازگردانید؛ خانه‌ای که نقطه در آن به پایان می‌رسد، ضمیر از آن است.',
+  'نقطه‌ای که به خانه‌ی هم‌طبع خود برود (آتش به خانه‌ی آتشی و باد به بادی) حرکت طبیعی دارد و دلیل سعادت و سلامت است؛ نقطه‌ای که به خانه‌ی ناهم‌طبع برود حرکت قسری دارد و برعکس.',
+  'اگر نقطه‌ی آب در مرتبه‌ی آتش بنشیند یا آتش در مرتبه‌ی آب، «مستحیل» است و مطلوب حاصل نمی‌شود.',
+  'نقطه‌ی آتش دلیل دیدن است، باد دلیل سخن و خبر، آب دلیل پیوستن، و خاک دلیل حصول و منفعت.']],
+ ['ضمیر و تکرار', [
+  'شکل طالع اگر در خانه‌ای تکرار کرده باشد، ضمیر از آن خانه است؛ و اگر تکرار نکرده باشد، از خانه‌ای است که آن شکل صاحب آن است.',
+  'ضمیر را با چند روش بیرون آورید؛ خانه‌ای که بیشترین روش‌ها بر آن گواهی دهند، به ضمیر نزدیک‌تر است.',
+  'دانستن ضمیر مجازی است نه حقیقی؛ مقصود اصلی سائل عاقبت کار است که آیا ممکن الحصول است یا نه.']]
+];
+const nokatHtml = () => NOKAT.map(([t, l]) => `<h2>${t}</h2><ul>${l.map(x => `<li>${x}</li>`).join('')}</ul>`).join('');
+
 /* ======================================================================
    درس‌های رمل زناتی، از پایه تا آخر
    ====================================================================== */
@@ -3169,6 +3276,7 @@ const steps = list => `<ol class="steps">${list.map(x => `<li>${x}</li>`).join('
 const SH = n => `<span class="sh-inline">${dotsSvg(n, 'tiny')}${n}</span>`;
 
 const LESSONS = [
+{ id: 'nokat', g: 'نکته‌های تفسیر', t: 'نکته‌هایی برای تفسیر بهتر', body: () => `<p class="lead">نکته‌هایی که به فهم بهتر تفسیر هر رمل کمک می‌کند.</p>${nokatHtml()}` },
 { id: 'intro', g: 'پایه', t: 'رمل زناتی چیست', body: () => `
     <p class="lead">رمل زناتی روشی است که به نام محمد زناتی شناخته می‌شود و قاعده‌هایش را از دانیال نقل می‌کنند. شکل‌ها و ساختن زایچه در آن مثل همه‌ی روش‌های رمل است؛ آنچه آن را جدا می‌کند، <b>ترتیب شانزده شکل</b>، منسوبات شکل‌ها و قاعده‌های حکم کردن است.</p>
     <p>در این روش ترتیب شکل‌ها این است:</p>
@@ -3559,15 +3667,50 @@ function itemsHtml(items){
     return `<ul class="zi">${items.map(x => `<li class="t-${x.tone}">${esc(x.t)}${x.m ? ` <a class="zh-tag" href="?m=${x.m.map(n => Z_ORDER.indexOf(n) + 1).join(',')}#cast">ساختن زایچه‌ی این رمل</a>` : ''}${x.houses && x.houses.length ? `<span class="zh-tags">${[...new Set(x.houses)].map(h => `<button type="button" class="zh-tag" data-house="${h}" title="خانه‌ی ${fa(h)}">${HOUSE_SHORT[h - 1]}</button>`).join('')}</span>` : ''}</li>`).join('')}</ul>`;
 }
 
-/* ---------- زایچه ---------- */
-const LAYOUT = [[1, 2, 3, 4, 5, 6, 7, 8], [9, 10, 11, 12], [13, 14], [15], [16]];
+/* ---------- زایچه (چیدمان همانند رمل ابدح) ---------- */
+const SH_LAYOUT = [
+    { row: 1, col: 1 }, { row: 1, col: 2 }, { row: 1, col: 3 }, { row: 1, col: 4 },
+    { row: 1, col: 5 }, { row: 1, col: 6 }, { row: 1, col: 7 }, { row: 1, col: 8 },
+    { row: 2, colStart: 1, colEnd: 3 }, { row: 2, colStart: 3, colEnd: 5 },
+    { row: 2, colStart: 5, colEnd: 7 }, { row: 2, colStart: 7, colEnd: 9 },
+    { row: 3, colStart: 2, colEnd: 4 }, { row: 3, colStart: 6, colEnd: 8 },
+    { row: 4, colStart: 2, colEnd: 8 },
+    { row: 5, colStart: 2, colEnd: 4 }
+];
+const EL4N = ['آتش', 'باد', 'آب', 'خاک'];
 function renderChart(){
-    $('chart').innerHTML = LAYOUT.map((row, ri) => `<div class="zrow zr${ri}">${row.map(n => {
-        const s = S(n), f = F(n);
-        return `<button type="button" class="zc ${fClass(f)}" data-house="${n}" aria-label="خانه‌ی ${fa(n)}: ${s}">
-            <span class="zc-n">${fa(n)}</span>${dotsSvg(s)}<span class="zc-name">${s}</span>
-            <span class="zc-meta">${f} · ${kindOf(s)}</span></button>`; }).join('')}</div>`).join('');
+    const box = $('chart'); box.innerHTML = '';
+    for(let i = 0; i < 16; i++){
+        const n = i + 1, s = S(n), f = fOf(s), el = META[s].el + 'ی', pos = SH_LAYOUT[i];
+        const c = document.createElement('div');
+        c.className = 'card'; c.style.animationDelay = (i * 0.03) + 's';
+        c.dataset.element = el; c.dataset.fortune = f; c.dataset.houseIndex = i; c.dataset.house = n;
+        c.setAttribute('role', 'button'); c.setAttribute('tabindex', '0');
+        c.setAttribute('aria-label', `خانه‌ی ${fa(n)}: ${s}`);
+        if(n === 15) c.classList.add('judge-house');
+        c.innerHTML = `<div class="hd"><span class="hn" data-n="${EL4N[i % 4]}">${fa(n)} ${EL4N[i % 4]}</span><span class="hf" data-f="${f}">${f}</span></div><h3>${s} <span class="se" data-e="${el}">${el}</span></h3><pre>${rowsOf(s).map(r => r === 1 ? '•' : '••').join('\n')}</pre><div class="house-topic">${HOUSE_SHORT[i]}</div>`;
+        if(pos.col !== undefined) c.style.gridColumn = String(pos.col);
+        else { const span = pos.colEnd - pos.colStart; c.classList.add('narrow'); c.style.gridColumn = `${pos.colStart} / ${pos.colEnd}`; c.style.width = (100 / span).toFixed(4) + '%'; }
+        c.style.gridRow = String(pos.row);
+        if(i === 3) c.classList.add('divide-gap-r');
+        if(i === 4) c.classList.add('divide-gap-l');
+        box.appendChild(c);
+    }
+    drawDivide();
 }
+function drawDivide(){
+    const wrap = $('shieldWrap'), svg = $('shieldDivideSvg'); if(!svg) return; svg.innerHTML = '';
+    requestAnimationFrame(() => {
+        const W = wrap.getBoundingClientRect(); if(!W.width) return;
+        const q = k => $('chart').querySelector(`[data-house-index="${k}"]`), h4 = q(3), h5 = q(4), h15 = q(14); if(!h4 || !h5 || !h15) return;
+        const r4 = h4.getBoundingClientRect(), r5 = h5.getBoundingClientRect(), r15 = h15.getBoundingClientRect();
+        svg.setAttribute('viewBox', `0 0 ${W.width} ${W.height}`);
+        const x = ((r4.left + r5.right) / 2) - W.left, top = Math.min(r4.top, r5.top) - W.top, t15 = r15.top - W.top, fy = t15 - 22, ey = t15 - 8, lx = r15.left - W.left, rx = r15.right - W.left;
+        svg.innerHTML = `<path d="M ${x} ${top} L ${x} ${fy}" fill="none" stroke="#7d3c98" stroke-width="3.5" stroke-linecap="round"/><path d="M ${x} ${fy} L ${lx} ${ey}" fill="none" stroke="#7d3c98" stroke-width="3.5" stroke-linecap="round"/><path d="M ${x} ${fy} L ${rx} ${ey}" fill="none" stroke="#7d3c98" stroke-width="3.5" stroke-linecap="round"/><circle cx="${x}" cy="${top}" r="3.5" fill="#7d3c98"/><circle cx="${x}" cy="${fy}" r="3.5" fill="#7d3c98"/>`;
+    });
+}
+window.addEventListener('resize', () => { if(CUR) drawDivide(); });
+document.addEventListener('keydown', e => { const c = e.target.closest && e.target.closest('.card[data-house]'); if(c && (e.key === 'Enter' || e.key === ' ')){ e.preventDefault(); houseDetail(Number(c.dataset.house)); } });
 function houseDetail(n){
     const s = S(n), m = META[s], k = Z_ORDER.indexOf(s), ab = ABDAH_BOOK[s];
     const rp = rep(n);
@@ -3625,7 +3768,7 @@ const Q_WHERE = {};
 Q_TOPICS.forEach(t => t.s.forEach(([st, ids]) => ids.forEach(i => { Q_WHERE[i] = { t, st }; })));
 function qItem(i){
     const q = QUESTIONS[i], on = curQ === i;
-    return `<div class="zq${on ? ' on' : ''}" id="z_q${i}"><button type="button" class="qbtn" data-q="${i}" aria-expanded="${on}"><span>${esc(q.q)}</span><span class="zq-arr" aria-hidden="true">${on ? '−' : '+'}</span></button>${on ? `<div class="qans">${answerHtml(i)}</div>` : ''}</div>`;
+    return `<div class="zq${on ? ' on' : ''}" id="z_q${i}"><button type="button" class="qbtn" data-q="${i}" aria-expanded="${on}"><span>${esc(q.q)}</span><span class="zq-arr" aria-hidden="true">${on ? '−' : '+'}</span></button>${on ? `<div class="qans">${CUR ? answerHtml(i) : `<p class="zq-hint">این پرسش انتخاب شد. حالا در مرحله‌ی ۲ رمل بزنید تا جوابش بیاید.</p><details class="qrule"><summary>قاعده‌ی این پرسش</summary><p>${esc(q.rule)}</p></details>`}</div>` : ''}</div>`;
 }
 function secHtml(title, ids){ return `<div class="zq-sec"><h4>${esc(title)}</h4><div class="zq-list">${ids.map(qItem).join('')}</div></div>`; }
 function renderGroups(){
@@ -3648,10 +3791,17 @@ function answerHtml(i){
     return `${itemsHtml(items)}<details class="qrule"><summary>قاعده‌ی این پرسش</summary><p>${esc(q.rule)}</p></details>`;
 }
 function answer(i){
-    curQ = curQ === i ? null : i; renderGroups();
+    curQ = curQ === i ? null : i; renderGroups(); renderSelAnswer();
     const el = $('q' + i); if(el && curQ === i) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
+function renderSelAnswer(){
+    const b = $('selAnswer'); if(!b) return;
+    if(!CUR || curQ === null){ b.hidden = true; return; }
+    const w = Q_WHERE[curQ];
+    b.hidden = false;
+    b.innerHTML = `<h2 class="zq-title">پاسخ پرسش شما</h2><p class="zq-head">${w ? `<span aria-hidden="true">${w.t.ico}</span> ${esc(w.t.t)} · ` : ''}${esc(QUESTIONS[curQ].q)}</p>${answerHtml(curQ)}`;
+}
 /* ---------- رمل زدن ---------- */
 let mothers = ['لحیان', 'لحیان', 'لحیان', 'لحیان'];
 function renderMothers(){
@@ -3671,16 +3821,51 @@ function randomMothers(){
 function cast(ms, push = true){
     mothers = ms.slice(); renderMothers();
     CUR = build16(mothers);
+    $('zResults').hidden = false;
     renderChart();
     $('general').innerHTML = generalReading();
-    $('zResults').hidden = false;
-    curQ = null; renderGroups();
+    const niy = ($('niyatInput') && $('niyatInput').value.trim()) || '';
+    $('resTitle').textContent = curQ !== null ? QUESTIONS[curQ].q : (curTopic ? Q_TOPICS.find(t => t.id === curTopic).t : 'زایچه‌ی رمل');
+    $('resMeta').textContent = `امّهات: ${mothers.join('، ')}${niy ? ' · نیت: ' + niy : ''}`;
+    renderGroups(); renderSelAnswer();
     if(push){
         const code = mothers.map(n => Z_ORDER.indexOf(n) + 1).join(',');
         try { history.replaceState(null, '', `?m=${code}${location.hash || '#cast'}`); } catch(e){}
         $('zResults').scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
 }
+
+/* ---------- حالت دستی / نقطه به نقطه (همانند رمل ابدح) ---------- */
+function setMode(m){
+    $('modeManualBtn').classList.toggle('active', m === 'manual'); $('modeClickBtn').classList.toggle('active', m === 'click');
+    $('manualModeBox').style.display = m === 'manual' ? '' : 'none'; $('clickModeBox').style.display = m === 'click' ? '' : 'none';
+    if(m === 'click') resetClick();
+}
+let cM, cMI, cR, cTaps;
+function resetClick(){ cM = [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]; cMI = 0; cR = 0; cTaps = 0; $('clickPad').style.pointerEvents = 'auto'; $('clickPad').style.opacity = 1; renderClickProg(); renderClickPad(); }
+function renderClickProg(){
+    let h = ''; for(let m = 0; m < 4; m++){ h += `<div class="click-mother-row"><span class="cm-label">امّ ${fa(m + 1)}</span>`;
+        for(let r = 0; r < 4; r++){ const v = cM[m][r], done = v !== 0, act = !done && m === cMI && r === cR;
+            h += `<div class="click-line-badge${done ? ' done' : act ? ' active' : ''}"><span class="clb-el">${EL4N[r]}</span><span class="clb-dots">${done ? (v === 1 ? '•' : '••') : '—'}</span></div>`; }
+        h += '</div>'; }
+    $('clickProgress').innerHTML = h;
+}
+function renderClickPad(){ cTaps = 0; $('clickDots').innerHTML = ''; if(cMI < 4) $('clickPadLabel').textContent = `امّ ${fa(cMI + 1)} — خط عنصر ${EL4N[cR]} (خط ${fa(cMI * 4 + cR + 1)} از ۱۶)`; }
+function tapPad(){ if(cMI >= 4) return; cTaps++; $('clickDots').appendChild(document.createElement('span')); }
+function finishLine(){
+    if(cMI >= 4) return;
+    if(!cTaps){ toast('لطفاً حداقل یک‌بار روی کادر ضربه بزنید.'); return; }
+    cM[cMI][cR] = cTaps % 2 ? 1 : 2; cR++; if(cR >= 4){ cR = 0; cMI++; }
+    if(cMI >= 4){ $('clickPadLabel').textContent = 'همه‌ی ۱۶ خط ثبت شد ✅'; $('clickPad').style.pointerEvents = 'none'; $('clickPad').style.opacity = .5; renderClickProg(); cast(cM.map(r => nameOf(r))); }
+    else { renderClickProg(); renderClickPad(); }
+}
+$('modeManualBtn').onclick = () => setMode('manual');
+$('modeClickBtn').onclick = () => setMode('click');
+$('clickPad').addEventListener('click', tapPad);
+$('clickPad').addEventListener('keydown', e => { if(e.key === ' ' || e.key === 'Enter'){ e.preventDefault(); tapPad(); } });
+$('finishLineBtn').onclick = finishLine;
+$('resetClickBtn').onclick = resetClick;
+$('newCastBtn').onclick = () => { $('zResults').hidden = true; CUR = null; renderGroups(); resetClick(); try { history.replaceState(null, '', location.pathname + '#cast'); } catch(e){} window.scrollTo({ top: 0, behavior: 'smooth' }); };
 
 /* ---------- ۱۶ شکل ---------- */
 function renderShapes(){
@@ -3793,9 +3978,10 @@ renderMothers(); renderShapes(); renderGroups(); renderLessonNav();
 (function init(){
     const m = new URLSearchParams(location.search).get('m');
     if(m){ const p = m.split(',').map(Number); if(p.length === 4 && p.every(x => x >= 1 && x <= 16)){
-        cast(p.map(x => Z_ORDER[x - 1]), false);
         const q = Number(new URLSearchParams(location.search).get('q'));
-        if(new URLSearchParams(location.search).has('q') && QUESTIONS[q] && Q_WHERE[q]){ curTopic = Q_WHERE[q].t.id; curQ = q; renderGroups(); setTimeout(() => { const el = $('q' + q); if(el) el.scrollIntoView({ block: 'center' }); }, 300); }
+        if(new URLSearchParams(location.search).has('q') && QUESTIONS[q] && Q_WHERE[q]){ curTopic = Q_WHERE[q].t.id; curQ = q; }
+        cast(p.map(x => Z_ORDER[x - 1]), false);
+        setTimeout(() => { const el = $(curQ !== null ? 'selAnswer' : 'zResults'); if(el) el.scrollIntoView({ block: 'start' }); }, 300);
     } }
     route();
     document.body.style.opacity = 1;

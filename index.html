@@ -377,6 +377,19 @@ textarea:focus, input:focus, select:focus{ outline:2px solid var(--gold); outlin
 .t-section > h3{ display:flex; align-items:center; gap:8px; font-size:15px; font-weight:900; margin:0 0 8px; color:var(--ink); }
 .t-section > h3 .ts-ico{ font-size:17px; }
 .t-section > h3 .ts-tag{ font-size:11px; font-weight:700; color:var(--muted); background:var(--bg-2); border-radius:999px; padding:1px 9px; }
+.t-fold{ border:1px solid var(--line, #e5e7eb); border-radius:14px; padding:10px 12px; background:var(--bg-2); }
+.t-fold > summary{ list-style:none; cursor:pointer; }
+.t-fold > summary::-webkit-details-marker{ display:none; }
+.t-fold > summary h3{ display:flex; align-items:center; gap:8px; font-size:15px; font-weight:900; margin:0; color:var(--ink); flex-wrap:wrap; }
+.t-fold > summary .ts-ico{ font-size:17px; }
+.t-fold > summary .ts-tag{ font-size:11px; font-weight:700; color:var(--muted); background:var(--bg); border-radius:999px; padding:1px 9px; }
+.t-fold > summary .ts-open{ margin-inline-start:auto; font-size:12px; font-weight:800; color:var(--info); }
+.t-fold > summary .ts-open::after{ content:' ▾'; }
+.t-fold[open] > summary .ts-open{ font-size:0; }
+.t-fold[open] > summary .ts-open::after{ content:'▴'; font-size:12px; }
+.t-fold[open] > summary{ margin-bottom:8px; }
+.ts-help{ font-size:13px; line-height:2; color:var(--muted); background:var(--bg); border-radius:10px; padding:8px 11px; margin:0 0 8px; }
+.ts-help b{ color:var(--ink); }
 .t-items{ display:flex; flex-direction:column; border:1px solid var(--line-2); border-radius:13px; overflow:hidden; background:var(--surface-2); }
 .t-item{ display:flex; gap:10px; align-items:flex-start; padding:10px 12px; font-size:14px; line-height:1.95; border-top:1px solid var(--line-2); }
 .t-item:first-child{ border-top:0; }
@@ -702,6 +715,23 @@ table.tbl{ width:100%; border-collapse:collapse; font-size:13.5px; line-height:1
 .toast{ position:fixed; bottom:calc(var(--tabbar-h) + 18px); left:50%; transform:translateX(-50%) translateY(20px); opacity:0; pointer-events:none; z-index:3000; background:var(--ink); color:var(--bg); padding:9px 18px; border-radius:999px; font-size:13.5px; font-weight:700; transition:opacity .2s, transform .2s; box-shadow:var(--shadow-2); }
 .toast.show{ opacity:1; transform:translateX(-50%); }
 
+
+/* ---------- پاسخ به پرسش‌ها (دانیال و شجره و ثمره) ---------- */
+#extCard h2{ margin:0 0 4px; font-size:18px; font-weight:900; }
+#extCard .ext-sub{ margin:0 0 10px; color:var(--muted); font-size:13px; }
+.ext-topics{ display:flex; flex-wrap:wrap; gap:6px; margin:6px 0 10px; }
+.ext-topics button{ border:1px solid var(--line-2); background:var(--surface); color:var(--ink); border-radius:999px; padding:5px 12px; font:inherit; font-size:13px; cursor:pointer; }
+.ext-topics button[aria-pressed="true"]{ background:var(--brand); color:var(--bg); border-color:var(--brand); }
+.ext-sec h4{ margin:12px 0 6px; font-size:14px; color:var(--ink-2); }
+.ext-q{ border:1px solid var(--line-2); border-radius:12px; margin:6px 0; background:var(--surface); overflow:hidden; }
+.ext-q > button{ width:100%; text-align:right; display:flex; justify-content:space-between; gap:8px; padding:10px 12px; border:0; background:none; color:var(--ink); font:inherit; font-size:14px; font-weight:700; cursor:pointer; }
+.ext-ans{ padding:2px 12px 12px; }
+.ext-ans ul{ list-style:none; margin:0; padding:0; }
+.ext-ans li{ margin:6px 0; padding:8px 10px; border-radius:10px; border-inline-start:4px solid var(--line-2); background:var(--bg); line-height:1.9; font-size:14px; }
+.ext-ans li.t-good{ border-color:#2b8a3e; } .ext-ans li.t-bad{ border-color:#c92a2a; } .ext-ans li.t-mid{ border-color:#e67700; } .ext-ans li.t-info{ border-color:#1c7ed6; }
+.ext-ans .ext-h{ display:inline-block; margin:2px; padding:0 8px; border-radius:999px; background:var(--brand); color:var(--bg); font-size:11.5px; line-height:1.9; }
+.ext-ans details{ margin-top:6px; font-size:13px; color:var(--muted); }
+
 footer{ text-align:center; padding:18px 16px 22px; font-size:12px; color:var(--muted); border-top:1px solid var(--line); }
 footer strong{ color:var(--ink-2); }
 
@@ -770,6 +800,7 @@ img, svg{ -webkit-user-drag:none; user-drag:none; pointer-events:none; }
             <a href="#shapes" data-view="shapes"><span class="ti" aria-hidden="true">⁘</span><span>۱۶ شکل</span></a>
             <a href="#history" data-view="history"><span class="ti" aria-hidden="true">🗂</span><span>رمل‌های من</span></a>
             <a href="zenati.html" class="ext-tab"><span class="ti" aria-hidden="true">📕</span><span>رمل زناتی</span></a>
+            <a href="rasael.html" class="ext-tab"><span class="ti" aria-hidden="true">📜</span><span>رساله‌ها</span></a>
         </nav>
         <div class="theme-wrap">
             <button type="button" class="icon-btn" id="themeBtn" aria-label="تغییر حالت روشن و تاریک" title="روشن / تاریک">◐</button>
@@ -856,12 +887,14 @@ img, svg{ -webkit-user-drag:none; user-drag:none; pointer-events:none; }
 
         <nav class="res-nav" aria-label="بخش‌های نتیجه">
             <a href="#tafsirCard">🔎 تفسیر</a>
+            <a href="#extCard">📜 پاسخ به پرسش‌ها</a>
             <a href="#zahirAnchor">🔷 ظاهر رمل</a>
             <a href="#zhPathBox">🧭 ضمیر و حکم</a>
             <a href="#batinAnchor">🔮 باطن رمل</a>
         </nav>
 
         <div class="panel anchor" id="tafsirCard"></div>
+        <div class="panel anchor" id="extCard" style="display:none;"></div>
 
         <div class="anchor" id="zahirAnchor">
             <div class="shield-section-title"><span class="zahir-tag">🔷 ظاهر رمل</span><small>روی هر خانه بزنید تا جزئیاتش باز شود</small></div>
@@ -996,9 +1029,10 @@ img, svg{ -webkit-user-drag:none; user-drag:none; pointer-events:none; }
 
 <footer>
     <p style="margin:0;">&copy; ۲۰۲۵ نیت‌رمل — بر پایه‌ی دایره‌ی ابدح، تدوین: <strong>محمود خاوری</strong> (گروه آموزشی راقیون) · <a href="https://raqiyoun.github.io/ABDAH/" target="_blank" rel="noopener">دایره‌ی ابدح و منسوبات آن</a></p>
-    <p style="margin:4px 0 0;font-size:11px;opacity:.7;">v11.6 : نسخه</p>
+    <p style="margin:4px 0 0;font-size:11px;opacity:.7;">نسخه <span class="app-ver">v13.8</span></p>
 </footer>
 
+<script src="abdah-ext.js"></script>
 <script>
 /* ======================================================================
    بخش ۱: دیتای مرجع ۱۶ شکل رملی (عیناً از صفحه‌ی «دایره ابدح» گرفته شده)
@@ -2364,12 +2398,40 @@ function buildShieldCards(container, isBatin){
 }
 
 function renderShield(){
+    try { renderExt(); } catch(e){ console.error(e); }
     buildShieldCards(shield, false);
     shieldWrap.classList.add('show');
     renderZamirHokmPath();
     drawDivideLine(shieldWrap, shield, shieldDivideSvg);
     drawShieldTraceLines();
 }
+
+
+/* ======================================================================
+   پرسش‌های کتاب: رساله‌ی دانیال و شجره و ثمره (افزونه‌ی abdah-ext.js).
+   این بخش فقط از زایچه‌ی ظاهر حساب می‌کند و قاعده‌های تفسیر صفحه را تغییر نمی‌دهد.
+   ====================================================================== */
+let extTopic = null, extQ = null;
+function extAnswer(i){
+    let items; try { items = window.ABDAH_EXT.run(currentCast.housesRows, i); } catch(e){ console.error(e); items = [{ t: 'در محاسبه‌ی این پرسش خطایی پیش آمد.', houses: [], tone: 'bad' }]; }
+    const q = window.ABDAH_EXT.q(i);
+    return `<ul>${items.map(x => `<li class="t-${x.tone}">${x.t}${x.houses && x.houses.length ? ' ' + [...new Set(x.houses)].map(h => `<span class="ext-h">خانه‌ی ${faDigits(h)}</span>`).join('') : ''}</li>`).join('')}</ul><details><summary>قاعده‌ی این پرسش</summary><p>${q.rule}</p></details>`;
+}
+function renderExt(){
+    const box = document.getElementById('extCard');
+    if(!box || !window.ABDAH_EXT || !currentCast){ if(box) box.style.display = 'none'; return; }
+    const T = window.ABDAH_EXT.topics;
+    if(!extTopic) extTopic = T[0].id;
+    const t = T.find(x => x.id === extTopic);
+    box.style.display = '';
+    box.innerHTML = `<h2>📜 پاسخ به پرسش‌ها</h2><p class="ext-sub">پرسش‌های آماده بر پایه‌ی قاعده‌های دانیال، شجره و ثمره و مثلثات، که از همین رملی که زدید حساب می‌شوند. موضوع را انتخاب کنید و روی پرسش بزنید تا پاسخ را ببینید.</p>
+        <div class="ext-topics">${T.map(x => `<button type="button" data-ext-tp="${x.id}" aria-pressed="${x.id === extTopic}">${x.ico} ${x.t}</button>`).join('')}</div>
+        ${t.s.map(([st, ids]) => `<div class="ext-sec"><h4>${st}</h4>${ids.map(i => `<div class="ext-q"><button type="button" data-ext-q="${i}" aria-expanded="${extQ === i}"><span>${window.ABDAH_EXT.q(i).q}</span><span aria-hidden="true">${extQ === i ? '−' : '+'}</span></button>${extQ === i ? `<div class="ext-ans">${extAnswer(i)}</div>` : ''}</div>`).join('')}</div>`).join('')}`;
+}
+document.addEventListener('click', e => {
+    const a = e.target.closest('[data-ext-tp]'); if(a){ extTopic = a.dataset.extTp; extQ = null; renderExt(); return; }
+    const b = e.target.closest('[data-ext-q]'); if(b){ const i = Number(b.dataset.extQ); extQ = extQ === i ? null : i; renderExt(); }
+});
 
 function renderBatinShield(){
     buildShieldCards(batinShield, true);
@@ -3293,6 +3355,10 @@ function matlubTimingItems(){
     return items;
 }
 
+const GASHTAR_HELP = `<b>خانه‌ی اصلی</b> خانه‌ای است که موضوع پرسش در آن دیده می‌شود (مثلاً ازدواج خانه‌ی ۷، بیماری خانه‌ی ۶). هر دو قاعده‌ی زیر از شکلی شروع می‌شوند که در این رمل در خانه‌ی اصلی نشسته.<br>
+<b>تکرار:</b> همان شکل در کدام خانه‌های دیگر هم آمده؟ هر خانه‌ای که همان شکل را دارد با موضوع پیوند دارد؛ مثلاً اگر شکل خانه‌ی ۷ در خانه‌ی ۲ هم آمده باشد، کار با مال گره خورده. تکرار در امهات (۱ تا ۴) نشانه‌ی سرعت است.<br>
+<b>گشتار:</b> در دایره‌ی ابدح هر شکل یک خانه‌ی خود دارد (لحیان ۱، حمره ۲، نصره‌الخارج ۳، بیاض ۴، قبض‌الخارج ۵، اجتماع ۶، عتبه‌الخارج ۷، انکیس ۸، عقله ۹، قبض‌الداخل ۱۰، فرح ۱۱، نصره‌الداخل ۱۲، نقی‌الخد ۱۳، عتبه‌الداخل ۱۴، طریق ۱۵، جماعت ۱۶). از شکل خانه‌ی اصلی به خانه‌ی خودِ آن شکل می‌رویم، می‌بینیم آن‌جا چه شکلی نشسته، و با آن شکل تازه همین کار را تکرار می‌کنیم تا به خانه‌ی تکراری برسیم (حداکثر پنج قدم). خانه‌هایی که زنجیره از آن‌ها می‌گذرد جاهایی‌اند که موضوع به آن‌ها راه پیدا می‌کند؛ سعد یا نحس بودن شکل‌های سر راه، خوبی یا سختی روند را نشان می‌دهد. شکلی که در خانه‌ی خود نشسته باشد قوی است.`;
+
 /* بخش مشترک زیر هر تفسیر: خانه‌ی اصلی موضوع و شواهدش */
 function mainHouseSection(m, topicId){
     const s = shapeOfHouse(m), f = fortuneOfHouse(m), st = stateOfName(s), home = homeHouseOf(s);
@@ -3333,9 +3399,10 @@ function mainHouseSection(m, topicId){
         cur = nx;
     }
     if(chain.length){
-        const txt = chain.map(c => `در خانه‌ی «${c.from}» (${fa(c.h)}) «${c.to}» نشسته`).join(' ← ');
         const bad = chain.filter(c => fortuneOfName(c.to) === 'نحس').length, good = chain.filter(c => fortuneOfName(c.to) === 'سعد').length;
-        items.push(it(`گشتار خانه‌ها: ${txt}.`, chain.map(c => c.h), good > bad ? 'good' : bad > good ? 'bad' : 'mid'));
+        const steps = chain.map((c, i) => `<br><b>قدم ${fa(i + 1)}:</b> خانه‌ی خودِ «${c.from}» در ابدح خانه‌ی ${fa(c.h)} (${houseShortLabel[c.h - 1]}) است؛ آن‌جا «${c.to}» نشسته (${fortuneOfName(c.to)}).`).join('');
+        const end = chain.length < 5 ? '<br>به خانه‌ای رسیدیم که قبلاً دیده شده بود؛ زنجیره بسته شد.' : '';
+        items.push(it(`گشتار از «${s}» شروع می‌شود:${steps}${end}<br><b>جمع:</b> موضوع به خانه‌های ${hList(chain.map(c => c.h))} کشیده می‌شود؛ ${good > bad ? 'بیشتر شکل‌های سر راه سعدند و روند کار نیک است' : bad > good ? 'بیشتر شکل‌های سر راه نحس‌اند و روند کار سخت است' : 'سعد و نحس سر راه برابرند و روند کار میانه است'}.`, chain.map(c => c.h), good > bad ? 'good' : bad > good ? 'bad' : 'mid'));
     }
 
     // شواهد
@@ -3346,7 +3413,7 @@ function mainHouseSection(m, topicId){
         return it(`شاهد ${hLabel(n)}: «${ws}» ${fortuneOfName(ws)} و ${wst}${v ? ` ← ${v[0]}، ${easeOf(fortuneOfName(ws))}` : ''}.`, [n], v ? v[1] : fortuneTone(fortuneOfName(ws)));
     });
     items.push(...extraMainHouseItems(m, topicId));
-    return [section('🧭', `خانه‌ی اصلی (${fa(m)}): حالت، تکرار و گشتار`, items),
+    return [section('🧭', `خانه‌ی اصلی (${fa(m)}): حالت، تکرار و گشتار`, items, { fold: true, help: GASHTAR_HELP }),
             section('👁️', `شواهد خانه‌ی ${fa(m)}${kind ? ` (سؤال از ${kind === 'وصل' ? 'رسیدن' : 'جدا شدن'})` : ''}`, wItems)];
 }
 
@@ -5096,9 +5163,11 @@ function renderTafsir(){
     }
     res.sections.forEach(s => {
         if(!s.items.length) return;
-        html += `<div class="t-section"><h3><span class="ts-ico">${s.ico}</span>${s.title}${s.tag ? `<span class="ts-tag">${s.tag}</span>` : ''}</h3>
-            <div class="t-items">${s.items.map(x => `
-                <div class="t-item ${x.tone ? 't-' + x.tone : ''}"><span class="ti-mark"></span><div class="ti-body">${chipsHtml(x.houses)}${faDigits(x.html)}</div></div>`).join('')}</div></div>`;
+        const head = `<span class="ts-ico">${s.ico}</span>${s.title}${s.tag ? `<span class="ts-tag">${s.tag}</span>` : ''}`;
+        const body = `${s.help ? `<div class="ts-help">${s.help}</div>` : ''}<div class="t-items">${s.items.map(x => `
+                <div class="t-item ${x.tone ? 't-' + x.tone : ''}"><span class="ti-mark"></span><div class="ti-body">${chipsHtml(x.houses)}${faDigits(x.html)}</div></div>`).join('')}</div>`;
+        html += s.fold ? `<details class="t-section t-fold"><summary><h3>${head}<span class="ts-open">باز کنید</span></h3></summary>${body}</details>`
+                       : `<div class="t-section"><h3>${head}</h3>${body}</div>`;
     });
     if(!res.verdicts.length && !res.sections.some(s => s.items.length)){
         html += `<div class="empty-note" style="margin-top:14px;">هیچ‌کدام از نشانه‌های ثبت‌شده‌ی این موضوع در این رمل نیامده است. برای جزئیات، روی خانه‌های رمل بزنید.</div>`;
@@ -6637,7 +6706,7 @@ const LESSONS = [
     <p>قاعده‌های هر موضوع فقط برای شکل‌های مشخصی حکم دارند. اگر هیچ‌کدام از آن شکل‌ها در خانه‌های موضوع نیفتاده باشد، حکم ویژه‌ای نیست و حکم از قاعده‌های خانه‌ی اصلی (حالت، تکرار، گشتار و شواهد) گرفته می‌شود.</p>
     <h3>رمل‌هایم کجا ذخیره می‌شود؟</h3>
     <p>فقط روی همین دستگاه و مرورگر. اگر حافظه‌ی مرورگر پاک شود، فهرست هم پاک می‌شود. برای نگه داشتن یک رمل، لینک آن را کپی کنید.</p>` },
-/* ======================== شجره و ثمره (رساله‌ای دانیالی از کتاب علم رمل ایرانی؛ جدا از قاعده‌های تفسیر صفحه) ======================== */
+/* ======================== شجره و ثمره (جدا از قاعده‌های تفسیر صفحه) ======================== */
 { id: 'sh-intro', group: 'شجره و ثمره', ico: '🌳', title: 'شجره‌ی پرثمره چیست', blurb: 'رساله‌ای دانیالی درباره‌ی سیر نقطه', kw: 'شجره ثمره دانیال نقطه میزان',
   body: () => `
     <p class="lead">«شجره‌ی پرثمره» رساله‌ای است در علم نقطه که به دانیال نسبت داده می‌شود و همان راه دایره‌ی ابدح است. متن اصلی را «شجره» گفته‌اند و شرح هر بند را «ثمره».</p>
@@ -6693,7 +6762,8 @@ const LESSONS = [
     ${table(['خانه‌ی پایان نقطه', 'جهت'], [['۱ و ۵', 'مشرق'], ['۲ و ۶', 'شمال'], ['۳ و ۷', 'مغرب'], ['۴ و ۸', 'جنوب']])}
     <p>اگر نقطه از جای خود به جای دیگر نقل کند، مثل آتش از ۵ به ۴ یا باد از ۶ به ۸، آن کار میسر نمی‌شود.</p>` },
 ];
-const LESSON_GROUPS = ['شروع', 'پایه‌ها', 'پیشرفته', 'موضوع‌ها', 'شجره و ثمره'];
+if(window.ABDAH_EXT) LESSONS.push(...window.ABDAH_EXT.lessons);
+const LESSON_GROUPS = ['شروع', 'پایه‌ها', 'پیشرفته', 'موضوع‌ها', 'شجره و ثمره', ...(window.ABDAH_EXT ? window.ABDAH_EXT.groups : [])];
 const lessonById = id => LESSONS.find(l => l.id === id);
 
 /* آموزش مربوط به موضوع و زیرگزینه‌ی فعلی */
