@@ -1,5 +1,5 @@
 // هر بار که آپدیت جدیدی منتشر می‌کنید، فقط همین عدد را زیاد کنید
-const CACHE_VERSION = 'v13.8';
+const CACHE_VERSION = 'v15.17';
 const CACHE_NAME = `niyat-ramal-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -10,7 +10,10 @@ const PRECACHE_URLS = [
   './abdah-ext.js',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './img/tarh1.jpg',
+  './img/tarh2.jpg',
+  './img/tamkin.jpg'
 ];
 
 // نصب: نسخه‌ی جدید فوراً منتظر نمی‌ماند، فایل‌های پایه را کش می‌کند

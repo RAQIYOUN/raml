@@ -1029,7 +1029,7 @@ img, svg{ -webkit-user-drag:none; user-drag:none; pointer-events:none; }
 
 <footer>
     <p style="margin:0;">&copy; ۲۰۲۵ نیت‌رمل — بر پایه‌ی دایره‌ی ابدح، تدوین: <strong>محمود خاوری</strong> (گروه آموزشی راقیون) · <a href="https://raqiyoun.github.io/ABDAH/" target="_blank" rel="noopener">دایره‌ی ابدح و منسوبات آن</a></p>
-    <p style="margin:4px 0 0;font-size:11px;opacity:.7;">نسخه <span class="app-ver">v13.8</span></p>
+    <p style="margin:4px 0 0;font-size:11px;opacity:.7;">نسخه <span class="app-ver">v15.17</span></p>
 </footer>
 
 <script src="abdah-ext.js"></script>
@@ -2424,7 +2424,7 @@ function renderExt(){
     if(!extTopic) extTopic = T[0].id;
     const t = T.find(x => x.id === extTopic);
     box.style.display = '';
-    box.innerHTML = `<h2>📜 پاسخ به پرسش‌ها</h2><p class="ext-sub">پرسش‌های آماده بر پایه‌ی قاعده‌های دانیال، شجره و ثمره و مثلثات، که از همین رملی که زدید حساب می‌شوند. موضوع را انتخاب کنید و روی پرسش بزنید تا پاسخ را ببینید.</p>
+    box.innerHTML = `<h2>📜 پاسخ به پرسش‌ها</h2><p class="ext-sub">پرسش‌های آماده (دانستنی‌های شکل‌ها، دانیال، شجره و ثمره و مثلثات) که از همین رملی که زدید حساب می‌شوند. موضوع را انتخاب کنید و روی پرسش بزنید تا پاسخ را ببینید.</p>
         <div class="ext-topics">${T.map(x => `<button type="button" data-ext-tp="${x.id}" aria-pressed="${x.id === extTopic}">${x.ico} ${x.t}</button>`).join('')}</div>
         ${t.s.map(([st, ids]) => `<div class="ext-sec"><h4>${st}</h4>${ids.map(i => `<div class="ext-q"><button type="button" data-ext-q="${i}" aria-expanded="${extQ === i}"><span>${window.ABDAH_EXT.q(i).q}</span><span aria-hidden="true">${extQ === i ? '−' : '+'}</span></button>${extQ === i ? `<div class="ext-ans">${extAnswer(i)}</div>` : ''}</div>`).join('')}</div>`).join('')}`;
 }
@@ -3434,6 +3434,44 @@ function interpWhen(m){
         it(`شکل خانه‌ی ۱۶ «${s16}» است و در خانه‌های ${hList(r16)} آمده. هر جا در امهات بود روز، در بنات هفته، در متولدات ماه و در شواهد سال حساب کنید و عدد هر کدام را از جدول عدد (بزدح) بردارید و همه را جمع بزنید.`, r16, 'info')
     ]));
     return res;
+}
+
+/* ======================== زمان، مقدار، عدد و جهت (نیت جمع) ======================== */
+function interpAmount(kind){
+    if(kind === 'when') return interpWhen(15);
+    const res = { verdicts: [], sections: [], book: [15] };
+    if(kind === 'qty'){
+        res.verdicts.push(numberRangeItem(15));
+        res.verdicts.push(it(`عدد ابدح قاضی «${SH(15)}» ${fa(midNum(SH(15)))} و عدد صغیرش ${fa(smallNum(SH(15)))} است.`, [15], 'info'));
+        const tm = matlubTimingItems();
+        res.sections.push(section('🔢', 'مرتبه‌ی عدد از جای مطلوب', tm.length ? tm : [it('مطلوب حکم «طریق» است یا گرفته نمی‌شود؛ از این راه مرتبه‌ای به دست نمی‌آید.', [15], 'mid')], { tag: 'امهات کم، بنات میانه، شواهد بسیار' }));
+        res.sections.push(section('🧮', 'نقطه‌های فرد ۱۳ و ۱۴', [pointsNumberItem()]));
+        return res;
+    }
+    if(kind === 'num'){
+        const total = totalRamalPoints();
+        res.verdicts.push(numberRangeItem(15));
+        res.sections.push(section('🔢', 'شمارش نقطه‌ها', [it(`مجموع نقطه‌های کل رمل ${fa(total)} است؛ طرح بر ۲: ${fa(castOutByTwo(total))} (${castOutByTwo(total) === 1 ? 'فرد' : 'زوج'})، طرح بر ۱۲: ${fa(castOutByTwelve(total))}، طرح بر ۴: ${fa(castOutToFour(total))}.`)]));
+        res.sections.push(section('💭', 'عددی که در دل گرفته', [it('به طرف بگویید عددش را دو برابر کند، ده بیفزاید، حاصل را پنج برابر کند و عدد آخر را بگوید. از آن ۵۰ کم کنید و بر ۱۰ تقسیم کنید (۶۰ ← ۱، ۷۰ ← ۲، ۱۰۰ ← ۵، ۱۵۰ ← ۱۰). این حساب گفت‌وگوست و به رمل بستگی ندارد.', [], 'info')]));
+        const nm = interpName();
+        (nm.verdicts || []).forEach(v => res.verdicts.push(v));
+        (nm.sections || []).forEach(x => res.sections.push(x));
+        return res;
+    }
+    if(kind === 'dir'){
+        const rows = currentCast.housesRows, dirOfEnd = h => [null, 'مشرق', 'شمال', 'مغرب', 'جنوب'][((h - 1) % 4) + 1];
+        const singles = rows[14].map((v, i) => v === 1 ? i : -1).filter(i => i !== -1);
+        const elName = ['آتش', 'باد', 'آب', 'خاک'];
+        const ends = singles.map((r, k) => { const ch = tracePoint(14, r, rows), end = ch[ch.length - 1].house + 1;
+            return it(`نقطه‌ی ${elName[r]} قاضی${singles.length > 1 ? (k === 0 ? ' (ضمیر)' : k === 1 ? ' (حکم)' : '') : ''} در خانه‌ی ${fa(end)} منتهی شده ← سمت <b>${dirOfEnd(end)}</b>.`, [15, end], 'info'); });
+        res.sections.push(section('🧭', 'جهت از خانه‌ی پایان نقطه', ends.length ? ends : [it('قاضی «جماعت» است و نقطه‌ی فردی ندارد؛ از این راه جهتی به دست نمی‌آید.', [15], 'mid')], { tag: '۱ و ۵ مشرق، ۲ و ۶ شمال، ۳ و ۷ مغرب، ۴ و ۸ جنوب' }));
+        const el = shapeByName[SH(15)].element, d = { 'آتشی': 'مشرق', 'بادی': 'شمال', 'آبی': 'مغرب', 'خاکی': 'جنوب' }[el];
+        res.verdicts.push(it(`قاضی «${SH(15)}» ${el} است ← سمت ${d}.`, [15], 'info'));
+        const g = Object.entries(missingDirGroups).find(([, arr]) => arr.includes(SH(15)));
+        if(g) res.sections.push(section('📍', 'جهت از گروه شکل', [it(`«${SH(15)}» از شکل‌های ${g[0]} است.`, [15], 'info')]));
+        return res;
+    }
+    return interpWhen(15);
 }
 
 /* ======================== فرزند و بارداری ======================== */
@@ -4711,6 +4749,11 @@ const TOPICS = [
       kw: ['واریز', 'کارت به کارت', 'همکاری', 'پول بفرستد', 'برای دوستم', 'واسطه'],
       subs: { label: 'تعداد ارکان سؤال:', opts: [['2', 'دو رکن: من و یک نفر'], ['3', 'سه رکن: با واسطه یا نفر سوم'], ['1', 'یک رکن: فقط خودم']] },
       run: s => interpArkan(Number(s || 2)) },
+    { id: 'amount', ico: '🔢', title: 'زمان، مقدار، عدد و جهت', desc: 'کی، چه مدت، چقدر، چند تا، چه عددی، کدام سمت', lesson: 'time',
+      kw: ['چقدر', 'چند تا', 'چندتا', 'چه مقدار', 'چه عددی', 'چه عدد', 'کدام سمت', 'کدام جهت', 'چه مدت', 'چند وقت'],
+      subs: { label: 'پرسش:', opts: [['when', 'کی / چه مدت'], ['qty', 'چه مقدار / چند تا'], ['num', 'چه عددی'], ['dir', 'کدام جهت / سمت']] },
+      pick: [['qty', ['چقدر', 'چند تا', 'چندتا', 'مقدار', 'تعداد']], ['num', ['عدد', 'شماره', 'رقم']], ['dir', ['سمت', 'جهت', 'کدام طرف']], ['when', ['کی', 'چه وقت', 'مدت', 'چند وقت']]],
+      run: s => interpAmount(s || 'when') },
     { id: 'when', ico: '⏳', title: 'کی برآورده می‌شود', desc: 'روز، هفته، ماه یا سال', lesson: 'time',
       kw: ['چه وقت', 'چه زمانی', 'چند روز دیگر', 'چند ماه دیگر', 'کِی', 'زمان برآورده'],
       subs: { label: 'خانه‌ی مقصود:', opts: [['15', 'نیت کلی (۱۵)'], ['7', 'ازدواج (۷)'], ['2', 'مال و پول (۲)'], ['10', 'شغل (۱۰)'], ['9', 'آمدن غائب (۹)'], ['5', 'فرزند و معشوق (۵)']] },
@@ -5961,6 +6004,10 @@ const LESSONS = [
         ['خانه‌ی ۱۲', 'نقطه‌های شکل خانه‌ی ۱'], ['خانه‌ی ۱۳', 'نقطه‌های شکل خانه‌ی ۲'], ['خانه‌ی ۱۴', '۴'], ['خانه‌ی ۱۵', '۳'], ['خانه‌ی ۱۶', '۴']
     ])}
     <p>اگر لحیان در زایچه نبود، ببینید شکل خانه‌ی ۱ در ابدح صاحب کدام خانه است و با همان شماره از جدول بخوانید.</p>
+    <h2>عددی که در دل گرفته (چند پسر دارد)</h2>
+    <p>این قاعده با رمل نیست و با حساب گفت‌وگو کار می‌کند. به طرف بگویید عددی را (مثلاً شمار پسرانش) در دل بگیرد:</p>
+    ${steps(['عدد را <b>دو برابر</b> کند.', '<b>ده</b> به آن بیفزاید.', 'حاصل را <b>پنج برابر</b> کند (یعنی چهار برابر خودش را به آن بیفزاید) و عدد آخر را بگوید.', 'از عددی که گفت <b>۵۰</b> کم کنید و بر <b>۱۰</b> تقسیم کنید؛ همان عدد دل اوست.'])}
+    ${table(['عدد گفته‌شده', 'عدد دل'], [['۶۰', '۱'], ['۷۰', '۲'], ['۱۰۰', '۵'], ['۱۵۰', '۱۰']])}
     <div class="example"><b>🧪 مثال</b><p>رمل نمونه روی هم ${faDigits(total)} نقطه دارد. طرح بر ۲ ← ${castOutByTwo(total) === 1 ? 'فرد' : 'زوج'}؛ طرح بر ۱۲ ← ${faDigits(castOutByTwelve(total))}؛ طرح بر ۴ ← ${faDigits(castOutToFour(total))}. پس در فکر طرف: ${pointsMindInfo[castOutByTwelve(total)]}</p></div>` ; } },
 
 { id: 'arkan', group: 'پیشرفته', ico: '👥', title: 'سؤال یک، دو یا سه نفره', blurb: 'تقسیم خانه‌ها میان ارکان سؤال', kw: 'ارکان رکن کلیدواژه دو نفر سه نفر واسطه تقسیم تطبیق', topic: 'arkan', sub: '2',
